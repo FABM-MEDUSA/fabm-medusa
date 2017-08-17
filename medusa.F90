@@ -22,7 +22,7 @@ module fabm_medusa
       ! Parameters
       logical :: jliebig
       real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xuif,xthetam,xthetamd
-      real(rk) :: xkmi,xpmipn,xpmid,xkme,xpmepn,xpmepd,xpmezmi,zpmed,xgmi,xgme,xthetad,xphi,xthetapn
+      real(rk) :: xkmi,xpmipn,xpmid,xkme,xpmepn,xpmepd,xpmezmi,zpmed,xgmi,xgme,xthetad,xphi,xthetapn,xthetazme
    contains
       procedure :: initialize
       procedure :: do
@@ -65,9 +65,10 @@ contains
    call self%get_parameter(self%xphi, 'xphi', '-','zooplankton grazing inefficiency', default=0.20_rk)
    call self%get_parameter(self%xthetapn, 'xthetapn', 'molC molN-1','phytoplankton C:N ratio (non-diatoms)', default=6.625_rk)
    call self%get_parameter(self%xbetan, 'xbetan', '-','zooplankton N assimilation efficiency', default=0.77_rk)
-   call self%get_parameter(self%xthetazmi, 'xthetazmi', 'molC molN-1','zooplankton C:N ratio', default=5.625_rk)
+   call self%get_parameter(self%xthetazmi, 'xthetazmi', 'molC molN-1','microzooplankton C:N ratio', default=5.625_rk)
    call self%get_parameter(self%xbetac, 'xbetac', '-','zooplankton C assimilation efficiency', default=0.64_rk)
    call self%get_parameter(self%xkc, 'xkc', '-','zooplankton net C growth efficiency', default=0.8_rk)
+   call self%get_parameter(self%xthetazme, 'xthetazme', 'molC molN-1','mesozooplankton C:N ratio', default=5.625_rk)
 
    ! Register state variables
    call self%register_state_variable(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
@@ -207,10 +208,56 @@ contains
   else
      fmigrow = (self%xbetac * self%xkc * ficmi) / self%xthetazmi
      fmiexcr = ficmi * ((self%xbetan / fmith) - ((self%xbetac * self%xkc) / self%xthetazmi))
+  end if
   fmiresp = (self%xbetac * ficmi) - (self%xthetazmi * fmigrow) !Respiration
 
   !Mesozooplankton
-  
+  fme1 = (self%xkme * self%xkme) + (self%xpmepn * ZPHN * ZPHN) + (self%xpmepd * ZPHD * ZPHD) + (self%xpmezmi * ZZMI * ZZMI) + (self%xpmed * ZDET * ZDET)
+  fme = self%xgme * ZZME / fme1
+  fgmepn = fme * self%xpmepn * ZPHN * ZPHN
+  fgmepd = fme * self%xpmepd * ZPHD * ZPHD
+  fgmepds = fsin * fgmepd
+  fgmezmi = fme * self%xpmezmi * ZZMI * ZZMI
+  fgmed = fme * self%xpmed * ZDET * ZDET
+  fgmedc = self%xthetad * fgmed !grazing on detrital carbon: non-ROAM formulation (see switch in original code to be implemented)
+  finme = (1.0_rk - self%xphi) * (fgmepn + fgmepd + fgmezmi + fgmed)
+  ficme = (1.0_rk - self%xphi) * ((self%xthetapn * fgmepn) + (self%thetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc) 
+  fstarme = (self%xbetan * self%xthetazme) / (self%xbetac * self%xkc)
+  fmeth = ficme / finme
+  if (fmeth .ge. fstarme) then
+     fmegrow = self%xbetan * finme
+     fmeexcr = 0.0_rk
+  else
+     fmegrow = (self%xbetac * self%xkc * ficme) / self%xthetazme
+     fmeexcr = ficme * ((self%xbetan / fmeth) - ((self%xbetac * self%xkc) / self%xthetazme))
+  end if
+  fmeresp = (self%xbetac * ficme) - (self%xthetazme * fmegrow)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   !_SET_ODE_(self%id_..,)
