@@ -23,6 +23,7 @@ module fabm_medusa
       logical :: jliebig
       real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xuif,xthetam,xthetamd
       real(rk) :: xkmi,xpmipn,xpmid,xkme,xpmepn,xpmepd,xpmezmi,zpmed,xgmi,xgme,xthetad,xphi,xthetapn,xthetazme
+      real(rk) :: xmetapn,xmetapd,xmetazmi,xmetazme
    contains
       procedure :: initialize
       procedure :: do
@@ -69,6 +70,10 @@ contains
    call self%get_parameter(self%xbetac, 'xbetac', '-','zooplankton C assimilation efficiency', default=0.64_rk)
    call self%get_parameter(self%xkc, 'xkc', '-','zooplankton net C growth efficiency', default=0.8_rk)
    call self%get_parameter(self%xthetazme, 'xthetazme', 'molC molN-1','mesozooplankton C:N ratio', default=5.625_rk)
+   call self%get_parameter(self%xmetapn, 'xmetapn', 'd-1','phytoplankton loss rate (non-diatoms)', default=0.02_rk)
+   call self%get_parameter(self%xmetapd, 'xmetapd', 'd-1','phytoplankton loss rate (diatoms)', default=0.02_rk)
+   call self%get_parameter(self%xmetazmi, 'xmetazmi', 'd-1','microzooplankton loss rate', default=0.02_rk)
+   call self%get_parameter(self%xmetazme, 'xmetazme', 'd-1','mesozooplankton loss rate', default=0.02_rk)
 
    ! Register state variables
    call self%register_state_variable(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
@@ -105,6 +110,7 @@ contains
     real(rk) :: fpnlim,fpdlim !nutrient limitation of primary production
     real(rk) :: fmi1,fmi,fgmipn,fgmid,fgmidc,finmi,ficmi,fstarmi,fmith,fmigrow,fmiexcr,fmiresp
     real(rk) :: fme1,fme,fgmepn,fgmepd,fgmepds,fgmezmi,fgmed,fgmedc,finme,ficme,fstarme,fmeth,fmegrow,fmeexcr,fmeresp
+    real(rk) :: fdpn2,fdpd2,fdpds2,fdzmi2,fdzme2
     _LOOP_BEGIN_
 
     ! Retrieve current (local) state variable values
@@ -233,7 +239,13 @@ contains
   end if
   fmeresp = (self%xbetac * ficme) - (self%xthetazme * fmegrow)
 
-
+  !Plankton metabolic losses
+  !Linear loss processes assumed to be metabolic in origin
+  fdpn2 = self%xmetapn * ZPHN
+  fdpd2 = self%xmetapd * ZPHD
+  fdpds2 = self%xmetapd * ZPDS
+  fdzmi2 = self%xmetazmi * ZZMI
+  fdzme2 = self%xmetazme * ZZME
 
 
 
