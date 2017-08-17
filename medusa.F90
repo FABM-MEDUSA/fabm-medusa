@@ -15,14 +15,14 @@ module fabm_medusa
 
   type,extends(type_base_model),public :: type_medusa
       ! Variable identifiers
-      type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL
+      type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME
       type (type_dependency_id)            :: id_temp,id_par
   !    type (type_diagnostic_variable_id)   ::
 
       ! Parameters
       logical :: jliebig
       real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xuif,xthetam,xthetamd
-
+      real(rk) :: xkmi,xpmipn,xpmid,xkme,xpmepn,xpmepd,xpmezmi,zpmed,xgmi,xgme,xthetad,xphi,xthetapn
    contains
       procedure :: initialize
       procedure :: do
@@ -51,6 +51,19 @@ contains
    call self%get_parameter(self%xuif, 'xuif', '-','hypothetical growth ratio at Inf Si : N ratio', default=1.5_rk)
    call self%get_parameter(self%xthetam, 'xthetam', 'g chl gC-1','maximum Chl : C ratio (non-diatoms)', default=0.05_rk)
    call self%get_parameter(self%xthetamd, 'xthetamd', 'g chl gC-1','maximum Chl : C ratio (diatoms)', default=0.05_rk)
+   call self%get_parameter(self%xkmi, 'xkmi', 'mmolN m-3','microzooplankton grazing half-saturation constant', default=0.8_rk)
+   call self%get_parameter(self%xpmipn, 'xpmipn', '-','microzooplankton grazing preference on non-diatoms', default=0.75_rk)
+   call self%get_parameter(self%xpmid, 'xpmid', '-','microzooplankton grazing preference on detritus', default=0.25_rk)
+   call self%get_parameter(self%xkme, 'xkme', 'mmolN m-3','mesozooplankton grazing half-saturation constant', default=0.3_rk)
+   call self%get_parameter(self%xpmepn, 'xpmepn', '-','mesozooplankton grazing preference on non-diatoms', default=0.15_rk)
+   call self%get_parameter(self%xpmepd, 'xpmepd', '-','mesozooplankton grazing preference on diatoms', default=0.35_rk)
+   call self%get_parameter(self%xpmezmi, 'xpmezmi', '-','mesozooplankton grazing preference on microzooplankton', default=0.35_rk)
+   call self%get_parameter(self%xpmed, 'xpmed', '-','mesozooplankton grazing preference on detritus', default=0.15_rk)
+   call self%get_parameter(self%xgmi, 'xgmi', 'd-1','maximum microzooplankton grazing rate', default=2.0_rk)
+   call self%get_parameter(self%xgme, 'xgme', 'd-1','maximum mesozooplankton grazing rate', default=0.5_rk)
+   call self%get_parameter(self%xthetad, 'xthetad', 'molC molN-1','detritus C : N ratio', default=6.625_rk)
+   call self%get_parameter(self%xphi, 'xphi', '-','zooplankton grazing inefficiency', default=0.20_rk)
+   call self%get_parameter(self%xthetapn, 'xthetapn', 'molC molN-1','phytoplankton C:N ratio (non-diatoms)', default=6.625_rk)
    ! Register state variables
    call self%register_state_variable(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZCHD,'ZCHD','mg chl/m**3', 'chlorophyll in diatoms', minimum=0.0_rk)
@@ -60,7 +73,10 @@ contains
    call self%register_state_variable(self%id_ZDIN,'ZDIN','mmolN/m**3', 'nitrogen nutrient', minimum=0.0_rk) !no river dilution?
    call self%register_state_variable(self%id_ZFER,'ZFER','mmolFe/m**3', 'iron nutrient', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZSIL,'ZSIL','mmolSi/m**3', 'silicic acid', minimum=0.0_rk)
-
+   call self%register_state_variable(self%id_ZDET,'ZDET','mmolN/m**3', 'slow-sinking detritus (N)', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZDTC,'ZDTC','mmolC/m**3', 'slow-sinking detritus (C)', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZZMI,'ZZMI','mmolN/m**3', 'microzooplankton', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZZME,'ZZME','mmolN/m**3', 'mesozooplankton', minimum=0.0_rk)
    ! Register diagnostic variables
      
    ! Register environmental dependencies
@@ -80,7 +96,9 @@ contains
     real(rk) :: fnld,fsld,ffld ! diatom Qn/Qs/Qf terms
     real(rk) :: fun_T,xvpnT,xvpdT,fchn1,fchn,fjln,fchd1,fchd,fjld
     real(rk) :: fsin,fnsi,fsin1,fnsi1,fnsi2,fprn,fprd,fsld2,frn,frd
-    real(rk) :: fpnlim,fpdlim !nutrient limitation of primary production 
+    real(rk) :: fpnlim,fpdlim !nutrient limitation of primary production
+    real(rk) :: fmi1,fmi,fgmipn,fgmid,fgmidc,finmi,ficmi,fstarmi,fmith,fmigrow,fmiexcr,fmiresp
+    real(rk) :: fme1,fme,fgmepn,fgmepd,fgmepds,fgmezmi,fgmed,fgmedc,finme,ficme,fstarme,fmeth,fmegrow,fmeexcr,fmeresp
     _LOOP_BEGIN_
 
     ! Retrieve current (local) state variable values
@@ -92,7 +110,11 @@ contains
     _GET_(self%id_ZPDS,ZPDS)
     _GET_(self%id_ZDIN,ZDIN)
     _GET_(self%id_ZFER,ZFER)
-    _GET_(self%id_ZSIL,ZSIL) 
+    _GET_(self%id_ZSIL,ZSIL)
+    _GET_(self%id_ZDET,ZDET)
+    _GET_(self%id_ZDTC,ZDTC)
+    _GET_(self%id_ZZMI,ZZMI)
+    _GET_(self%id_ZZME,ZZME)
     _GET_(self%id_temp,temp)
     _GET_(self%id_par,par) !check PAR // what about self-shading?
 
@@ -165,9 +187,14 @@ contains
 
   !ZOOPLANKTON GRAZING
   !Microzooplankton
+  fmi1 = (self%xkmi * self%xkmi) + (self%xpmipn * ZPHN * ZPHN) + (self%xpmid * ZDET * ZDET)
+  fmi = self%xgmi * ZZMI / fmi1
+  fgmipn = fmi * self%xpmipn * ZPHN * ZPHN !grazing on non-diatoms
+  fgmid = fmi * self%xpmid * ZDET * ZDET   !grazing on detrital nitrogen
+  fgmidc = self%xthetad * fgmid !non-ROAM formulation (see switch in original code)
+  finmi = (1.0_rk - self%xphi) * (fgmipn + fgmid)
+  ficmi = (1.0_rk - self%xphi) * ((self%xthetan * fgmipn) + fgmidc)
 
-  
-  
 
   !_SET_ODE_(self%id_..,)
 
