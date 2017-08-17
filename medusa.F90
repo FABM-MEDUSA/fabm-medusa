@@ -21,7 +21,7 @@ module fabm_medusa
 
       ! Parameters
       logical :: jliebig
-      real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xuif
+      real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xuif,xthetam,xthetamd
 
    contains
       procedure :: initialize
@@ -49,6 +49,8 @@ contains
    call self%get_parameter(self%xvpd, 'xvpd', 'd-1','Maximum phytoplankton growth rate (diatoms)', default=0.50_rk)
    call self%get_parameter(self%xsin0, 'xsin0', 'molN molSi-1','minimum diatom Si : N ratio', default=0.2_rk)
    call self%get_parameter(self%xuif, 'xuif', '-','hypothetical growth ratio at Inf Si : N ratio', default=1.5_rk)
+   call self%get_parameter(self%xthetam, 'xthetam', 'g chl gC-1','maximum Chl : C ratio (non-diatoms)', default=0.05_rk)
+   call self%get_parameter(self%xthetamd, 'xthetamd', 'g chl gC-1','maximum Chl : C ratio (diatoms)', default=0.05_rk)
    ! Register state variables
    call self%register_state_variable(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZCHD,'ZCHD','mg chl/m**3', 'chlorophyll in diatoms', minimum=0.0_rk)
@@ -77,7 +79,7 @@ contains
     real(rk) :: fnln,ffln ! non-diatom Qn/Qf terms
     real(rk) :: fnld,fsld,ffld ! diatom Qn/Qs/Qf terms
     real(rk) :: fun_T,xvpnT,xvpdT,fchn1,fchn,fjln,fchd1,fchd,fjld
-    real(rk) :: fsin,fnsi,fsin1,fnsi1,fnsi2,fprn,fprd,fsld2
+    real(rk) :: fsin,fnsi,fsin1,fnsi1,fnsi2,fprn,fprd,fsld2,frn,frd
     real(rk) :: fpnlim,fpdlim !nutrient limitation of primary production 
     _LOOP_BEGIN_
 
@@ -94,7 +96,7 @@ contains
     _GET_(self%id_temp,temp)
     _GET_(self%id_par,par) !check PAR // what about self-shading?
 
-   !PHYTOPLANKTON
+   !PHYTOPLANKTON GROWTH
    !Chlorophyll
    fthetan = (ZCHN * self%xxi) / ZPHN
    faln = self%xaln * fthetan
@@ -156,6 +158,16 @@ contains
       fprd = fjld * fpdlim
       fsld2 = 1.0_rk
    end if
+
+  !Chlorophyll production
+  frn = (self%xthetam * fchn * fnln * ffln) / fthetan
+  frd = (self%xthetamd * fchd * fnld * ffld * fsld2) / fthetad  
+
+  !ZOOPLANKTON GRAZING
+  !Microzooplankton
+
+  
+  
 
   !_SET_ODE_(self%id_..,)
 
