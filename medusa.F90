@@ -64,6 +64,11 @@ contains
    call self%get_parameter(self%xthetad, 'xthetad', 'molC molN-1','detritus C : N ratio', default=6.625_rk)
    call self%get_parameter(self%xphi, 'xphi', '-','zooplankton grazing inefficiency', default=0.20_rk)
    call self%get_parameter(self%xthetapn, 'xthetapn', 'molC molN-1','phytoplankton C:N ratio (non-diatoms)', default=6.625_rk)
+   call self%get_parameter(self%xbetan, 'xbetan', '-','zooplankton N assimilation efficiency', default=0.77_rk)
+   call self%get_parameter(self%xthetazmi, 'xthetazmi', 'molC molN-1','zooplankton C:N ratio', default=5.625_rk)
+   call self%get_parameter(self%xbetac, 'xbetac', '-','zooplankton C assimilation efficiency', default=0.64_rk)
+   call self%get_parameter(self%xkc, 'xkc', '-','zooplankton net C growth efficiency', default=0.8_rk)
+
    ! Register state variables
    call self%register_state_variable(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZCHD,'ZCHD','mg chl/m**3', 'chlorophyll in diatoms', minimum=0.0_rk)
@@ -191,9 +196,21 @@ contains
   fmi = self%xgmi * ZZMI / fmi1
   fgmipn = fmi * self%xpmipn * ZPHN * ZPHN !grazing on non-diatoms
   fgmid = fmi * self%xpmid * ZDET * ZDET   !grazing on detrital nitrogen
-  fgmidc = self%xthetad * fgmid !non-ROAM formulation (see switch in original code)
+  fgmidc = self%xthetad * fgmid !grazing on detrital carbon: non-ROAM formulation (see switch in original code to be implemented)
   finmi = (1.0_rk - self%xphi) * (fgmipn + fgmid)
   ficmi = (1.0_rk - self%xphi) * ((self%xthetan * fgmipn) + fgmidc)
+  fstarmi = (self%xbetan * self%xthetazmi) / (self%xbetac * self%xkc) !the ideal food C : N ratio for microzooplankton
+  fmith = ficmi / finmi
+  if (fmith .ge. fstarmi) then
+     fmigrowth = self%xbetan * finmi
+     fmiexcr = 0.0_rk
+  else
+     fmigrow = (self%xbetac * self%xkc * ficmi) / self%xthetazmi
+     fmiexcr = ficmi * ((self%xbetan / fmith) - ((self%xbetac * self%xkc) / self%xthetazmi))
+  fmiresp = (self%xbetac * ficmi) - (self%xthetazmi * fmigrow) !Respiration
+
+  !Mesozooplankton
+  
 
 
   !_SET_ODE_(self%id_..,)
