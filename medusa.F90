@@ -23,7 +23,7 @@ module fabm_medusa
       logical :: jliebig
       real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xuif,xthetam,xthetamd
       real(rk) :: xkmi,xpmipn,xpmid,xkme,xpmepn,xpmepd,xpmezmi,zpmed,xgmi,xgme,xthetad,xphi,xthetapn,xthetazme
-      real(rk) :: xmetapn,xmetapd,xmetazmi,xmetazme
+      real(rk) :: xmetapn,xmetapd,xmetazmi,xmetazme,xmpn,xmpd,xmzmi,xmzme,xkphn,xkphd,xkzmi,xkzme
    contains
       procedure :: initialize
       procedure :: do
@@ -74,6 +74,14 @@ contains
    call self%get_parameter(self%xmetapd, 'xmetapd', 'd-1','phytoplankton loss rate (diatoms)', default=0.02_rk)
    call self%get_parameter(self%xmetazmi, 'xmetazmi', 'd-1','microzooplankton loss rate', default=0.02_rk)
    call self%get_parameter(self%xmetazme, 'xmetazme', 'd-1','mesozooplankton loss rate', default=0.02_rk)
+   call self%get_parameter(self%xmpn,'xmpn','d-1','phytoplankton maximum loss rate (non-diatoms)', default=0.1_rk)
+   call self%get_parameter(self%xmpd,'xmpd','d-1','phytoplankton maximum loss rate (diatoms)', default=0.1_rk)
+   call self%get_parameter(self%xmzmi,'xmzmi','d-1','microzooplankton maximum loss rate', default=0.1_rk)
+   call self%get_parameter(self%xmzme,'xmzme','d-1','mesozooplankton maximum loss rate', default=0.2_rk)
+   call self%get_parameter(self%xkphn,'xkphn','mmolN m-3','phytoplankton los half-saturation constant (non-diatoms)', default=0.5_rk)
+   call self%get_parameter(self%xkphd,'xkphd','mmolN m-3','phytoplankton los half-saturation constant (diatoms)', default=0.5_rk)
+   call self%get_parameter(self%xkzmi,'xkzmi','mmolN m-3','microzooplankton loss half-saturation constant', default=0.5_rk)
+   call self%get_parameter(self%xkzme,'xkzme','mmolN m-3','mesozooplankton loss half-saturation constant', default=0.75_rk)
 
    ! Register state variables
    call self%register_state_variable(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
@@ -110,7 +118,7 @@ contains
     real(rk) :: fpnlim,fpdlim !nutrient limitation of primary production
     real(rk) :: fmi1,fmi,fgmipn,fgmid,fgmidc,finmi,ficmi,fstarmi,fmith,fmigrow,fmiexcr,fmiresp
     real(rk) :: fme1,fme,fgmepn,fgmepd,fgmepds,fgmezmi,fgmed,fgmedc,finme,ficme,fstarme,fmeth,fmegrow,fmeexcr,fmeresp
-    real(rk) :: fdpn2,fdpd2,fdpds2,fdzmi2,fdzme2
+    real(rk) :: fdpn2,fdpd2,fdpds2,fdzmi2,fdzme2,fdpn,fdpd,fdzmi,fdzme
     _LOOP_BEGIN_
 
     ! Retrieve current (local) state variable values
@@ -247,7 +255,11 @@ contains
   fdzmi2 = self%xmetazmi * ZZMI
   fdzme2 = self%xmetazme * ZZME
 
-
+  !Plankton mortality losses !NB: currently hyperbolic mortality term only (18/08/2017)
+  fdpn = self%xmpn * ZPHN * (ZPHN / (self%xkphn + ZPHN)) !non-diatom phytoplankton
+  fdpd = self%xmpd * ZPHD * (ZPHD / (self%xkphd + ZPHD)) !diatom phytoplankton
+  fdzmi = self%xmzmi * ZZMI * (ZZMI / (self%xkzmi + ZZMI)) !microzooplankton
+  fdzme = self%xmzme * ZZME * (ZZME / (self%xkzme + ZZME)) !mesozooplankton
 
 
 
