@@ -25,6 +25,7 @@ module fabm_medusa
       real(rk) :: xkmi,xpmipn,xpmid,xkme,xpmepn,xpmepd,xpmezmi,zpmed,xgmi,xgme,xthetad,xphi,xthetapn,xthetazme
       real(rk) :: xmetapn,xmetapd,xmetazmi,xmetazme,xmpn,xmpd,xmzmi,xmzme,xkphn,xkphd,xkzmi,xkzme
       real(rk) :: xmd,xmdc,xsdiss
+      real(rk) :: xk_FeL,xLgT,xk_sc_Fe
    contains
       procedure :: initialize
       procedure :: do
@@ -86,6 +87,9 @@ contains
    call self%get_parameter(self%xmd,'xmd','d-1','detrital N remineralisation rate', default=0.0158_rk)
    call self%get_parameter(self%xmdc,'xmdc','d-1','detrital C remineralisation rate', default=0.0127_rk)
    call self%get_parameter(self%xsdiss,'xsdiss','d-1','diatom frustule dissolution rate', default=0.006_rk)
+   call self%get_parameter(self%xk_FeL,'xk_FeL','-','dissociation constant for (Fe+ligand)',default=100.0_rk)
+   call self%get_parameter(self%xLgT,'xLgT','umol m-3','total ligand concentration',default=1.0_rk)
+   call self%get_parameter(self%xk_sc_Fe,'xk_sc_Fe','d-1','scavenging rate of "free" Fe',default=0.001_rk)
 
    ! Register state variables
    call self%register_state_variable(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
@@ -124,6 +128,8 @@ contains
     real(rk) :: fme1,fme,fgmepn,fgmepd,fgmepds,fgmezmi,fgmed,fgmedc,finme,ficme,fstarme,fmeth,fmegrow,fmeexcr,fmeresp
     real(rk) :: fdpn2,fdpd2,fdpds2,fdzmi2,fdzme2,fdpn,fdpd,fdzmi,fdzme
     real(rk) :: fdd,fddc,fsdiss
+    real(rk) :: xFeT,xb_coef_tmp,xb2M4ac,xLgF,xFel,xFeF,xFree,ffescav
+
     _LOOP_BEGIN_
 
     ! Retrieve current (local) state variable values
@@ -269,21 +275,23 @@ contains
   !Detritus remineralisation (temperature-dependent)
   fdd = self%xmd * fun_T * ZDET
   fddc = self%xmdc * fun_T * ZDTC
+  !Original contains accelerated detrital remineralisation in the bottom box (how do I let model know it is a bottom box?)
 
   !Diatom frustule dissolution
   fsdiss = self%xsdiss * ZPDS
 
-
-
-
-
-
-
-
-
-
-
-
+  !IRON CHEMISTRY AND FRACTIONATION
+  xFeT = ZFER * 1.e3_rk !total iron concentration (mmolFe/m3 -> umolFe/m3)
+  xb_coef_tmp = self%xk_FeL * (self%xLgT - xFeT) - 1.0_rk !this is F1 in Yool et al (2013)
+  xb2M4ac = max(((xb_coef_tmp * xb_coef_tmp) + (4.0_rk * self%xk_FeL * self%xLgT)), 0._rk)
+  xLgF = 0.5_rk * (xb_coef_tmp + (xb2M4ac**0.5_rk)) / self%xk_FeL ! "free" ligand concentration
+  xFeL = xLgT - xLgF ! ligand-bound iron concentration
+  xFeF = (xFeT - xFeL) * 1.e-3_rk! "free" iron concentration (and convert to mmolFe/m3)
+  xFree = xFeF / ZFER
+  ! Scavenging of iron (option 1 from original code)
+  ffescav = self%xk_sc_Fe * xFeF
+  !!Further (optional) implicit "scavenging" by Mick (who is Mick?, caps concentration of total Fe, and not included here yet...
+  !!Aeolian iron deposition and seafloor iron addition - should be dealt with through model inputs.
 
 
 
