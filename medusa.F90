@@ -24,6 +24,7 @@ module fabm_medusa
       real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xuif,xthetam,xthetamd
       real(rk) :: xkmi,xpmipn,xpmid,xkme,xpmepn,xpmepd,xpmezmi,zpmed,xgmi,xgme,xthetad,xphi,xthetapn,xthetazme
       real(rk) :: xmetapn,xmetapd,xmetazmi,xmetazme,xmpn,xmpd,xmzmi,xmzme,xkphn,xkphd,xkzmi,xkzme
+      real(rk) :: xmd,xmdc,xsdiss
    contains
       procedure :: initialize
       procedure :: do
@@ -82,6 +83,9 @@ contains
    call self%get_parameter(self%xkphd,'xkphd','mmolN m-3','phytoplankton los half-saturation constant (diatoms)', default=0.5_rk)
    call self%get_parameter(self%xkzmi,'xkzmi','mmolN m-3','microzooplankton loss half-saturation constant', default=0.5_rk)
    call self%get_parameter(self%xkzme,'xkzme','mmolN m-3','mesozooplankton loss half-saturation constant', default=0.75_rk)
+   call self%get_parameter(self%xmd,'xmd','d-1','detrital N remineralisation rate', default=0.0158_rk)
+   call self%get_parameter(self%xmdc,'xmdc','d-1','detrital C remineralisation rate', default=0.0127_rk)
+   call self%get_parameter(self%xsdiss,'xsdiss','d-1','diatom frustule dissolution rate', default=0.006_rk)
 
    ! Register state variables
    call self%register_state_variable(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
@@ -119,6 +123,7 @@ contains
     real(rk) :: fmi1,fmi,fgmipn,fgmid,fgmidc,finmi,ficmi,fstarmi,fmith,fmigrow,fmiexcr,fmiresp
     real(rk) :: fme1,fme,fgmepn,fgmepd,fgmepds,fgmezmi,fgmed,fgmedc,finme,ficme,fstarme,fmeth,fmegrow,fmeexcr,fmeresp
     real(rk) :: fdpn2,fdpd2,fdpds2,fdzmi2,fdzme2,fdpn,fdpd,fdzmi,fdzme
+    real(rk) :: fdd,fddc,fsdiss
     _LOOP_BEGIN_
 
     ! Retrieve current (local) state variable values
@@ -261,10 +266,12 @@ contains
   fdzmi = self%xmzmi * ZZMI * (ZZMI / (self%xkzmi + ZZMI)) !microzooplankton
   fdzme = self%xmzme * ZZME * (ZZME / (self%xkzme + ZZME)) !mesozooplankton
 
+  !Detritus remineralisation (temperature-dependent)
+  fdd = self%xmd * fun_T * ZDET
+  fddc = self%xmdc * fun_T * ZDTC
 
-
-
-
+  !Diatom frustule dissolution
+  fsdiss = self%xsdiss * ZPDS
 
 
 
