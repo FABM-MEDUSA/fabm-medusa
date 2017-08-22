@@ -26,6 +26,7 @@ module fabm_medusa
       real(rk) :: xmetapn,xmetapd,xmetazmi,xmetazme,xmpn,xmpd,xmzmi,xmzme,xkphn,xkphd,xkzmi,xkzme
       real(rk) :: xmd,xmdc,xsdiss
       real(rk) :: xk_FeL,xLgT,xk_sc_Fe
+      real(rk) :: xfdfrac1,xfdfrac2
    contains
       procedure :: initialize
       procedure :: do
@@ -92,7 +93,8 @@ contains
    call self%get_parameter(self%xk_FeL,'xk_FeL','-','dissociation constant for (Fe+ligand)',default=100.0_rk)
    call self%get_parameter(self%xLgT,'xLgT','umol m-3','total ligand concentration',default=1.0_rk)
    call self%get_parameter(self%xk_sc_Fe,'xk_sc_Fe','d-1','scavenging rate of "free" Fe',default=0.001_rk)
-
+   call self%get_parameter(self%xfdfrac1,'xfdfrac1','-','fast detritus fraction of diatom losses',default=0.33_rk)
+   call self%get_parameter(self%xfdfrac2,'xfdfrac2','-','fast detritus fraction of mesozooplankton losses',default=1._rk)
    ! Register state variables
    call self%register_state_variable(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZCHD,'ZCHD','mg chl/m**3', 'chlorophyll in diatoms', minimum=0.0_rk)
@@ -133,6 +135,7 @@ contains
     real(rk) :: fdpn2,fdpd2,fdpds2,fdzmi2,fdzme2,fdpn,fdpd,fdzmi,fdzme
     real(rk) :: fdd,fddc,fsdiss
     real(rk) :: xFeT,xb_coef_tmp,xb2M4ac,xLgF,xFel,xFeF,xFree,ffescav
+    real(rk) :: fslown
 
     _LOOP_BEGIN_
 
@@ -304,14 +307,16 @@ contains
   xFree = xFeF / ZFER
   ! Scavenging of iron (option 1 from original code)
   ffescav = self%xk_sc_Fe * xFeF
-  !!Further (optional) implicit "scavenging" by Mick (who is Mick?, caps concentration of total Fe, and not included here yet...
+  !!Further (optional) implicit "scavenging" by Mick Follows, caps concentration of total Fe, and not included here yet...
   !!Aeolian iron deposition and seafloor iron addition - should be dealt with through model inputs.
+  ! Stop scavenging for inron at depths greater than 1000 m - how to do this?
+ 
+  !Slow detritus creation
+  fslown  = fdpn + fdzmi + ((1._rk - self%xfdfrac1) * fdpd) + ((1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetan) * (finmi + finme))
+  fslowc  = (self%xthetapn * fdpn) + (self%xthetazmi * fdzmi) + (self%xthetapd * (1._rk - self%xfdfrac1) * fdpd) + (self%xthetazme * (1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetac) * (ficmi + ficme))
 
-
-
-
-
-
+  !Nutrient regeneration
+  
 
   !_SET_ODE_(self%id_..,)
 
