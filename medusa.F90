@@ -21,7 +21,7 @@ module fabm_medusa
 
       ! Parameters
       logical :: jliebig
-      real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xuif,xthetam,xthetamd
+      real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xnsi0,xuif,xthetam,xthetamd
       real(rk) :: xkmi,xpmipn,xpmid,xkme,xpmepn,xpmepd,xpmezmi,zpmed,xgmi,xgme,xthetad,xphi,xthetapn,xthetazme
       real(rk) :: xmetapn,xmetapd,xmetazmi,xmetazme,xmpn,xmpd,xmzmi,xmzme,xkphn,xkphd,xkzmi,xkzme
       real(rk) :: xmd,xmdc,xsdiss
@@ -50,7 +50,8 @@ contains
    call self%get_parameter(self%xfld, 'xfld', 'mmolFe m-3','Fe nutrient uptake half-saturation constant (diatoms)', default=0.67_rk)
    call self%get_parameter(self%xvpn, 'xvpn', 'd-1','Maximum phytoplankton growth rate (non-diatoms)', default=0.53_rk)
    call self%get_parameter(self%xvpd, 'xvpd', 'd-1','Maximum phytoplankton growth rate (diatoms)', default=0.50_rk)
-   call self%get_parameter(self%xsin0, 'xsin0', 'molN molSi-1','minimum diatom Si : N ratio', default=0.2_rk)
+   call self%get_parameter(self%xsin0, 'xsin0', 'molSi molN-1','minimum diatom Si : N ratio', default=0.2_rk)
+   call self%get_parameter(self%xnsi0, 'xnsi0', 'molN molSi-1','minimum diatom N : Si ratio', default=0.2_rk)
    call self%get_parameter(self%xuif, 'xuif', '-','hypothetical growth ratio at Inf Si : N ratio', default=1.5_rk)
    call self%get_parameter(self%xthetam, 'xthetam', 'g chl gC-1','maximum Chl : C ratio (non-diatoms)', default=0.05_rk)
    call self%get_parameter(self%xthetamd, 'xthetamd', 'g chl gC-1','maximum Chl : C ratio (diatoms)', default=0.05_rk)
@@ -118,11 +119,13 @@ contains
   _DECLARE_ARGUMENTS_DO_
 
 ! !LOCAL VARIABLES:
+
+    real(rk) :: ZCHN,ZCHD,ZPHN,ZPHD,ZPDS,ZDIN,ZFER,ZSIL,ZDET,ZDTC,ZZMI,ZZME,loc_T,par
     real(rk) :: fthetan,fthetad,faln,fald !scaled chl/biomass ratio
     real(rk) :: fnln,ffln ! non-diatom Qn/Qf terms
     real(rk) :: fnld,fsld,ffld ! diatom Qn/Qs/Qf terms
     real(rk) :: fun_T,xvpnT,xvpdT,fchn1,fchn,fjln,fchd1,fchd,fjld
-    real(rk) :: fsin,fnsi,fsin1,fnsi1,fnsi2,fprn,fprd,fsld2,frn,frd
+    real(rk) :: fsin,fnsi,fsin1,fnsi1,fnsi2,fprn,fprd,fsld2,frn,frd,fprds
     real(rk) :: fpnlim,fpdlim !nutrient limitation of primary production
     real(rk) :: fmi1,fmi,fgmipn,fgmid,fgmidc,finmi,ficmi,fstarmi,fmith,fmigrow,fmiexcr,fmiresp
     real(rk) :: fme1,fme,fgmepn,fgmepd,fgmepds,fgmezmi,fgmed,fgmedc,finme,ficme,fstarme,fmeth,fmegrow,fmeexcr,fmeresp
@@ -146,7 +149,7 @@ contains
     _GET_(self%id_ZDTC,ZDTC)
     _GET_(self%id_ZZMI,ZZMI)
     _GET_(self%id_ZZME,ZZME)
-    _GET_(self%id_temp,temp)
+    _GET_(self%id_temp,loc_T)
     _GET_(self%id_par,par) !check PAR // what about self-shading?
 
    !PHYTOPLANKTON GROWTH
@@ -157,7 +160,7 @@ contains
    fald = self%xald * fthetad
 
   !Temperature limitation
-   fun_T = 1.066_rk**temp
+   fun_T = 1.066_rk**loc_T
 
    xvpnT = self%xvpn * fun_T
    xvpdT = self%xvpd * fun_T
@@ -172,10 +175,10 @@ contains
    fjld = fchd * fald * par !diatom J term
 
    ! Phytoplankton nutrient limitation
-   !! Non-diatoms 
+   !! Non-diatoms (N, Fe)
    fnln = ZDIN / (ZDIN + self%xnln) !non-diatom Qn term
    ffln = ZFER / (ZFER + self%xfln) !non-diatom Qf term
-   !! Diatoms 
+   !! Diatoms (N, Si, Fe)
    fnld = ZDIN / (ZDIN + self%xnld) !diatom Qn term
    fsld = ZSIL / (ZSIL + self%xsld) !diatom Qs term
    ffld = ZFER / (ZFER + self%xfld) !diatom Qf term
@@ -198,18 +201,27 @@ contains
 
    fsin = ZPDS / ZPHD
    fnsi = ZPHD / ZPDS
-   fsin1 = 3.0_rk * self%xsin0
-   fnsi1 = 1.0_rk / fsin1
-   fnsi2 = 1.0_rk / self%xsin0
+   fsin1 = 3.0_rk * self%xsin0 !! = 0.6
+   fnsi1 = 1.0_rk / fsin1      !! = 1.667
+   fnsi2 = 1.0_rk / self%xsin0 !! = 5.0
    if (fsin .le. self%xsin0) then
       fprd = 0._rk
       fsld2 = 0._rk
    elseif (fsin .lt. fsin1) then
-      fprd = self%xuif * ((fsin - self%xsin0) / fsin) * fjld * fpdlim
+      fprd = self%xuif * ((fsin - self%xsin0) / fsin) * (fjld * fpdlim)
       fsld2 = self%xuif * ((fsin - self%xsin0) / fsin)
    elseif (fsin .ge. fsin1) then
       fprd = fjld * fpdlim
       fsld2 = 1.0_rk
+   end if
+  !Silicon
+
+   if (fsin.lt.fnsi1) then
+     fprds = (fjld * fsld)
+   elseif (fsin.lt.fnsi2) then
+     fprds = self%xuif * ((fnsi - self%xnsi0) / fnsi) * (fjld * fsld)
+   else
+     fprds = 0._rk
    end if
 
   !Chlorophyll production
