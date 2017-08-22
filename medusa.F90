@@ -97,6 +97,7 @@ contains
    call self%get_parameter(self%xfdfrac2,'xfdfrac2','-','fast detritus fraction of mesozooplankton losses',default=1._rk)
    call self%get_parameter(self%xfdfrac3,'xfdfrac3','-','fast detritus fraction of mesozooplankton grazing',default=0.8_rk)
    call self%get_parameter(self%xrfn,'xrfn','umolFe molN-1 m','phytoplankton Fe : N uptake ratio',default=30._rk)
+   call self%get_parameter(self%xridg_r0,'xridg_r0','-','CaCO3 : POC export rain ratio scalar, Ridgwell et al (2007)',default=0.026_rk)
    ! Register state variables
    call self%register_state_variable(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZCHD,'ZCHD','mg chl/m**3', 'chlorophyll in diatoms', minimum=0.0_rk)
@@ -137,7 +138,8 @@ contains
     real(rk) :: fdpn2,fdpd2,fdpds2,fdzmi2,fdzme2,fdpn,fdpd,fdzmi,fdzme
     real(rk) :: fdd,fddc,fsdiss
     real(rk) :: xFeT,xb_coef_tmp,xb2M4ac,xLgF,xFel,xFeF,xFree,ffescav
-    real(rk) :: fslown,fregen,fregensi,fregenc,ftempn,ftempsi,ftempfe,ftempc
+    real(rk) :: fslown,fregen,fregensi,fregenc,ftempn,ftempsi,ftempfe,ftempc,fq1,fcaco3,ftempca
+    real(rk) :: fn_prod,fn_cons
 
     _LOOP_BEGIN_
 
@@ -345,7 +347,74 @@ contains
   ! carbon:     diatom and mesozooplankton mortality
   ftempc = (self%xfdfrac1 * self%xthetapd * fdpd) + (self%xfdfrac2 * self%xthetazme * fdzme)
 
-  !_SET_ODE_(self%id_..,)
+  ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
+  if (f3_omcal .ge. 1._rk) then !get f3_omcal!
+     fq1 = (f3_omcal - 1._rk)**0.81
+  else
+     fq1 = 0.
+  endif
+     fcaco3 = self%xridg_r0 * fq1
+  ftempca = ftempc * fcaco3
+
+  !Fast-sinking detritus magic...
+
+  !LOCAL SMS TRENDS
+  ! chlorophyll
+  _SET_ODE_(self%id_ZCHN,((frn * fprn * ZPHN) - fgmipn - fgmepn - fdpn - fdpn2) * (fthetan / self%xxi))
+  _SET_ODE_(self%id_ZCHD,((frd * fprd * ZPHD) - fgmepd - fdpd - fdpd2) * (fthetad / self%xxi))
+
+  ! phytoplankton
+  _SET_ODE_(self%id_ZPHN,(fprn * ZPHN) - fgmipn - fgmepn - fdpn - fdpn2 )
+  _SET_ODE_(self%id_ZPHD,(fprd * ZPHD) - fgmepd - fdpd - fdpd2 )
+  _SET_ODE_(self%id_ZPDS,(fprds * ZPDS) - fgmepds - fdpds - fsdiss - fdpds2 )
+
+  ! zooplankton
+  _SET_ODE_(self%id_ZZMI, fmigrow - fgmezmi - fdzmi - fdzmi2 )
+  _SET_ODE_(self%id_ZZME, fmegrow - fdzme - fdzme2 )
+
+  ! detritus
+  _SET_ODE_(self%id_ZDET, + fdpn + ((1._rk - self%xfdfrac1) * fdpd)     &  ! mort. losses
+                 + fdzmi + ((1._rk - self%xfdfrac2) * fdzme)            &  ! mort. losses
+                 + ((1._rk - self%xbetan) * (finmi + finme))            &  ! assim. inefficiency
+                 - fgmid - fgmed - fdd) )!                                &  ! grazing and remin.
+                 !+ ffast2slown )                                    ! seafloor fast->slow
+
+  !dissolved inorganic nitrogen
+   fn_cons = - (fprn * ZPHN) - (fprd * ZPHD)                         ! primary production
+   fn_prod = + (self%xphi * (fgmipn + fgmid))                     &  ! messy feeding remin.
+             + (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed))  &  ! messy feeding remin.
+             + fmiexcr + fmeexcr + fdd & !+ freminn (fast-detritus contribution!!!)                  &  ! excretion and remin.
+             + fdpn2 + fdpd2 + fdzmi2 + fdzme2                       ! metab. losses
+
+   _SET_ODE_(self%id_ZDIN,fn_prod-fn_cons)
+
+  ! dissolved silicic acid
+   fs_cons = - (fprds * ZPDS)                                       ! opal production
+   fs_prod = + fsdiss                                        &  ! opal dissolution
+             + ((1.0 - self%xfdfrac1) * fdpds)                    &  ! mort. loss
+             + ((1.0 - self%xfdfrac3) * fgmepds)                  &  ! egestion of grazed Si
+             !+ freminsi (fast-detritus contribution!!!) 
+             + fdpds2                                ! fast diss. and metab. losses
+   _SET_ODE_(self%id_ZSIL,fs_prod + fs_cons)
+
+  ! dissolved iron
+   _SET_ODE_(self%id_ZFER, (self%xrfn * (n_prod-fn_cons)) + ffetop + ffebot - ffescav)
+
+  ! detrital carbon
+   _SET_ODE_(self%id_ZDTC, (self%xthetapn * fdpn) + ((1._rk - self%xfdfrac1) * (self%xthetapd * fdpd))      &  ! mort. losses
+                 + (self%xthetazmi * fdzmi) + ((1._rk - self%xfdfrac2) * (self%xthetazme * fdzme))  &  ! mort. losses
+                 + ((1._rk - self%xbetac) * (ficmi + ficme))                              &  ! assim. inefficiency
+                 - fgmidc - fgmedc - fddc))!                                          &  ! grazing and remin.
+                 !+ ffast2slowc )                                                   ! seafloor fast->slow
+
+   ! dissolved inorganic carbon
+   _SET_ODE_
+
+   ! alkalinity
+   _SET_ODE_
+
+   ! oxygen
+   _SET_ODE_
 
    _LOOP_END_
 
