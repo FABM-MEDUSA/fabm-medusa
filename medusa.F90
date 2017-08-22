@@ -395,7 +395,7 @@ contains
              + ((1.0 - self%xfdfrac3) * fgmepds)                  &  ! egestion of grazed Si
              !+ freminsi (fast-detritus contribution!!!) 
              + fdpds2                                ! fast diss. and metab. losses
-   _SET_ODE_(self%id_ZSIL,fs_prod + fs_cons)
+   _SET_ODE_(self%id_ZSIL,fs_prod - fs_cons)
 
   ! dissolved iron
    _SET_ODE_(self%id_ZFER, (self%xrfn * (n_prod-fn_cons)) + ffetop + ffebot - ffescav)
