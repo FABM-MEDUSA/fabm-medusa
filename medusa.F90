@@ -22,7 +22,7 @@ module fabm_medusa
       ! Parameters
       logical :: jliebig
       real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xnsi0,xuif,xthetam,xthetamd
-      real(rk) :: xkmi,xpmipn,xpmid,xkme,xpmepn,xpmepd,xpmezmi,zpmed,xgmi,xgme,xthetad,xphi,xthetapn,xthetazme
+      real(rk) :: xkmi,xpmipn,xpmid,xkme,xpmepn,xpmepd,xpmezmi,zpmed,xgmi,xgme,xthetad,xphi,xthetapn,xthetazme,xthetazmi,xthetapd
       real(rk) :: xmetapn,xmetapd,xmetazmi,xmetazme,xmpn,xmpd,xmzmi,xmzme,xkphn,xkphd,xkzmi,xkzme
       real(rk) :: xmd,xmdc,xsdiss
       real(rk) :: xk_FeL,xLgT,xk_sc_Fe
@@ -68,6 +68,7 @@ contains
    call self%get_parameter(self%xthetad, 'xthetad', 'molC molN-1','detritus C : N ratio', default=6.625_rk)
    call self%get_parameter(self%xphi, 'xphi', '-','zooplankton grazing inefficiency', default=0.20_rk)
    call self%get_parameter(self%xthetapn, 'xthetapn', 'molC molN-1','phytoplankton C:N ratio (non-diatoms)', default=6.625_rk)
+   call self%get_parameter(self%xthetapd, 'xthetapd', 'molC molN-1','phytoplankton C:N ratio (diatoms)', default=6.625_rk)
    call self%get_parameter(self%xbetan, 'xbetan', '-','zooplankton N assimilation efficiency', default=0.77_rk)
    call self%get_parameter(self%xthetazmi, 'xthetazmi', 'molC molN-1','microzooplankton C:N ratio', default=5.625_rk)
    call self%get_parameter(self%xbetac, 'xbetac', '-','zooplankton C assimilation efficiency', default=0.64_rk)
@@ -236,7 +237,7 @@ contains
   fgmid = fmi * self%xpmid * ZDET * ZDET   !grazing on detrital nitrogen
   fgmidc = self%xthetad * fgmid !grazing on detrital carbon: non-ROAM formulation (see switch in original code to be implemented)
   finmi = (1.0_rk - self%xphi) * (fgmipn + fgmid)
-  ficmi = (1.0_rk - self%xphi) * ((self%xthetan * fgmipn) + fgmidc)
+  ficmi = (1.0_rk - self%xphi) * ((self%xthetapn * fgmipn) + fgmidc)
   fstarmi = (self%xbetan * self%xthetazmi) / (self%xbetac * self%xkc) !the ideal food C : N ratio for microzooplankton
   fmith = ficmi / finmi
   if (fmith .ge. fstarmi) then
@@ -258,7 +259,7 @@ contains
   fgmed = fme * self%xpmed * ZDET * ZDET
   fgmedc = self%xthetad * fgmed !grazing on detrital carbon: non-ROAM formulation (see switch in original code to be implemented)
   finme = (1.0_rk - self%xphi) * (fgmepn + fgmepd + fgmezmi + fgmed)
-  ficme = (1.0_rk - self%xphi) * ((self%xthetapn * fgmepn) + (self%thetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc) 
+  ficme = (1.0_rk - self%xphi) * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc) 
   fstarme = (self%xbetan * self%xthetazme) / (self%xbetac * self%xkc)
   fmeth = ficme / finme
   if (fmeth .ge. fstarme) then
@@ -284,9 +285,10 @@ contains
   fdzmi = self%xmzmi * ZZMI * (ZZMI / (self%xkzmi + ZZMI)) !microzooplankton
   fdzme = self%xmzme * ZZME * (ZZME / (self%xkzme + ZZME)) !mesozooplankton
 
-  !Detritus remineralisation (temperature-dependent)
+  !Detritus remineralisation (temperature-dependent) !another option is Q10-based
   fdd = self%xmd * fun_T * ZDET
   fddc = self%xmdc * fun_T * ZDTC
+
   !Original contains accelerated detrital remineralisation in the bottom box (how do I let model know it is a bottom box?)
 
   !Diatom frustule dissolution
