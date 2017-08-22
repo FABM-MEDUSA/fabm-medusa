@@ -26,7 +26,7 @@ module fabm_medusa
       real(rk) :: xmetapn,xmetapd,xmetazmi,xmetazme,xmpn,xmpd,xmzmi,xmzme,xkphn,xkphd,xkzmi,xkzme
       real(rk) :: xmd,xmdc,xsdiss
       real(rk) :: xk_FeL,xLgT,xk_sc_Fe
-      real(rk) :: xfdfrac1,xfdfrac2
+      real(rk) :: xfdfrac1,xfdfrac2,xfdfrac3
    contains
       procedure :: initialize
       procedure :: do
@@ -95,6 +95,7 @@ contains
    call self%get_parameter(self%xk_sc_Fe,'xk_sc_Fe','d-1','scavenging rate of "free" Fe',default=0.001_rk)
    call self%get_parameter(self%xfdfrac1,'xfdfrac1','-','fast detritus fraction of diatom losses',default=0.33_rk)
    call self%get_parameter(self%xfdfrac2,'xfdfrac2','-','fast detritus fraction of mesozooplankton losses',default=1._rk)
+   call self%get_parameter(self%xfdfrac3,'xfdfrac3','-','fast detritus fraction of mesozooplankton grazing',default=0.8_rk)
    ! Register state variables
    call self%register_state_variable(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZCHD,'ZCHD','mg chl/m**3', 'chlorophyll in diatoms', minimum=0.0_rk)
@@ -135,7 +136,7 @@ contains
     real(rk) :: fdpn2,fdpd2,fdpds2,fdzmi2,fdzme2,fdpn,fdpd,fdzmi,fdzme
     real(rk) :: fdd,fddc,fsdiss
     real(rk) :: xFeT,xb_coef_tmp,xb2M4ac,xLgF,xFel,xFeF,xFree,ffescav
-    real(rk) :: fslown
+    real(rk) :: fslown,fregen,fregensi,fregenc
 
     _LOOP_BEGIN_
 
@@ -316,7 +317,22 @@ contains
   fslowc  = (self%xthetapn * fdpn) + (self%xthetazmi * fdzmi) + (self%xthetapd * (1._rk - self%xfdfrac1) * fdpd) + (self%xthetazme * (1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetac) * (ficmi + ficme))
 
   !Nutrient regeneration
-  
+  !nitrogen
+  fregen = (( (self%xphi * (fgmipn + fgmid)) +                            &  ! messy feeding
+  (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed)) +                     &  ! messy feeding
+  fmiexcr + fmeexcr + fdd +                                               &  ! excretion + D remin.
+  fdpn2 + fdpd2 + fdzmi2 + fdzme2))                                          ! linear mortality
+  !silicon
+  fregensi = (( fsdiss + ((1._rk - self%xfdfrac1) * fdpds) +              &  ! dissolution + non-lin. mortality
+  ((1._rk - self%xfdfrac3) * fgmepds) +                                   &  ! egestion by zooplankton
+  fdpds2))                                                                   ! linear mortality
+  !carbon
+  fregenc  = (( (self%xphi * ((self%xthetapn * fgmipn) + fgmidc)) +       &  ! messy feeding
+  (self%xphi * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) +     &  ! messy feeding
+  (self%xthetazmi * fgmezmi) + fgmedc)) +                                 &  ! messy feeding
+  fmiresp + fmeresp + fddc +                                              &  ! respiration + D remin.
+  (self%xthetapn * fdpn2) + (self%xthetapd * fdpd2) +                     &  ! linear mortality
+  (self%xthetazmi * fdzmi2) + (self%xthetazme * fdzme2)))                    ! linear mortality
 
   !_SET_ODE_(self%id_..,)
 
