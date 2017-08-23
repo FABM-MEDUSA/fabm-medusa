@@ -23,7 +23,7 @@ module fabm_medusa_pelagic
       logical :: jliebig
       real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xnsi0,xuif,xthetam,xthetamd
       real(rk) :: xkmi,xpmipn,xpmid,xkme,xpmepn,xpmepd,xpmezmi,zpmed,xgmi,xgme,xthetad,xphi,xthetapn,xthetazme,xthetazmi,xthetapd
-      real(rk) :: jmpn,jmpd,jmzmi,jmzme
+      real(rk) :: jmpn,jmpd,jmzmi,jmzme,jphy,jq10
       real(rk) :: xmetapn,xmetapd,xmetazmi,xmetazme,xmpn,xmpd,xmzmi,xmzme,xkphn,xkphd,xkzmi,xkzme
       real(rk) :: xmd,xmdc,xsdiss
       real(rk) :: xk_FeL,xLgT,xk_sc_Fe
@@ -53,6 +53,8 @@ contains
    call self%get_parameter(self%xfld, 'xfld', 'mmol Fe m-3','Fe nutrient uptake half-saturation constant (diatoms)', default=0.67_rk)
    call self%get_parameter(self%xvpn, 'xvpn', 'd-1','Maximum phytoplankton growth rate (non-diatoms)', default=0.53_rk)
    call self%get_parameter(self%xvpd, 'xvpd', 'd-1','Maximum phytoplankton growth rate (diatoms)', default=0.50_rk)
+   call self%get_parameter(self%jphy, 'jphy','-','Temperature regulation: 1-Eppley,2-q10',default=1)
+   call self%get_parameter(self%jq10, 'jq10','-','q10 factor for temperature regulation option 2, "default = 2", I guess?',default=2._rk)
    call self%get_parameter(self%xsin0, 'xsin0', 'mol Si mol N-1','minimum diatom Si : N ratio', default=0.2_rk)
    call self%get_parameter(self%xnsi0, 'xnsi0', 'mol N mol Si-1','minimum diatom N : Si ratio', default=0.2_rk)
    call self%get_parameter(self%xuif, 'xuif', '-','hypothetical growth ratio at Inf Si : N ratio', default=1.5_rk)
@@ -142,7 +144,7 @@ contains
     real(rk) :: fthetan,fthetad,faln,fald !scaled chl/biomass ratio
     real(rk) :: fnln,ffln ! non-diatom Qn/Qf terms
     real(rk) :: fnld,fsld,ffld ! diatom Qn/Qs/Qf terms
-    real(rk) :: fun_T,xvpnT,xvpdT,fchn1,fchn,fjln,fchd1,fchd,fjld
+    real(rk) :: fun_T,fun_q10,xvpnT,xvpdT,fchn1,fchn,fjln,fchd1,fchd,fjld
     real(rk) :: fsin,fnsi,fsin1,fnsi1,fnsi2,fprn,fprd,fsld2,frn,frd,fprds
     real(rk) :: fpnlim,fpdlim !nutrient limitation of primary production
     real(rk) :: fmi1,fmi,fgmipn,fgmid,fgmidc,finmi,ficmi,fstarmi,fmith,fmigrow,fmiexcr,fmiresp
@@ -184,9 +186,18 @@ contains
 
   !Temperature limitation
    fun_T = 1.066_rk**loc_T
+   fun_q10 = self%jq10**((loc_T - 0._rk) / 10._rk)
 
-   xvpnT = self%xvpn * fun_T
-   xvpdT = self%xvpd * fun_T
+   if (self%jphy .eq. 1) then
+     xvpnT = self%xvpn * fun_T
+     xvpdT = self%xvpd * fun_T
+   elseif (self%jphy .eq. 2) then
+     xvpnT = xvpn * fun_Q10
+     xvpdT = xvpd * fun_Q10
+   else
+     xvpnT = xvpn
+     xvpdT = xvpd
+   endif
 
   !Phytoplankton light limitation
    fchn1 = (xvpnT * xvpnT) + (faln * faln * par * par)
