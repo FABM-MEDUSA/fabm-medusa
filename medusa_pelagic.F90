@@ -332,8 +332,8 @@ contains
   if (self%jmzmi.eq.1) fdzmi = self%xmzmi * ZZMI            !! linear
   if (self%jmzmi.eq.2) fdzmi = self%xmzmi * ZZMI * ZZMI     !! quadratic
   if (self%jmzmi.eq.3) fdzmi = self%xmzmi * ZZMI * &        !! hyperbolic
-                  (zzmi / (self%xkzmi + ZZMI))
-  if (jmzmi.eq.4) fdzmi = self%xmzmi * ZZMI * &        !! sigmoid
+                  (ZZMI / (self%xkzmi + ZZMI))
+  if (self%jmzmi.eq.4) fdzmi = self%xmzmi * ZZMI * &        !! sigmoid
                   ((ZZMI * ZZMI) / (self%xkzmi + (ZZMI * ZZMI)))
   ! mesozooplankton
   if (self%jmzme.eq.1) fdzme = self%xmzme * ZZME            !! linear
