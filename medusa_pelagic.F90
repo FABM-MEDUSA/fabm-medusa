@@ -1,11 +1,11 @@
 #include "fabm_driver.h"
 
 !
-!********************************************    
-!                FABM-MEDUSA                       
-!********************************************                                                                            
+!*********************************************************    
+!                FABM-MEDUSA pelagic module                      
+!*********************************************************                                                                            
 
-module fabm_medusa
+module fabm_medusa_pelagic
 
    use fabm_types
 
@@ -13,7 +13,7 @@ module fabm_medusa
 
    private
 
-  type,extends(type_base_model),public :: type_medusa
+  type,extends(type_base_model),public :: type_medusa_pelagic
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
       type (type_dependency_id)            :: id_temp,id_par
@@ -38,7 +38,7 @@ contains
 
    subroutine initialize(self,configunit)
 ! SELF%DT???
-   class(type_medusa),intent(inout),target :: self
+   class(type_medusa_pelagic),intent(inout),target :: self
    integer,               intent(in)           :: configunit   
    !Register parameters
    call self%get_parameter(self%xxi, 'xxi', 'mol N g C-1','C : N conversion factor', default=0.01257_rk)
@@ -128,7 +128,7 @@ contains
 
    subroutine do(self,_ARGUMENTS_DO_)
 
-   class(type_medusa), INTENT(IN) :: self
+   class(type_medusa_pelagic), INTENT(IN) :: self
   _DECLARE_ARGUMENTS_DO_
 
 ! !LOCAL VARIABLES:
@@ -490,5 +490,5 @@ contains
 
    end subroutine do
 
-  end module fabm_medusa
+  end module fabm_medusa_pelagic
 
