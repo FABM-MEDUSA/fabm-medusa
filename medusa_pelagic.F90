@@ -23,6 +23,7 @@ module fabm_medusa_pelagic
       logical :: jliebig
       real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xnsi0,xuif,xthetam,xthetamd
       real(rk) :: xkmi,xpmipn,xpmid,xkme,xpmepn,xpmepd,xpmezmi,zpmed,xgmi,xgme,xthetad,xphi,xthetapn,xthetazme,xthetazmi,xthetapd
+      real(rk) :: jmpn,jmpd,jmzmi,jmzme
       real(rk) :: xmetapn,xmetapd,xmetazmi,xmetazme,xmpn,xmpd,xmzmi,xmzme,xkphn,xkphd,xkzmi,xkzme
       real(rk) :: xmd,xmdc,xsdiss
       real(rk) :: xk_FeL,xLgT,xk_sc_Fe
@@ -84,10 +85,14 @@ contains
    call self%get_parameter(self%xmpd,'xmpd','d-1','phytoplankton maximum loss rate (diatoms)', default=0.1_rk)
    call self%get_parameter(self%xmzmi,'xmzmi','d-1','microzooplankton maximum loss rate', default=0.1_rk)
    call self%get_parameter(self%xmzme,'xmzme','d-1','mesozooplankton maximum loss rate', default=0.2_rk)
-   call self%get_parameter(self%xkphn,'xkphn','mmol N m-3','phytoplankton los half-saturation constant (non-diatoms)', default=0.5_rk)
-   call self%get_parameter(self%xkphd,'xkphd','mmol N m-3','phytoplankton los half-saturation constant (diatoms)', default=0.5_rk)
+   call self%get_parameter(self%xkphn,'xkphn','mmol N m-3','phytoplankton loss half-saturation constant (non-diatoms)', default=0.5_rk)
+   call self%get_parameter(self%xkphd,'xkphd','mmol N m-3','phytoplankton loss half-saturation constant (diatoms)', default=0.5_rk)
    call self%get_parameter(self%xkzmi,'xkzmi','mmol N m-3','microzooplankton loss half-saturation constant', default=0.5_rk)
    call self%get_parameter(self%xkzme,'xkzme','mmol N m-3','mesozooplankton loss half-saturation constant', default=0.75_rk)
+   call self%get_parameter(self%jmpn,'jmpn','-','mortality formulation (non-diatoms): 1-linear, 2-quadratic, 3-hyperbolic, 4-sigmoid', default = 3)
+   call self%get_parameter(self%jmpd,'jmpd','-','mortality formulation (diatoms): 1-linear, 2-quadratic, 3-hyperbolic, 4-sigmoid', default = 3)
+   call self%get_parameter(self%jmzmi,'jmzmi','-','mortality formulation (non-diatoms): 1-linear, 2-quadratic, 3-hyperbolic, 4-sigmoid', default = 3)
+   call self%get_parameter(self%jmzme,'jmzme','-','mortality formulation (non-diatoms): 1-linear, 2-quadratic, 3-hyperbolic, 4-sigmoid', default = 3)
    call self%get_parameter(self%xmd,'xmd','d-1','detrital N remineralisation rate', default=0.0158_rk)
    call self%get_parameter(self%xmdc,'xmdc','d-1','detrital C remineralisation rate', default=0.0127_rk)
    call self%get_parameter(self%xsdiss,'xsdiss','d-1','diatom frustule dissolution rate', default=0.006_rk)
@@ -142,7 +147,7 @@ contains
     real(rk) :: fpnlim,fpdlim !nutrient limitation of primary production
     real(rk) :: fmi1,fmi,fgmipn,fgmid,fgmidc,finmi,ficmi,fstarmi,fmith,fmigrow,fmiexcr,fmiresp
     real(rk) :: fme1,fme,fgmepn,fgmepd,fgmepds,fgmezmi,fgmed,fgmedc,finme,ficme,fstarme,fmeth,fmegrow,fmeexcr,fmeresp
-    real(rk) :: fdpn2,fdpd2,fdpds2,fdzmi2,fdzme2,fdpn,fdpd,fdzmi,fdzme
+    real(rk) :: fdpn2,fdpd2,fdpds2,fdzmi2,fdzme2,fdpn,fdpd,fdpds,fdzmi,fdzme
     real(rk) :: fdd,fddc,fsdiss
     real(rk) :: xFeT,xb_coef_tmp,xb2M4ac,xLgF,xFel,xFeF,xFree,ffescav
     real(rk) :: fslown,fregen,fregensi,fregenc,ftempn,ftempsi,ftempfe,ftempc,fq1,fcaco3,ftempca
@@ -296,11 +301,35 @@ contains
   fdzmi2 = self%xmetazmi * ZZMI
   fdzme2 = self%xmetazme * ZZME
 
-  !Plankton mortality losses !NB: currently hyperbolic mortality term only (18/08/2017)
-  fdpn = self%xmpn * ZPHN * (ZPHN / (self%xkphn + ZPHN)) !non-diatom phytoplankton
-  fdpd = self%xmpd * ZPHD * (ZPHD / (self%xkphd + ZPHD)) !diatom phytoplankton
-  fdzmi = self%xmzmi * ZZMI * (ZZMI / (self%xkzmi + ZZMI)) !microzooplankton
-  fdzme = self%xmzme * ZZME * (ZZME / (self%xkzme + ZZME)) !mesozooplankton
+  !Plankton mortality losses
+  ! non-diatom phytoplankton
+  if (self%jmpn.eq.1) fdpn = self%xmpn * ZPHN                                     !! linear
+  if (self%jmpn.eq.2) fdpn = self%xmpn * ZPHN * ZPHN                              !! quadratic
+  if (self%jmpn.eq.3) fdpn = self%xmpn * ZPHN * (ZPHN / (self%xkphn + ZPHN)) !! hyperbolic
+  if (self%jmpn.eq.4) fdpn = self%xmpn * ZPHN * &                                 !! sigmoid
+                 ((ZPHN * ZPHN) / (self%xkphn + (ZPHN * ZPHN)))
+  ! diatom phytoplankton
+  if (self%jmpd.eq.1) fdpd = self%xmpd * ZPHD               !! linear
+  if (self%jmpd.eq.2) fdpd = self%xmpd * ZPHD * ZPHD        !! quadratic
+  if (self%jmpd.eq.3) fdpd = self%xmpd * ZPHD * &           !! hyperbolic
+                  (ZPHD / (self%xkphd + ZPHD))
+  if (self%jmpd.eq.4) fdpd = self%xmpd * ZPHD * &           !! sigmoid
+                  ((ZPHD * ZPHD) / (self%xkphd + (ZPHD * ZPHD)))
+          fdpds = fdpd * fsin
+  ! microzooplankton
+  if (self%jmzmi.eq.1) fdzmi = self%xmzmi * ZZMI            !! linear
+  if (self%jmzmi.eq.2) fdzmi = self%xmzmi * ZZMI * ZZMI     !! quadratic
+  if (self%jmzmi.eq.3) fdzmi = self%xmzmi * ZZMI * &        !! hyperbolic
+                  (zzmi / (self%xkzmi + ZZMI))
+  if (jmzmi.eq.4) fdzmi = self%xmzmi * ZZMI * &        !! sigmoid
+                  ((ZZMI * ZZMI) / (self%xkzmi + (ZZMI * ZZMI)))
+  ! mesozooplankton
+  if (self%jmzme.eq.1) fdzme = self%xmzme * ZZME            !! linear
+  if (self%jmzme.eq.2) fdzme = self%xmzme * ZZME * ZZME     !! quadratic
+  if (self%jmzme.eq.3) fdzme = self%xmzme * ZZME * &        !! hyperbolic
+                  (ZZME / (self%xkzme + ZZME))
+  if (self%jmzme.eq.4) fdzme = self%xmzme * ZZME * &        !! sigmoid
+                  ((ZZME * ZZME) / (self%xkzme + (ZZME * ZZME)))
 
   !Detritus remineralisation (temperature-dependent) !another option is Q10-based
   fdd = self%xmd * fun_T * ZDET
