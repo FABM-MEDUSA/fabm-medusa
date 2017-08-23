@@ -23,7 +23,7 @@ module fabm_medusa_pelagic
       logical :: jliebig
       real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xnsi0,xuif,xthetam,xthetamd
       real(rk) :: xkmi,xpmipn,xpmid,xkme,xpmepn,xpmepd,xpmezmi,zpmed,xgmi,xgme,xthetad,xphi,xthetapn,xthetazme,xthetazmi,xthetapd
-      real(rk) :: jmpn,jmpd,jmzmi,jmzme,jphy,jq10
+      real(rk) :: jmpn,jmpd,jmzmi,jmzme,jphy,jq10,jmd
       real(rk) :: xmetapn,xmetapd,xmetazmi,xmetazme,xmpn,xmpd,xmzmi,xmzme,xkphn,xkphd,xkzmi,xkzme
       real(rk) :: xmd,xmdc,xsdiss
       real(rk) :: xk_FeL,xLgT,xk_sc_Fe
@@ -53,7 +53,7 @@ contains
    call self%get_parameter(self%xfld, 'xfld', 'mmol Fe m-3','Fe nutrient uptake half-saturation constant (diatoms)', default=0.67_rk)
    call self%get_parameter(self%xvpn, 'xvpn', 'd-1','Maximum phytoplankton growth rate (non-diatoms)', default=0.53_rk)
    call self%get_parameter(self%xvpd, 'xvpd', 'd-1','Maximum phytoplankton growth rate (diatoms)', default=0.50_rk)
-   call self%get_parameter(self%jphy, 'jphy','-','Temperature regulation: 1-Eppley,2-q10',default=1)
+   call self%get_parameter(self%jphy, 'jphy','-','Temperature regulation (phyto growth): 1-Eppley,2-q10',default=1)
    call self%get_parameter(self%jq10, 'jq10','-','q10 factor for temperature regulation option 2, "default = 2", I guess?',default=2._rk)
    call self%get_parameter(self%xsin0, 'xsin0', 'mol Si mol N-1','minimum diatom Si : N ratio', default=0.2_rk)
    call self%get_parameter(self%xnsi0, 'xnsi0', 'mol N mol Si-1','minimum diatom N : Si ratio', default=0.2_rk)
@@ -95,6 +95,7 @@ contains
    call self%get_parameter(self%jmpd,'jmpd','-','mortality formulation (diatoms): 1-linear, 2-quadratic, 3-hyperbolic, 4-sigmoid', default = 3)
    call self%get_parameter(self%jmzmi,'jmzmi','-','mortality formulation (non-diatoms): 1-linear, 2-quadratic, 3-hyperbolic, 4-sigmoid', default = 3)
    call self%get_parameter(self%jmzme,'jmzme','-','mortality formulation (non-diatoms): 1-linear, 2-quadratic, 3-hyperbolic, 4-sigmoid', default = 3)
+   call self%get_parameter(self%jmd, 'jmd','-','Temperature regulation (detritus remin): 1-Eppley,2-q10',default=1)
    call self%get_parameter(self%xmd,'xmd','d-1','detrital N remineralisation rate', default=0.0158_rk)
    call self%get_parameter(self%xmdc,'xmdc','d-1','detrital C remineralisation rate', default=0.0127_rk)
    call self%get_parameter(self%xsdiss,'xsdiss','d-1','diatom frustule dissolution rate', default=0.006_rk)
@@ -248,8 +249,8 @@ contains
       fprd = fjld * fpdlim
       fsld2 = 1.0_rk
    end if
-  !Silicon
 
+  !Silicon
    if (fsin.lt.fnsi1) then
      fprds = (fjld * fsld)
    elseif (fsin.lt.fnsi2) then
@@ -268,7 +269,7 @@ contains
   fmi = self%xgmi * ZZMI / fmi1
   fgmipn = fmi * self%xpmipn * ZPHN * ZPHN !grazing on non-diatoms
   fgmid = fmi * self%xpmid * ZDET * ZDET   !grazing on detrital nitrogen
-  fgmidc = self%xthetad * fgmid !grazing on detrital carbon: non-ROAM formulation (see switch in original code to be implemented)
+  fgmidc = ZDTC / ZDET * fgmid !ROAM formulation
   finmi = (1.0_rk - self%xphi) * (fgmipn + fgmid)
   ficmi = (1.0_rk - self%xphi) * ((self%xthetapn * fgmipn) + fgmidc)
   fstarmi = (self%xbetan * self%xthetazmi) / (self%xbetac * self%xkc) !the ideal food C : N ratio for microzooplankton
@@ -290,7 +291,7 @@ contains
   fgmepds = fsin * fgmepd
   fgmezmi = fme * self%xpmezmi * ZZMI * ZZMI
   fgmed = fme * self%xpmed * ZDET * ZDET
-  fgmedc = self%xthetad * fgmed !grazing on detrital carbon: non-ROAM formulation (see switch in original code to be implemented)
+  fgmedc = ZDTC / ZDET * fgmed !ROAM formulation
   finme = (1.0_rk - self%xphi) * (fgmepn + fgmepd + fgmezmi + fgmed)
   ficme = (1.0_rk - self%xphi) * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc) 
   fstarme = (self%xbetan * self%xthetazme) / (self%xbetac * self%xkc)
@@ -342,9 +343,18 @@ contains
   if (self%jmzme.eq.4) fdzme = self%xmzme * ZZME * &        !! sigmoid
                   ((ZZME * ZZME) / (self%xkzme + (ZZME * ZZME)))
 
-  !Detritus remineralisation (temperature-dependent) !another option is Q10-based
-  fdd = self%xmd * fun_T * ZDET
-  fddc = self%xmdc * fun_T * ZDTC
+  !Detritus remineralisation (temperature-dependent)
+
+  if (self%jmd .eq. 1_ then
+    fdd = self%xmd * fun_T * ZDET
+    fddc = self%xmdc * fun_T * ZDTC
+  elseif (self%jmd .eq. 2) then
+    fdd  = self%xmd  * fun_Q10 * ZDET
+    fddc = self%xmdc * fun_Q10 * ZDTC
+  else
+    fdd  = self%xmd  * ZDET
+    fddc = self%xmdc * ZDTC
+  end if
 
   !Original contains accelerated detrital remineralisation in the bottom box (how do I let model know it is a bottom box?)
 
