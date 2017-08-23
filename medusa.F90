@@ -15,7 +15,7 @@ module fabm_medusa
 
   type,extends(type_base_model),public :: type_medusa
       ! Variable identifiers
-      type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZOXY
+      type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
       type (type_dependency_id)            :: id_temp,id_par
   !    type (type_diagnostic_variable_id)   ::
 
@@ -41,41 +41,41 @@ contains
    class(type_medusa),intent(inout),target :: self
    integer,               intent(in)           :: configunit   
    !Register parameters
-   call self%get_parameter(self%xxi, 'xxi', 'molN gC-1','C : N conversion factor', default=0.01257_rk)
-   call self%get_parameter(self%xaln, 'xaln', 'gC(g chl)-1 (W m-2)-1 d-1','chl-specific initial slope of P-I curve (non-diatoms)', default=15.0_rk)
-   call self%get_parameter(self%xald, 'xald', 'gC(g chl)-1 (W m-2)-1 d-1','chl-specific initial slope of P-I curve (diatoms)', default=11.25_rk)
+   call self%get_parameter(self%xxi, 'xxi', 'mol N g C-1','C : N conversion factor', default=0.01257_rk)
+   call self%get_parameter(self%xaln, 'xaln', 'g C(g chl)-1 (W m-2)-1 d-1','chl-specific initial slope of P-I curve (non-diatoms)', default=15.0_rk)
+   call self%get_parameter(self%xald, 'xald', 'g C(g chl)-1 (W m-2)-1 d-1','chl-specific initial slope of P-I curve (diatoms)', default=11.25_rk)
    call self%get_parameter(self%jliebig, 'jliebig', 'Liebig''s minimum law for nutrient limitation', default=.false.)
-   call self%get_parameter(self%xnln, 'xnln', 'mmolN m-3','N nutrient uptake half-saturation constant (non-diatoms)', default=0.5_rk)
-   call self%get_parameter(self%xfln, 'xfln', 'mmolFe m-3','Fe nutrient uptake half-saturation constant (non-diatoms)', default=0.33_rk)
-   call self%get_parameter(self%xnld, 'xnld', 'mmolN m-3','N nutrient uptake half-saturation constant (non-diatoms)', default=0.75_rk)
-   call self%get_parameter(self%xsld, 'xsld', 'mmolSi m-3','Si nutrient uptake half-saturation constant (diatoms)', default=3.0_rk)
-   call self%get_parameter(self%xfld, 'xfld', 'mmolFe m-3','Fe nutrient uptake half-saturation constant (diatoms)', default=0.67_rk)
+   call self%get_parameter(self%xnln, 'xnln', 'mmol N m-3','N nutrient uptake half-saturation constant (non-diatoms)', default=0.5_rk)
+   call self%get_parameter(self%xfln, 'xfln', 'mmol Fe m-3','Fe nutrient uptake half-saturation constant (non-diatoms)', default=0.33_rk)
+   call self%get_parameter(self%xnld, 'xnld', 'mmol N m-3','N nutrient uptake half-saturation constant (non-diatoms)', default=0.75_rk)
+   call self%get_parameter(self%xsld, 'xsld', 'mmol Si m-3','Si nutrient uptake half-saturation constant (diatoms)', default=3.0_rk)
+   call self%get_parameter(self%xfld, 'xfld', 'mmol Fe m-3','Fe nutrient uptake half-saturation constant (diatoms)', default=0.67_rk)
    call self%get_parameter(self%xvpn, 'xvpn', 'd-1','Maximum phytoplankton growth rate (non-diatoms)', default=0.53_rk)
    call self%get_parameter(self%xvpd, 'xvpd', 'd-1','Maximum phytoplankton growth rate (diatoms)', default=0.50_rk)
-   call self%get_parameter(self%xsin0, 'xsin0', 'molSi molN-1','minimum diatom Si : N ratio', default=0.2_rk)
-   call self%get_parameter(self%xnsi0, 'xnsi0', 'molN molSi-1','minimum diatom N : Si ratio', default=0.2_rk)
+   call self%get_parameter(self%xsin0, 'xsin0', 'mol Si mol N-1','minimum diatom Si : N ratio', default=0.2_rk)
+   call self%get_parameter(self%xnsi0, 'xnsi0', 'mol N mol Si-1','minimum diatom N : Si ratio', default=0.2_rk)
    call self%get_parameter(self%xuif, 'xuif', '-','hypothetical growth ratio at Inf Si : N ratio', default=1.5_rk)
-   call self%get_parameter(self%xthetam, 'xthetam', 'g chl gC-1','maximum Chl : C ratio (non-diatoms)', default=0.05_rk)
-   call self%get_parameter(self%xthetamd, 'xthetamd', 'g chl gC-1','maximum Chl : C ratio (diatoms)', default=0.05_rk)
-   call self%get_parameter(self%xkmi, 'xkmi', 'mmolN m-3','microzooplankton grazing half-saturation constant', default=0.8_rk)
+   call self%get_parameter(self%xthetam, 'xthetam', 'g chl g C-1','maximum Chl : C ratio (non-diatoms)', default=0.05_rk)
+   call self%get_parameter(self%xthetamd, 'xthetamd', 'g chl g C-1','maximum Chl : C ratio (diatoms)', default=0.05_rk)
+   call self%get_parameter(self%xkmi, 'xkmi', 'mmol N m-3','microzooplankton grazing half-saturation constant', default=0.8_rk)
    call self%get_parameter(self%xpmipn, 'xpmipn', '-','microzooplankton grazing preference on non-diatoms', default=0.75_rk)
    call self%get_parameter(self%xpmid, 'xpmid', '-','microzooplankton grazing preference on detritus', default=0.25_rk)
-   call self%get_parameter(self%xkme, 'xkme', 'mmolN m-3','mesozooplankton grazing half-saturation constant', default=0.3_rk)
+   call self%get_parameter(self%xkme, 'xkme', 'mmol N m-3','mesozooplankton grazing half-saturation constant', default=0.3_rk)
    call self%get_parameter(self%xpmepn, 'xpmepn', '-','mesozooplankton grazing preference on non-diatoms', default=0.15_rk)
    call self%get_parameter(self%xpmepd, 'xpmepd', '-','mesozooplankton grazing preference on diatoms', default=0.35_rk)
    call self%get_parameter(self%xpmezmi, 'xpmezmi', '-','mesozooplankton grazing preference on microzooplankton', default=0.35_rk)
    call self%get_parameter(self%xpmed, 'xpmed', '-','mesozooplankton grazing preference on detritus', default=0.15_rk)
    call self%get_parameter(self%xgmi, 'xgmi', 'd-1','maximum microzooplankton grazing rate', default=2.0_rk)
    call self%get_parameter(self%xgme, 'xgme', 'd-1','maximum mesozooplankton grazing rate', default=0.5_rk)
-   call self%get_parameter(self%xthetad, 'xthetad', 'molC molN-1','detritus C : N ratio', default=6.625_rk)
+   call self%get_parameter(self%xthetad, 'xthetad', 'mol C mol N-1','detritus C : N ratio', default=6.625_rk)
    call self%get_parameter(self%xphi, 'xphi', '-','zooplankton grazing inefficiency', default=0.20_rk)
-   call self%get_parameter(self%xthetapn, 'xthetapn', 'molC molN-1','phytoplankton C:N ratio (non-diatoms)', default=6.625_rk)
-   call self%get_parameter(self%xthetapd, 'xthetapd', 'molC molN-1','phytoplankton C:N ratio (diatoms)', default=6.625_rk)
+   call self%get_parameter(self%xthetapn, 'xthetapn', 'mol C mol N-1','phytoplankton C:N ratio (non-diatoms)', default=6.625_rk)
+   call self%get_parameter(self%xthetapd, 'xthetapd', 'mol C mol N-1','phytoplankton C:N ratio (diatoms)', default=6.625_rk)
    call self%get_parameter(self%xbetan, 'xbetan', '-','zooplankton N assimilation efficiency', default=0.77_rk)
-   call self%get_parameter(self%xthetazmi, 'xthetazmi', 'molC molN-1','microzooplankton C:N ratio', default=5.625_rk)
+   call self%get_parameter(self%xthetazmi, 'xthetazmi', 'mol C mol N-1','microzooplankton C:N ratio', default=5.625_rk)
    call self%get_parameter(self%xbetac, 'xbetac', '-','zooplankton C assimilation efficiency', default=0.64_rk)
    call self%get_parameter(self%xkc, 'xkc', '-','zooplankton net C growth efficiency', default=0.8_rk)
-   call self%get_parameter(self%xthetazme, 'xthetazme', 'molC molN-1','mesozooplankton C:N ratio', default=5.625_rk)
+   call self%get_parameter(self%xthetazme, 'xthetazme', 'mol C mol N-1','mesozooplankton C:N ratio', default=5.625_rk)
    call self%get_parameter(self%xmetapn, 'xmetapn', 'd-1','phytoplankton loss rate (non-diatoms)', default=0.02_rk)
    call self%get_parameter(self%xmetapd, 'xmetapd', 'd-1','phytoplankton loss rate (diatoms)', default=0.02_rk)
    call self%get_parameter(self%xmetazmi, 'xmetazmi', 'd-1','microzooplankton loss rate', default=0.02_rk)
@@ -84,10 +84,10 @@ contains
    call self%get_parameter(self%xmpd,'xmpd','d-1','phytoplankton maximum loss rate (diatoms)', default=0.1_rk)
    call self%get_parameter(self%xmzmi,'xmzmi','d-1','microzooplankton maximum loss rate', default=0.1_rk)
    call self%get_parameter(self%xmzme,'xmzme','d-1','mesozooplankton maximum loss rate', default=0.2_rk)
-   call self%get_parameter(self%xkphn,'xkphn','mmolN m-3','phytoplankton los half-saturation constant (non-diatoms)', default=0.5_rk)
-   call self%get_parameter(self%xkphd,'xkphd','mmolN m-3','phytoplankton los half-saturation constant (diatoms)', default=0.5_rk)
-   call self%get_parameter(self%xkzmi,'xkzmi','mmolN m-3','microzooplankton loss half-saturation constant', default=0.5_rk)
-   call self%get_parameter(self%xkzme,'xkzme','mmolN m-3','mesozooplankton loss half-saturation constant', default=0.75_rk)
+   call self%get_parameter(self%xkphn,'xkphn','mmol N m-3','phytoplankton los half-saturation constant (non-diatoms)', default=0.5_rk)
+   call self%get_parameter(self%xkphd,'xkphd','mmol N m-3','phytoplankton los half-saturation constant (diatoms)', default=0.5_rk)
+   call self%get_parameter(self%xkzmi,'xkzmi','mmol N m-3','microzooplankton loss half-saturation constant', default=0.5_rk)
+   call self%get_parameter(self%xkzme,'xkzme','mmol N m-3','mesozooplankton loss half-saturation constant', default=0.75_rk)
    call self%get_parameter(self%xmd,'xmd','d-1','detrital N remineralisation rate', default=0.0158_rk)
    call self%get_parameter(self%xmdc,'xmdc','d-1','detrital C remineralisation rate', default=0.0127_rk)
    call self%get_parameter(self%xsdiss,'xsdiss','d-1','diatom frustule dissolution rate', default=0.006_rk)
@@ -97,25 +97,27 @@ contains
    call self%get_parameter(self%xfdfrac1,'xfdfrac1','-','fast detritus fraction of diatom losses',default=0.33_rk)
    call self%get_parameter(self%xfdfrac2,'xfdfrac2','-','fast detritus fraction of mesozooplankton losses',default=1._rk)
    call self%get_parameter(self%xfdfrac3,'xfdfrac3','-','fast detritus fraction of mesozooplankton grazing',default=0.8_rk)
-   call self%get_parameter(self%xrfn,'xrfn','umolFe molN-1 m','phytoplankton Fe : N uptake ratio',default=30._rk)
+   call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=30._rk)
    call self%get_parameter(self%xridg_r0,'xridg_r0','-','CaCO3 : POC export rain ratio scalar, Ridgwell et al (2007)',default=0.026_rk)
-   call self%get_parameter(self%xthetanit,'xthetanit','molO_2 molN-1','O2 consumption by N remineralisation',default=2.0_rk)
-   call self%get_parameter(self%xthetarem,'xthetarem','molO_2 molC-1','O2 consumption by C remineralisation',default=1.1226_rk)
+   call self%get_parameter(self%xthetanit,'xthetanit','mol O_2 mol N-1','O2 consumption by N remineralisation',default=2.0_rk)
+   call self%get_parameter(self%xthetarem,'xthetarem','mol O_2 mol C-1','O2 consumption by C remineralisation',default=1.1226_rk)
    call self%get_parameter(self%xo2min,'xo2min','mmol O_2 m-3','minimum O2 concentration',default=4.0_rk)
    ! Register state variables
    call self%register_state_variable(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZCHD,'ZCHD','mg chl/m**3', 'chlorophyll in diatoms', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZCHD,'ZPHN','mmolN/m**3', 'non-diatom phytoplankton', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZCHD,'ZPHD','mmolN/m**3', 'diatom phytoplankton', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZCHD,'ZPDS','mmolSi/m**3', 'diatom phytoplankton (silicon)', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZDIN,'ZDIN','mmolN/m**3', 'nitrogen nutrient', minimum=0.0_rk) !no river dilution?
-   call self%register_state_variable(self%id_ZFER,'ZFER','mmolFe/m**3', 'iron nutrient', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZSIL,'ZSIL','mmolSi/m**3', 'silicic acid', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZDET,'ZDET','mmolN/m**3', 'slow-sinking detritus (N)', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZDTC,'ZDTC','mmolC/m**3', 'slow-sinking detritus (C)', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZZMI,'ZZMI','mmolN/m**3', 'microzooplankton', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZZME,'ZZME','mmolN/m**3', 'mesozooplankton', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZOXY,'ZOXY','mmolO_2/m**3', 'dissolved oxygen', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZPHN,'ZPHN','mmol N/m**3', 'non-diatom phytoplankton', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZPHD,'ZPHD','mmol N/m**3', 'diatom phytoplankton', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZPDS,'ZPDS','mmol Si/m**3', 'diatom phytoplankton (silicon)', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZDIN,'ZDIN','mmol N/m**3', 'nitrogen nutrient', minimum=0.0_rk) !no river dilution?
+   call self%register_state_variable(self%id_ZFER,'ZFER','mmol Fe/m**3', 'iron nutrient', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZSIL,'ZSIL','mmol Si/m**3', 'silicic acid', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZDET,'ZDET','mmol N/m**3', 'slow-sinking detritus (N)', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZDTC,'ZDTC','mmol C/m**3', 'slow-sinking detritus (C)', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZZMI,'ZZMI','mmol N/m**3', 'microzooplankton', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZZME,'ZZME','mmol N/m**3', 'mesozooplankton', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZALK,'ZALK','meq/m**3', 'total alkalinity', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZDIC,'ZDIC','mmol C/m**3', 'dissolved inorganic carbon', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZOXY,'ZOXY','mmol O_2/m**3', 'dissolved oxygen', minimum=0.0_rk)
    ! Register diagnostic variables
      
    ! Register environmental dependencies
@@ -131,7 +133,7 @@ contains
 
 ! !LOCAL VARIABLES:
 
-    real(rk) :: ZCHN,ZCHD,ZPHN,ZPHD,ZPDS,ZDIN,ZFER,ZSIL,ZDET,ZDTC,ZZMI,ZZME,ZOXY,loc_T,par
+    real(rk) :: ZCHN,ZCHD,ZPHN,ZPHD,ZPDS,ZDIN,ZFER,ZSIL,ZDET,ZDTC,ZZMI,ZZME,ZALK,ZDIC,ZOXY,loc_T,par
     real(rk) :: fthetan,fthetad,faln,fald !scaled chl/biomass ratio
     real(rk) :: fnln,ffln ! non-diatom Qn/Qf terms
     real(rk) :: fnld,fsld,ffld ! diatom Qn/Qs/Qf terms
@@ -144,7 +146,7 @@ contains
     real(rk) :: fdd,fddc,fsdiss
     real(rk) :: xFeT,xb_coef_tmp,xb2M4ac,xLgF,xFel,xFeF,xFree,ffescav
     real(rk) :: fslown,fregen,fregensi,fregenc,ftempn,ftempsi,ftempfe,ftempc,fq1,fcaco3,ftempca
-    real(rk) :: fn_prod,fn_cons,fo2_ccons
+    real(rk) :: fn_prod,fn_cons,fs_cons,fs_prod,fc_cons,fc_prod,fa_prod,fa_cons,fo2_ccons,fo2_ncons,fo2_cons,fo2_prod
 
     _LOOP_BEGIN_
 
@@ -162,6 +164,8 @@ contains
     _GET_(self%id_ZDTC,ZDTC)
     _GET_(self%id_ZZMI,ZZMI)
     _GET_(self%id_ZZME,ZZME)
+    _GET_(self%id_ZALK,ZALK)
+    _GET_(self%id_ZDIC,ZDIC)
     _GET_(self%id_ZOXY,ZOXY)
     _GET_(self%id_temp,loc_T)
     _GET_(self%id_par,par) !check PAR // what about self-shading?
@@ -417,16 +421,31 @@ contains
                  )
 
   ! dissolved inorganic carbon
-   _SET_ODE_
+   fc_cons = - (self%xthetapn * fprn * ZPHN) - (self%xthetapd * fprd * ZPHD)                      ! primary production
+   fc_prod = + (self%xthetapn * self%xphi * fgmipn) + (self%xphi * fgmidc)                     &  ! messy feeding remin
+             + (self%xthetapn * self%xphi * fgmepn) + (self%xthetapd * self%xphi * fgmepd)     &  ! messy feeding remin
+             + (self%xthetazmi * self%xphi * fgmezmi) + (self%xphi * fgmedc)                   &  ! messy feeding remin
+             + fmiresp + fmeresp + fddc &
+             !+ freminc 
+             + (self%xthetapn * fdpn2)                                                         &  ! resp., remin., losses
+             + (sel%xthetapd * fdpd2) + (self%xthetazmi * fdzmi2)                              &  ! losses
+             + (self%xthetazme * fdzme2)                                                          ! losses
+               
+  ! fc_prod = fc_prod - ftempca + freminca         ! CaCO3
+                 
+   _SET_ODE_(self%id_ZDIC,fc_prod + fc_cons)
 
   ! alkalinity
-   _SET_ODE_
+   fa_prod =  2._rk * freminca                                                   ! CaCO3 dissolution
+   fa_cons = -2._rk * ftempca                                                    ! CaCO3 production
+
+   _SET_ODE_(self%id_ZALK, fa_prod + fa_cons)
 
   ! oxygen
-   fo2_prod = + (self%xthetanit * fprn * zphn)                                            & ! Pn primary production, N
-              + (self%xthetanit * fprd * zphd)                                            & ! Pd primary production, N
-              + (self%xthetarem * self%xthetapn * fprn * zphn)                            & ! Pn primary production, C
-              + (self%xthetarem * self%xthetapd * fprd * zphd)                              ! Pd primary production, C
+   fo2_prod = + (self%xthetanit * fprn * ZPHN)                                            & ! Pn primary production, N
+              + (self%xthetanit * fprd * ZPHD)                                            & ! Pd primary production, N
+              + (self%xthetarem * self%xthetapn * fprn * ZPHN)                            & ! Pn primary production, C
+              + (self%xthetarem * self%xthetapd * fprd * ZPHD)                              ! Pd primary production, C
    fo2_ncons = - (self%xthetanit * self%xphi * fgmipn)                                    & ! Pn messy feeding remin., N
                - (self%xthetanit * self%xphi * fgmid)                                     & ! D  messy feeding remin., N
                - (self%xthetanit * self%xphi * fgmepn)                                    & ! Pn messy feeding remin., N
@@ -458,6 +477,7 @@ contains
                - (self%xthetarem * self%xthetazme * fdzme2)                                 ! Zme losses, C
 
    fo2_cons = fo2_ncons + fo2_ccons
+
    if (zoxy .lt. self%xo2min) then                     ! deficient O2; production fluxes only
       _SET_ODE_(self%id_ZOXY, fo2_prod )
    else                                                ! sufficient O2; production + consumption fluxes
