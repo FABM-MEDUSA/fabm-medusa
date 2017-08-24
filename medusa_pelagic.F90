@@ -16,14 +16,14 @@ module fabm_medusa_pelagic
   type,extends(type_base_model),public :: type_medusa_pelagic
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
-      type (type_dependency_id)            :: id_temp,id_par
+      type (type_dependency_id)            :: id_temp,id_par,id_depth
   !    type (type_diagnostic_variable_id)   ::
 
       ! Parameters
       logical :: jliebig
       real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xnsi0,xuif,xthetam,xthetamd
       real(rk) :: xkmi,xpmipn,xpmid,xkme,xpmepn,xpmepd,xpmezmi,zpmed,xgmi,xgme,xthetad,xphi,xthetapn,xthetazme,xthetazmi,xthetapd
-      real(rk) :: jmpn,jmpd,jmzmi,jmzme,jphy,jq10,jmd
+      real(rk) :: jmpn,jmpd,jmzmi,jmzme,jphy,jq10,jmd,jiron
       real(rk) :: xmetapn,xmetapd,xmetazmi,xmetazme,xmpn,xmpd,xmzmi,xmzme,xkphn,xkphd,xkzmi,xkzme
       real(rk) :: xmd,xmdc,xsdiss
       real(rk) :: xk_FeL,xLgT,xk_sc_Fe
@@ -102,6 +102,7 @@ contains
    call self%get_parameter(self%xk_FeL,'xk_FeL','-','dissociation constant for (Fe+ligand)',default=100.0_rk)
    call self%get_parameter(self%xLgT,'xLgT','umol m-3','total ligand concentration',default=1.0_rk)
    call self%get_parameter(self%xk_sc_Fe,'xk_sc_Fe','d-1','scavenging rate of "free" Fe',default=0.001_rk)
+   call self%get_parameter(self%jiron,'jiron','-','iron scavenging scheme: 1-Dutkiewicz et al. (2005),2-Moore et al. (2004),3-Moore et al. (2008),4-Galbraith et al. (2010)',default=1)
    call self%get_parameter(self%xfdfrac1,'xfdfrac1','-','fast detritus fraction of diatom losses',default=0.33_rk)
    call self%get_parameter(self%xfdfrac2,'xfdfrac2','-','fast detritus fraction of mesozooplankton losses',default=1._rk)
    call self%get_parameter(self%xfdfrac3,'xfdfrac3','-','fast detritus fraction of mesozooplankton grazing',default=0.8_rk)
@@ -132,6 +133,7 @@ contains
 
    call self%register_dependency(self%id_temp, standard_variables%temperature)
    call self%register_dependency(self%id_par, standard_variables%downwelling_photosynthetic_radiative_flux)
+   call self%register_dependency(self%id_depth, standard_variables%depth)
    end subroutine initialize
 
    subroutine do(self,_ARGUMENTS_DO_)
@@ -141,7 +143,7 @@ contains
 
 ! !LOCAL VARIABLES:
 
-    real(rk) :: ZCHN,ZCHD,ZPHN,ZPHD,ZPDS,ZDIN,ZFER,ZSIL,ZDET,ZDTC,ZZMI,ZZME,ZALK,ZDIC,ZOXY,loc_T,par
+    real(rk) :: ZCHN,ZCHD,ZPHN,ZPHD,ZPDS,ZDIN,ZFER,ZSIL,ZDET,ZDTC,ZZMI,ZZME,ZALK,ZDIC,ZOXY,loc_T,par,depth
     real(rk) :: fthetan,fthetad,faln,fald !scaled chl/biomass ratio
     real(rk) :: fnln,ffln ! non-diatom Qn/Qf terms
     real(rk) :: fnld,fsld,ffld ! diatom Qn/Qs/Qf terms
@@ -152,7 +154,7 @@ contains
     real(rk) :: fme1,fme,fgmepn,fgmepd,fgmepds,fgmezmi,fgmed,fgmedc,finme,ficme,fstarme,fmeth,fmegrow,fmeexcr,fmeresp
     real(rk) :: fdpn2,fdpd2,fdpds2,fdzmi2,fdzme2,fdpn,fdpd,fdpds,fdzmi,fdzme
     real(rk) :: fdd,fddc,fsdiss
-    real(rk) :: xFeT,xb_coef_tmp,xb2M4ac,xLgF,xFel,xFeF,xFree,ffescav
+    real(rk) :: xFeT,xb_coef_tmp,xb2M4ac,xLgF,xFel,xFeF,xFree,ffescav,xmaxFeF,fdeltaFe
     real(rk) :: fslown,fregen,fregensi,fregenc,ftempn,ftempsi,ftempfe,ftempc,fq1,fcaco3,ftempca
     real(rk) :: fn_prod,fn_cons,fs_cons,fs_prod,fc_cons,fc_prod,fa_prod,fa_cons,fo2_ccons,fo2_ncons,fo2_cons,fo2_prod
 
@@ -177,6 +179,7 @@ contains
     _GET_(self%id_ZOXY,ZOXY)
     _GET_(self%id_temp,loc_T)
     _GET_(self%id_par,par) !check PAR // what about self-shading?
+    _GET_(self%id_depth,depth)
 
    !PHYTOPLANKTON GROWTH
    !Chlorophyll
@@ -369,12 +372,26 @@ contains
   xFeL = xLgT - xLgF ! ligand-bound iron concentration
   xFeF = (xFeT - xFeL) * 1.e-3_rk! "free" iron concentration (and convert to mmolFe/m3)
   xFree = xFeF / ZFER
-  ! Scavenging of iron (option 1 from original code)
-  ffescav = self%xk_sc_Fe * xFeF
-  !!Further (optional) implicit "scavenging" by Mick Follows, caps concentration of total Fe, and not included here yet...
+  ! Scavenging of iron
+  if (self%jiron .eq. 1) then
+     ffescav = self%xk_sc_Fe * xFeF
+     xmaxFeF = min((xFeF * 1.e3_rk), 0.3_rk)        ! = umol/m3
+     fdeltaFe = (xFeT - (xFeL + xmaxFeF)) * 1.e-3   ! = mmol/m3
+     ffescav     = ffescav + fdeltaFe               ! = mmol/m3/d
+
+     if ((depth .gt. 1000._rk) .and. (xFeT .lt. 0.5_rk)) then
+        ffescav = 0._rk
+     endif
+  elseif (self%jiron .eq. 2) then
+  elseif (self%jiron .eq. 3) then
+  elseif (self%jiron .eq. 4) then
+  else
+     ffescav = 0._rk
+  end if
+
+
   !!Aeolian iron deposition and seafloor iron addition - should be dealt with through model inputs.
-  ! Stop scavenging for inron at depths greater than 1000 m - how to do this?
- 
+
   !Slow detritus creation
   fslown  = fdpn + fdzmi + ((1._rk - self%xfdfrac1) * fdpd) + ((1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetan) * (finmi + finme))
   fslowc  = (self%xthetapn * fdpn) + (self%xthetazmi * fdzmi) + (self%xthetapd * (1._rk - self%xfdfrac1) * fdpd) + (self%xthetazme * (1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetac) * (ficmi + ficme))
