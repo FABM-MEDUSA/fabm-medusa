@@ -348,7 +348,7 @@ contains
 
   !Detritus remineralisation (temperature-dependent)
 
-  if (self%jmd .eq. 1_ then
+  if (self%jmd .eq. 1) then
     fdd = self%xmd * fun_T * ZDET
     fddc = self%xmdc * fun_T * ZDTC
   elseif (self%jmd .eq. 2) then
