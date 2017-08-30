@@ -1,0 +1,6 @@
+add_library(fabm_models_medusa OBJECT
+            medusa_model_library.F90
+            medusa_pelagic.F90
+           )
+
+add_dependencies(fabm_models_medusa fabm_base)
