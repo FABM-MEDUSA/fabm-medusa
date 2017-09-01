@@ -17,7 +17,7 @@ module medusa_pelagic
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
       type (type_dependency_id)            :: id_temp,id_par,id_depth
-  !    type (type_diagnostic_variable_id)   ::
+      type (type_diagnostic_variable_id)   :: id_dPAR
 
       ! Parameters
       logical :: jliebig
@@ -129,7 +129,7 @@ contains
    call self%register_state_variable(self%id_ZDIC,'ZDIC','mmol C/m**3', 'dissolved inorganic carbon', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZOXY,'ZOXY','mmol O_2/m**3', 'dissolved oxygen', minimum=0.0_rk)
    ! Register diagnostic variables
-     
+   call self%register_diagnostic_variable(self%id_dPAR,'PAR','W m-2',       'photosynthetically active radiation', output=output_time_step_averaged)
    ! Register environmental dependencies
 
    call self%register_dependency(self%id_temp, standard_variables%temperature)
@@ -559,6 +559,7 @@ contains
    endif
 
    !+ air-sea fluxes...
+  _SET_DIAGNOSTIC_(self%id_dPAR,par)
 
    _LOOP_END_
 
