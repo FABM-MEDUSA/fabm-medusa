@@ -187,9 +187,9 @@ contains
 
    !PHYTOPLANKTON GROWTH
    !Chlorophyll
-   fthetan = max(tiny(ZCHN,(ZCHN * self%xxi) / (ZPHN + tiny(ZPHN)))
+   fthetan = max(tiny(ZCHN),(ZCHN * self%xxi) / (ZPHN + tiny(ZPHN)))
    faln = self%xaln * fthetan
-   fthetad = max(tiny(ZCHD,(ZCHD * self%xxi) / (ZPHD + tiny(ZPHD)))
+   fthetad = max(tiny(ZCHD),(ZCHD * self%xxi) / (ZPHD + tiny(ZPHD)))
    fald = self%xald * fthetad
 
   !Temperature limitation
