@@ -14,7 +14,7 @@ instances:
       xvpn: 0.53                # Maximum phytoplankton growth rate (non-diatoms) (d-1), default=0.53
       xvpd: 0.50                # Maximum phytoplankton growth rate (diatoms) (d-1), default=0.50
       jphy: 1                   # Temperature regulation (phyto growth), 1-Eppley,2-q10,default=1
-      jq10: 2.                  # q10 factor for temperature regulation option 2, default=2
+      jq10: 1.5                  # q10 factor for temperature regulation option 2, default=1.5
       xsin0: 0.2                # minimum diatom Si:N ratio (mol Si mol N-1), default=0.2
       xnsi0: 0.2                # minimum diatom N:Si ratio (mol N mol Si-1), default=0.2
       xuif: 1.5                 # hypothetical growth ratio at Inf Si:N ratio, default=1.5
