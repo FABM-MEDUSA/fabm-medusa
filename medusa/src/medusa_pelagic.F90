@@ -135,6 +135,9 @@ contains
    call self%register_dependency(self%id_temp, standard_variables%temperature)
    call self%register_dependency(self%id_par, standard_variables%downwelling_photosynthetic_radiative_flux)
    call self%register_dependency(self%id_depth, standard_variables%depth)
+
+        self%dt = 86400._rk
+
    end subroutine initialize
 
    subroutine do(self,_ARGUMENTS_DO_)
@@ -184,9 +187,9 @@ contains
 
    !PHYTOPLANKTON GROWTH
    !Chlorophyll
-   fthetan = (ZCHN * self%xxi) / ZPHN
+   fthetan = max(tiny(ZCHN,(ZCHN * self%xxi) / (ZPHN + tiny(ZPHN)))
    faln = self%xaln * fthetan
-   fthetad = (ZCHD * self%xxi) / ZPHD
+   fthetad = max(tiny(ZCHD,(ZCHD * self%xxi) / (ZPHD + tiny(ZPHD)))
    fald = self%xald * fthetad
 
   !Temperature limitation
@@ -206,11 +209,11 @@ contains
 
   !Phytoplankton light limitation
    fchn1 = (xvpnT * xvpnT) + (faln * faln * par * par)
-   fchn = xvpnT / sqrt(fchn1)
+   fchn = xvpnT / (sqrt(fchn1) + tiny(fchn1))
    fjln = fchn * faln * par !non-diatom J term
 
    fchd1 = (xvpdT * xvpdT) + (fald * fald * par * par)
-   fchd = xvpdT / sqrt(fchd1)
+   fchd = xvpdT / (sqrt(fchd1) + tiny(fchd1))
    fjld = fchd * fald * par !diatom J term
 
    ! Phytoplankton nutrient limitation
@@ -247,8 +250,8 @@ contains
       fprd = 0._rk
       fsld2 = 0._rk
    elseif (fsin .lt. fsin1) then
-      fprd = self%xuif * ((fsin - self%xsin0) / fsin) * (fjld * fpdlim)
-      fsld2 = self%xuif * ((fsin - self%xsin0) / fsin)
+      fprd = self%xuif * ((fsin - self%xsin0) / (fsin + tiny(fsin))) * (fjld * fpdlim)
+      fsld2 = self%xuif * ((fsin - self%xsin0) / (fsin + tiny(fsin)))
    elseif (fsin .ge. fsin1) then
       fprd = fjld * fpdlim
       fsld2 = 1.0_rk
@@ -258,14 +261,14 @@ contains
    if (fsin.lt.fnsi1) then
      fprds = (fjld * fsld)
    elseif (fsin.lt.fnsi2) then
-     fprds = self%xuif * ((fnsi - self%xnsi0) / fnsi) * (fjld * fsld)
+     fprds = self%xuif * ((fnsi - self%xnsi0) / (fnsi + tiny(fnsi))) * (fjld * fsld)
    else
      fprds = 0._rk
    end if
 
   !Chlorophyll production
-  frn = (self%xthetam * fchn * fnln * ffln) / fthetan
-  frd = (self%xthetamd * fchd * fnld * ffld * fsld2) / fthetad  
+  frn = (self%xthetam * fchn * fnln * ffln) / (fthetan + tiny(fthetan))
+  frd = (self%xthetamd * fchd * fnld * ffld * fsld2) / (fthetad + tiny(fthetad))  
 
   !ZOOPLANKTON GRAZING
   !Microzooplankton
@@ -273,17 +276,17 @@ contains
   fmi = self%xgmi * ZZMI / fmi1
   fgmipn = fmi * self%xpmipn * ZPHN * ZPHN !grazing on non-diatoms
   fgmid = fmi * self%xpmid * ZDET * ZDET   !grazing on detrital nitrogen
-  fgmidc = ZDTC / ZDET * fgmid !ROAM formulation
+  fgmidc = (ZDTC / (ZDET + tiny(ZDET))) * fgmid !ROAM formulation
   finmi = (1.0_rk - self%xphi) * (fgmipn + fgmid)
   ficmi = (1.0_rk - self%xphi) * ((self%xthetapn * fgmipn) + fgmidc)
   fstarmi = (self%xbetan * self%xthetazmi) / (self%xbetac * self%xkc) !the ideal food C : N ratio for microzooplankton
-  fmith = ficmi / finmi
+  fmith = (ficmi / (finmi + tiny(finmi)))
   if (fmith .ge. fstarmi) then
      fmigrow = self%xbetan * finmi
      fmiexcr = 0.0_rk
   else
      fmigrow = (self%xbetac * self%xkc * ficmi) / self%xthetazmi
-     fmiexcr = ficmi * ((self%xbetan / fmith) - ((self%xbetac * self%xkc) / self%xthetazmi))
+     fmiexcr = ficmi * ((self%xbetan / (fmith + tiny(fmith))) - ((self%xbetac * self%xkc) / self%xthetazmi))
   end if
   fmiresp = (self%xbetac * ficmi) - (self%xthetazmi * fmigrow) !Respiration
 
@@ -295,17 +298,17 @@ contains
   fgmepds = fsin * fgmepd
   fgmezmi = fme * self%xpmezmi * ZZMI * ZZMI
   fgmed = fme * self%xpmed * ZDET * ZDET
-  fgmedc = ZDTC / ZDET * fgmed !ROAM formulation
+  fgmedc = (ZDTC / (ZDET + tiny(ZDET))) * fgmed !ROAM formulation
   finme = (1.0_rk - self%xphi) * (fgmepn + fgmepd + fgmezmi + fgmed)
   ficme = (1.0_rk - self%xphi) * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc) 
   fstarme = (self%xbetan * self%xthetazme) / (self%xbetac * self%xkc)
-  fmeth = ficme / finme
+  fmeth = (ficme / (finme + tiny(finme)))
   if (fmeth .ge. fstarme) then
      fmegrow = self%xbetan * finme
      fmeexcr = 0.0_rk
   else
      fmegrow = (self%xbetac * self%xkc * ficme) / self%xthetazme
-     fmeexcr = ficme * ((self%xbetan / fmeth) - ((self%xbetac * self%xkc) / self%xthetazme))
+     fmeexcr = ficme * ((self%xbetan / (fmeth + tiny(fmeth))) - ((self%xbetac * self%xkc) / self%xthetazme))
   end if
   fmeresp = (self%xbetac * ficme) - (self%xthetazme * fmegrow)
 
