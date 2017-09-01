@@ -236,7 +236,7 @@ contains
 
    !Primary production (diatoms)
    if (self%jliebig.eqv..false.) then
-     fpdlim = fnld * fsld
+     fpdlim = fnld * ffld
    else
      fpdlim = min(fnld,ffld)
    end if
