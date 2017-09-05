@@ -141,8 +141,6 @@ contains
    call self%register_dependency(self%id_par, standard_variables%downwelling_photosynthetic_radiative_flux)
    call self%register_dependency(self%id_depth, standard_variables%depth)
 
-        self%dt = 86400._rk
-
    end subroutine initialize
 
    subroutine do(self,_ARGUMENTS_DO_)
@@ -200,7 +198,6 @@ contains
   !Temperature limitation
    fun_T = 1.066_rk**loc_T
    fun_q10 = self%jq10**((loc_T - 0._rk) / 10._rk)
-
    if (self%jphy .eq. 1) then
      xvpnT = self%xvpn * fun_T
      xvpdT = self%xvpd * fun_T
@@ -211,7 +208,6 @@ contains
      xvpnT = self%xvpn
      xvpdT = self%xvpd
    endif
-
   !Phytoplankton light limitation
    fchn1 = (xvpnT * xvpnT) + (faln * faln * par * par)
    fchn = xvpnT / (sqrt(fchn1) + tiny(fchn1))
@@ -224,11 +220,11 @@ contains
    ! Phytoplankton nutrient limitation
    !! Non-diatoms (N, Fe)
    fnln = ZDIN / (ZDIN + self%xnln) !non-diatom Qn term
-   ffln = ZFER / (ZFER + self%xfln) !non-diatom Qf term
+   ffln = 1. !ZFER / (ZFER + self%xfln) !non-diatom Qf term
    !! Diatoms (N, Si, Fe)
    fnld = ZDIN / (ZDIN + self%xnld) !diatom Qn term
    fsld = ZSIL / (ZSIL + self%xsld) !diatom Qs term
-   ffld = ZFER / (ZFER + self%xfld) !diatom Qf term
+   ffld = 1. !ZFER / (ZFER + self%xfld) !diatom Qf term
 
    ! Primary production (non-diatoms)
    if (self%jliebig.eqv..false.) then
