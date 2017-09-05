@@ -30,6 +30,7 @@ module medusa_pelagic
       real(rk) :: xk_FeL,xLgT,xk_sc_Fe
       real(rk) :: xfdfrac1,xfdfrac2,xfdfrac3,xrfn
       real(rk) :: xthetanit,xthetarem,xo2min
+      real(rk) :: wg
    contains
       procedure :: initialize
       procedure :: do
@@ -112,6 +113,8 @@ contains
    call self%get_parameter(self%xthetanit,'xthetanit','mol O_2 mol N-1','O2 consumption by N remineralisation',default=2.0_rk)
    call self%get_parameter(self%xthetarem,'xthetarem','mol O_2 mol C-1','O2 consumption by C remineralisation',default=1.1226_rk)
    call self%get_parameter(self%xo2min,'xo2min','mmol O_2 m-3','minimum O2 concentration',default=4.0_rk)
+   call self%get_parameter(self%wg,'wg','m d-1','detritus sinking rate (<0 for sinking)', default=-2.5_rk, scale_factor=d_per_s)
+
    ! Register state variables
    call self%register_state_variable(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZCHD,'ZCHD','mg chl/m**3', 'chlorophyll in diatoms', minimum=0.0_rk)
@@ -324,7 +327,7 @@ contains
   ! non-diatom phytoplankton
   if (self%jmpn == 1) fdpn = self%xmpn * ZPHN                                     !! linear
   if (self%jmpn == 2) fdpn = self%xmpn * ZPHN * ZPHN                              !! quadratic
-  if (self%jmpn == 3) fdpn = self%xmpn * ZPHN * (ZPHN / (self%xkphn + ZPHN)) !! hyperbolic
+  if (self%jmpn == 3) fdpn = self%xmpn * ZPHN * (ZPHN / (self%xkphn + ZPHN))      !! hyperbolic
   if (self%jmpn == 4) fdpn = self%xmpn * ZPHN * &                                 !! sigmoid
                  ((ZPHN * ZPHN) / (self%xkphn + (ZPHN * ZPHN)))
   ! diatom phytoplankton
