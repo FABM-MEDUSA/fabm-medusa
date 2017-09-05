@@ -472,7 +472,7 @@ contains
             !+ freminn (fast-detritus contribution!!!)            &      
              + fdpn2 + fdpd2 + fdzmi2 + fdzme2                       ! metab. losses
 
-   _SET_ODE_(self%id_ZDIN,fn_prod-fn_cons)
+   _SET_ODE_(self%id_ZDIN,fn_prod + fn_cons)
 
   ! dissolved silicic acid
    fs_cons = - (fprds * ZPDS)                                       ! opal production
@@ -481,7 +481,7 @@ contains
              + ((1.0 - self%xfdfrac3) * fgmepds)                  &  ! egestion of grazed Si
              !+ freminsi (fast-detritus contribution!!!)          &  ! fast dissolution
              + fdpds2                                                ! metab. losses
-   _SET_ODE_(self%id_ZSIL,fs_prod - fs_cons)
+   _SET_ODE_(self%id_ZSIL,fs_prod + fs_cons)
 
   ! dissolved iron
    _SET_ODE_(self%id_ZFER, (self%xrfn * (fn_prod-fn_cons)) - ffescav)
