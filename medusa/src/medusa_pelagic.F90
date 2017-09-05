@@ -455,12 +455,9 @@ contains
   _SET_ODE_(self%id_ZZME, fmegrow - fdzme - fdzme2 )
 
   ! detritus
-  _SET_ODE_(self%id_ZDET, + fdpn + ((1._rk - self%xfdfrac1) * fdpd)     &  ! mort. losses
-                 + fdzmi + ((1._rk - self%xfdfrac2) * fdzme)            &  ! mort. losses
-                 + ((1._rk - self%xbetan) * (finmi + finme))            &  ! assim. inefficiency
-                 - fgmid - fgmed - fdd)                                 &  ! grazing and remin.
-                 !+ ffast2slown                                        ! seafloor fast->slow
-                 )
+  _SET_ODE_(self%id_ZDET,fdpn + ((1._rk - self%xfdfrac1) * fdpd) + fdzmi + ((1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetan) * (finmi + finme))-fgmid-fgmed-fdd)
+        
+         !+ ffast2slown                                        ! seafloor fast->slow
 
   !dissolved inorganic nitrogen
    fn_cons = - (fprn * ZPHN) - (fprd * ZPHD)                         ! primary production
@@ -488,12 +485,8 @@ contains
                                                  
 
   ! detrital carbon
-   _SET_ODE_(self%id_ZDTC, (self%xthetapn * fdpn) + ((1._rk - self%xfdfrac1) * (self%xthetapd * fdpd))      &  ! mort. losses
-                 + (self%xthetazmi * fdzmi) + ((1._rk - self%xfdfrac2) * (self%xthetazme * fdzme))          &  ! mort. losses
-                 + ((1._rk - self%xbetac) * (ficmi + ficme))                                                &  ! assim. inefficiency
-                 - fgmidc - fgmedc - fddc)                                                                  &  ! grazing and remin.
-                 !+ ffast2slowc                                                                                ! seafloor fast->slow
-                 )
+   _SET_ODE_(self%id_ZDTC, (self%xthetapn * fdpn) + ((1._rk - self%xfdfrac1) * (self%xthetapd * fdpd)) + (self%xthetazmi * fdzmi) + ((1._rk - self%xfdfrac2) * (self%xthetazme * fdzme)) + ((1._rk - self%xbetac) * (ficmi + ficme))- fgmidc - fgmedc - fddc)
+                 !+ ffast2slowc                             ! seafloor fast->slow
 
   ! dissolved inorganic carbon
    fc_cons = - (self%xthetapn * fprn * ZPHN) - (self%xthetapd * fprd * ZPHD)                      ! primary production
