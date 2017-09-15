@@ -19,7 +19,7 @@ module medusa_pelagic
       type (type_dependency_id)            :: id_temp,id_par,id_depth,id_salt
       type (type_diagnostic_variable_id)   :: id_dPAR
       type (type_horizontal_diagnostic_variable_id) ::  id_fair
-      type (type_horizontal_dependency_id)    :: id_press,id_wnd
+      type (type_horizontal_dependency_id)    :: id_apress,id_wnd
 
       ! Parameters
       logical :: jliebig
@@ -143,7 +143,7 @@ contains
    call self%register_dependency(self%id_temp, standard_variables%temperature)
    call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
    call self%register_dependency(self%id_par, standard_variables%downwelling_photosynthetic_radiative_flux)
-   call self%register_dependency(self%id_press, standard_variables%surface_air_pressure)
+   call self%register_dependency(self%id_apress, standard_variables%surface_air_pressure)
    call self%register_dependency(self%id_wnd,standard_variables%wind_speed)
    call self%register_dependency(self%id_depth, standard_variables%depth)
 
@@ -616,16 +616,17 @@ contains
    _GET_(self%id_temp,pt)
    _GET_(self%id_salt,ps)
    _GET_(self%id_ZOXY,o2)
-   _GET_HORIZONTAL_(self%id_press,pp0)
+   _GET_HORIZONTAL_(self%id_apress,pp0)
    _GET_HORIZONTAL_(self%id_wnd,wnd)
 
+      o2 = o2/1000._rk
 
 ! Calculate gas transfer velocity (cm/h)
 
       tmp_k = (a(7) * wnd**2) + (b(7) * wnd)
 
 ! Convert tmp_k from cm/h to m/s
-      kw660 = tmp_k / (100. * 3600.)
+      kw660 = tmp_k / (3600._rk * 100._rk)
 
  !note: air-sea fluxes must be corrected for sea ice
 
@@ -648,11 +649,13 @@ contains
 
    o2_schmidt = as0 + pt*(as1 + pt*(as2 + pt*(as3 + pt*as4)))
    kwo2 = kw660 * (660._rk / o2_schmidt)**0.5_rk
-   o2sat = o2_sato * pp0
+   o2sat = o2_sato * pp0 / 101325._rk
+   !print*,pp0
+   
+   o2flux = kwo2 * (o2sat - o2)
+   o2flux = o2flux *1000.
 
-   o2flux = kwo2 * (o2sat - o2/1000._rk)
-
-   _SET_SURFACE_EXCHANGE_(self%id_ZOXY, o2flux * d_per_s)
+   _SET_SURFACE_EXCHANGE_(self%id_ZOXY, o2flux)
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fair, o2flux)
 
    _HORIZONTAL_LOOP_END_
