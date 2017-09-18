@@ -16,8 +16,8 @@ module medusa_pelagic
   type,extends(type_base_model),public :: type_medusa_pelagic
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
-      type (type_dependency_id)            :: id_temp,id_par,id_depth,id_salt
-      type (type_diagnostic_variable_id)   :: id_dPAR
+      type (type_dependency_id)            :: id_temp,id_par,id_depth,id_salt,id_dz
+      type (type_diagnostic_variable_id)   :: id_dPAR,id_ftempc
       type (type_horizontal_diagnostic_variable_id) ::  id_fair
       type (type_horizontal_dependency_id)    :: id_apress,id_wnd
 
@@ -33,10 +33,12 @@ module medusa_pelagic
       real(rk) :: xfdfrac1,xfdfrac2,xfdfrac3,xrfn
       real(rk) :: xthetanit,xthetarem,xo2min
       real(rk) :: wg
+
    contains
       procedure :: initialize
       procedure :: do
       procedure :: do_surface
+      procedure :: fast_detritus
 
   end type
 
@@ -139,6 +141,8 @@ contains
    ! Register diagnostic variables
    call self%register_diagnostic_variable(self%id_dPAR,'PAR','W m-2',       'photosynthetically active radiation', output=output_time_step_averaged)
    call self%register_diagnostic_variable(self%id_fair,'fair','mmol O_2/m^2/d','Air-sea flux of oxygen')
+   call self%register_diagnostic_variable(self%id_ftempc,'ftempc','mmol C/m^3/d','fast detritus carbon')
+
    ! Register environmental dependencies
    call self%register_dependency(self%id_temp, standard_variables%temperature)
    call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
@@ -146,7 +150,7 @@ contains
    call self%register_dependency(self%id_apress, standard_variables%surface_air_pressure)
    call self%register_dependency(self%id_wnd,standard_variables%wind_speed)
    call self%register_dependency(self%id_depth, standard_variables%depth)
-
+   call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
    end subroutine initialize
 
    subroutine do(self,_ARGUMENTS_DO_)
@@ -434,6 +438,7 @@ contains
   ftempfe = ((self%xfdfrac1 * fdpd) + (self%xfdfrac2 * fdzme)) * self%xrfn
   ! carbon:     diatom and mesozooplankton mortality
   ftempc = (self%xfdfrac1 * self%xthetapd * fdpd) + (self%xfdfrac2 * self%xthetazme * fdzme)
+  _SET_DIAGNOSTIC_(self%id_ftempc,ftempc)
 
   ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
   !if (f3_omcal .ge. 1._rk) then !get f3_omcal!
@@ -565,6 +570,66 @@ contains
 
    end subroutine do
 
+   subroutine fast_detritus(self,_ARGUMENTS_VERTICAL_)
+   class(type_medusa_pelagic),intent(in) :: self
+
+   _DECLARE_ARGUMENTS_VERTICAL_  
+
+   real(rk) :: dz,fq0,fq1,fq2,fq3,fq4,fq5,fq6,fq7,fq8,fprotf
+   real(rk) :: xmassc = 12.011_rk
+   real(rk) :: xmassca = 100.086_rk
+   real(rk) :: xmasssi = 60.084_rk
+   real(rk) :: xprotca = 0.07_rk
+   real(rk) :: xprotsi = 0.026_rk
+   real(rk) :: xfastc = 188._rk
+   real(rk) :: freminc,freminn,freminfe,freminsi,freminca
+   real(rk) :: ffastc=0._rk,ffastn=0._rk,ffastca=0._rk,ffastsi=0._rk
+   real(rk) :: ftempc
+   
+
+   _VERTICAL_LOOP_BEGIN_
+
+   _GET_(self%id_dz,dz)
+   _GET_(self%id_ftempc,ftempc)
+
+   !Carbon
+   fq0      = ffastc      !! how much organic C enters this box        (mol)
+   fq1      = (fq0 * xmassc)     !! how much it weighs                        (mass)
+   fq2      = (ffastca * xmassca)        !! how much CaCO3 enters this box            (mass)
+   fq3      = (ffastsi * xmasssi)        !! how much opal enters this box            (mass)
+   fq4      = (fq2 * xprotca) + (fq3 * xprotsi) !! total protected organic C                 (mass)
+
+   !! this next term is calculated for C but used for N and Fe as well
+   !! it needs to be protected in case ALL C is protected
+
+   if (fq4.lt.fq1) then
+     fprotf   = (fq4 / (fq1 + tiny(fq1)))      !! protected fraction of total organic C     (non-dim)
+   else
+     fprotf   = 1._rk                            !! all organic C is protected                (non-dim)
+   endif
+
+   fq5      = (1._rk - fprotf)                    !! unprotected fraction of total organic C   (non-dim)
+   fq6      = (fq0 * fq5)                       !! how much organic C is unprotected         (mol)
+   fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected C leaves this box    (mol)
+   fq8      = (fq7 + (fq0 * fprotf))            !! how much total C leaves this box          (mol)
+   freminc  = (fq0 - fq8) / dz            !! C remineralisation in this box            (mol)
+   ffastc = fq8
+                           
+   !Nitrogen
+   fq0      = ffastn   !! how much organic N enters this box        (mol)
+   fq5      = (1._rk - fprotf)   !! unprotected fraction of total organic N   (non-dim)
+   fq6      = (fq0 * fq5)      !! how much organic N is unprotected         (mol)
+   fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected N leaves this box    (mol)
+   fq8      = (fq7 + (fq0 * fprotf))            !! how much total N leaves this box          (mol)
+   freminn  = (fq0 - fq8) / dz                !! N remineralisation in this box            (mol)
+   ffastn = fq8 
+   
+    ffastc  = ffastc + ftempc
+
+   _VERTICAL_LOOP_END_
+
+   end subroutine fast_detritus
+
    subroutine do_surface(self,_ARGUMENTS_DO_SURFACE_)
 
    class(type_medusa_pelagic),intent(in) :: self
@@ -663,4 +728,3 @@ contains
    end subroutine do_surface
 
   end module medusa_pelagic
-
