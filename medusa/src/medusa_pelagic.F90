@@ -1,9 +1,9 @@
 #include "fabm_driver.h"
 
 !
-!*********************************************************    
-!                FABM-MEDUSA pelagic module                      
-!*********************************************************                                                                            
+!*********************************************************
+!            FABM-MEDUSA pelagic biogeochemistry
+!*********************************************************
 
 module medusa_pelagic
 
@@ -45,8 +45,8 @@ contains
    subroutine initialize(self,configunit)
 
    class(type_medusa_pelagic),intent(inout),target :: self
-   integer,               intent(in)           :: configunit  
-   real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk 
+   integer,               intent(in)           :: configunit
+   real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
    !Register parameters
    call self%get_parameter(self%xxi, 'xxi', 'mol N g C-1','C : N conversion factor', default=0.01257_rk)
@@ -513,7 +513,7 @@ contains
    _SET_ODE_(self%id_ZFER, (self%xrfn * (fn_prod-fn_cons)) - ffescav)
                                                !+ ffetop     &
                                                !+ ffebot     &
-                                                 
+
 
   ! detrital carbon
    _SET_ODE_(self%id_ZDTC, (self%xthetapn * fdpn) + ((1._rk - self%xfdfrac1) * (self%xthetapd * fdpd)) + (self%xthetazmi * fdzmi) + ((1._rk - self%xfdfrac2) * (self%xthetazme * fdzme)) + ((1._rk - self%xbetac) * (ficmi + ficme))- fgmidc - fgmedc - fddc)
@@ -529,9 +529,9 @@ contains
              + (self%xthetapn * fdpn2)                                                         &  ! resp., remin., losses
              + (self%xthetapd * fdpd2) + (self%xthetazmi * fdzmi2)                             &  ! losses
              + (self%xthetazme * fdzme2)                                                          ! losses
-               
+
   ! fc_prod = fc_prod - ftempca + freminca         ! CaCO3
-                 
+
    _SET_ODE_(self%id_ZDIC,fc_prod + fc_cons)
 
   ! alkalinity
@@ -553,7 +553,7 @@ contains
                - (self%xthetanit * self%xphi * fgmed)                                     & ! D  messy feeding remin., N
                - (self%xthetanit * fmiexcr)                                               & ! microzoo excretion, N
                - (self%xthetanit * fmeexcr)                                               & ! mesozoo  excretion, N
-               - (self%xthetanit * fdd)                                                   & ! slow detritus remin., N 
+               - (self%xthetanit * fdd)                                                   & ! slow detritus remin., N
                - (self%xthetanit * freminn)                                               & ! fast detritus remin., N
                - (self%xthetanit * fdpn2)                                                 & ! Pn  losses, N
                - (self%xthetanit * fdpd2)                                                 & ! Pd  losses, N
@@ -592,7 +592,7 @@ contains
    subroutine do_fast_detritus(self,_ARGUMENTS_VERTICAL_)
    class(type_medusa_pelagic),intent(in) :: self
    
-   _DECLARE_ARGUMENTS_VERTICAL_  
+   _DECLARE_ARGUMENTS_VERTICAL_
 
    real(rk) :: dz,fq0,fq1,fq2,fq3,fq4,fq5,fq6,fq7,fq8,fprotf
    real(rk) :: xmassc = 12.011_rk
@@ -617,7 +617,7 @@ contains
     _GET_(self%id_ftempca1,ftempca)
     _SET_DIAGNOSTIC_(self%id_aaa,ftempc)
 
-    _GET_(self%id_dz,dz) 
+    _GET_(self%id_dz,dz)
 
 !   !Carbon
    fq0      = ffastc                            !! how much organic C enters this box        (mol)
@@ -640,7 +640,7 @@ contains
    fq8      = (fq7 + (fq0 * fprotf))          !! how much total C leaves this box          (mol)
    freminc  = (fq0 - fq8) / dz                !! C remineralisation in this box            (mol)
    ffastc = fq8
-                           
+
    !Nitrogen
    fq0      = ffastn                          !! how much organic N enters this box        (mol)
    fq5      = (1._rk - fprotf)                !! unprotected fraction of total organic N   (non-dim)
@@ -664,7 +664,7 @@ contains
    fq1      = fq0 * exp(-(dz / xfastsi))      !! how much  opal leaves this box            (mol)
    freminsi = (fq0 - fq1) / dz                !! Si remineralisation in this box           (mol)
    ffastsi = fq1
-   
+
    !biogenic calcium carbonate
   ! fq0      = ffastca                           !! how much CaCO3 enters this box            (mol)
   ! if (fdep.le.fccd_dep) then

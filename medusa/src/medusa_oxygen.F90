@@ -2,8 +2,8 @@
 
 !
 !************************************************************
-!                FABM-MEDUSA oxygen air-sea flux                      
-!************************************************************                                                                            
+!               FABM-MEDUSA oxygen air-sea flux
+!************************************************************
 
 module medusa_oxygen
 
@@ -33,7 +33,7 @@ contains
    subroutine initialize(self,configunit)
 
    class(type_medusa_oxygen),intent(inout),target :: self
-   integer,               intent(in)           :: configunit  
+   integer,               intent(in)           :: configunit
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk 
    call self%register_state_dependency(self%id_ZOXY,'ZOXY','mmol O_2/m**3', 'dissolved oxygen')
    ! Register environmental dependencies
@@ -130,7 +130,7 @@ contains
    kwo2 = kw660 * (660._rk / o2_schmidt)**0.5_rk
    o2sat = o2_sato * pp0 / 101325._rk
    !print*,pp0
-   
+
    o2flux = kwo2 * (o2sat - o2)
    o2flux = o2flux *1000._rk
 
