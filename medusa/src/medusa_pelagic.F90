@@ -16,8 +16,8 @@ module medusa_pelagic
   type,extends(type_base_model),public :: type_medusa_pelagic
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
-      type (type_dependency_id)            :: id_temp,id_par,id_depth,id_salt,id_dz
-      type (type_diagnostic_variable_id)   :: id_dPAR,id_ftempc
+      type (type_dependency_id)            :: id_temp,id_par,id_depth,id_salt,id_dz,id_ftempc1,id_ftempn1,id_ftempsi1,id_ftempfe1,id_ftempca1,id_freminn1,id_freminc1,id_freminsi1
+      type (type_diagnostic_variable_id)   :: id_dPAR,id_ftempc,id_ftempn,id_ftempfe,id_ftempsi,id_ftempca,id_aaa,id_freminn,id_freminc,id_freminsi
       type (type_horizontal_diagnostic_variable_id) ::  id_fair
       type (type_horizontal_dependency_id)    :: id_apress,id_wnd
 
@@ -35,12 +35,13 @@ module medusa_pelagic
       real(rk) :: wg
 
    contains
+
       procedure :: initialize
       procedure :: do
       procedure :: do_surface
-      procedure :: fast_detritus
+      procedure :: get_light => do_fast_detritus
 
-  end type
+  end type type_medusa_pelagic
 
 contains
 
@@ -141,8 +142,24 @@ contains
    ! Register diagnostic variables
    call self%register_diagnostic_variable(self%id_dPAR,'PAR','W m-2',       'photosynthetically active radiation', output=output_time_step_averaged)
    call self%register_diagnostic_variable(self%id_fair,'fair','mmol O_2/m^2/d','Air-sea flux of oxygen')
-   call self%register_diagnostic_variable(self%id_ftempc,'ftempc','mmol C/m^3/d','fast detritus carbon')
-
+   call self%register_diagnostic_variable(self%id_ftempc,'ftempc','mmol C/m^3/d','fast detritus carbon',missing_value=0._rk)
+   call self%register_diagnostic_variable(self%id_ftempn,'ftempn','mmol N/m^3/d','fast detritus carbon',missing_value=0._rk)
+   call self%register_diagnostic_variable(self%id_ftempsi,'ftempsi','mmol Si/m^3/d','fast detritus carbon',missing_value=0._rk)
+   call self%register_diagnostic_variable(self%id_ftempfe,'ftempfe','mmol Fe/m^3/d','fast detritus carbon',missing_value=0._rk)
+   call self%register_diagnostic_variable(self%id_ftempca,'ftempca','mmol CaCO3/m^3/d','fast detritus carbon',missing_value=0._rk)
+   call self%register_dependency(self%id_ftempc1, 'ftempc', '', 'sth')
+   call self%register_dependency(self%id_ftempn1, 'ftempn', '', 'sth')
+   call self%register_dependency(self%id_ftempfe1, 'ftempfe', '', 'sth')
+   call self%register_dependency(self%id_ftempsi1, 'ftempsi', '', 'sth')
+   call self%register_dependency(self%id_ftempca1, 'ftempca', '', 'sth')
+   call self%register_diagnostic_variable(self%id_freminc,'freminc','mmol C/m^3/d','ccc',missing_value=0._rk)
+   call self%register_diagnostic_variable(self%id_freminn,'freminn','mmol N/m^3/d','ccc',missing_value=0._rk)
+   call self%register_diagnostic_variable(self%id_freminsi,'freminsi','mmol Si/m^3/d','ccc',missing_value=0._rk)
+   call self%register_dependency(self%id_freminc1, 'freminc', '', 'sth')
+   call self%register_dependency(self%id_freminn1, 'freminn', '', 'sth')
+   call self%register_dependency(self%id_freminsi1, 'freminsi', '', 'sth')
+   call self%register_diagnostic_variable(self%id_aaa,'aaa','x','y', &
+              source=source_do_column)
    ! Register environmental dependencies
    call self%register_dependency(self%id_temp, standard_variables%temperature)
    call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
@@ -174,6 +191,7 @@ contains
     real(rk) :: xFeT,xb_coef_tmp,xb2M4ac,xLgF,xFel,xFeF,xFree,ffescav,xmaxFeF,fdeltaFe
     real(rk) :: fslowc,fslown,fregen,fregensi,fregenc,ftempn,ftempsi,ftempfe,ftempc,fq1,fcaco3,ftempca
     real(rk) :: fn_prod,fn_cons,fs_cons,fs_prod,fc_cons,fc_prod,fa_prod,fa_cons,fo2_ccons,fo2_ncons,fo2_cons,fo2_prod
+    real(rk) :: freminc,freminn,freminsi
 
     _LOOP_BEGIN_
 
@@ -197,6 +215,10 @@ contains
     _GET_(self%id_temp,loc_T)
     _GET_(self%id_par,par) !check PAR // what about self-shading?
     _GET_(self%id_depth,depth)
+
+    _GET_(self%id_freminc1,freminc)
+    _GET_(self%id_freminn1,freminn)
+    _GET_(self%id_freminsi1,freminsi)
 
    !PHYTOPLANKTON GROWTH
    !Chlorophyll
@@ -380,29 +402,30 @@ contains
   fsdiss = self%xsdiss * ZPDS
 
   !IRON CHEMISTRY AND FRACTIONATION
-  xFeT = ZFER * 1.e3_rk !total iron concentration (mmolFe/m3 -> umolFe/m3)
-  xb_coef_tmp = self%xk_FeL * (self%xLgT - xFeT) - 1.0_rk !this is F1 in Yool et al (2013)
-  xb2M4ac = max(((xb_coef_tmp * xb_coef_tmp) + (4.0_rk * self%xk_FeL * self%xLgT)), 0._rk)
-  xLgF = 0.5_rk * (xb_coef_tmp + (xb2M4ac**0.5_rk)) / self%xk_FeL ! "free" ligand concentration
-  xFeL = self%xLgT - xLgF ! ligand-bound iron concentration
-  xFeF = (xFeT - xFeL) * 1.e-3_rk! "free" iron concentration (and convert to mmolFe/m3)
-  xFree = xFeF / ZFER
-  ! Scavenging of iron
-  if (self%jiron == 1) then
-     ffescav = self%xk_sc_Fe * xFeF
-     xmaxFeF = min((xFeF * 1.e3_rk), 0.3_rk)        ! = umol/m3
-     fdeltaFe = (xFeT - (xFeL + xmaxFeF)) * 1.e-3   ! = mmol/m3
-     ffescav     = ffescav + fdeltaFe               ! = mmol/m3/d
-
-     if ((depth .gt. 1000._rk) .and. (xFeT .lt. 0.5_rk)) then
-        ffescav = 0._rk
-     endif
-  elseif (self%jiron == 2) then
-  elseif (self%jiron == 3) then
-  elseif (self%jiron == 4) then
-  else
+ ! xFeT = ZFER * 1.e3_rk !total iron concentration (mmolFe/m3 -> umolFe/m3)
+ ! xb_coef_tmp = self%xk_FeL * (self%xLgT - xFeT) - 1.0_rk !this is F1 in Yool et al (2013)
+ ! xb2M4ac = max(((xb_coef_tmp * xb_coef_tmp) + (4.0_rk * self%xk_FeL * self%xLgT)), 0._rk)
+ ! xLgF = 0.5_rk * (xb_coef_tmp + (xb2M4ac**0.5_rk)) / self%xk_FeL ! "free" ligand concentration
+ ! xFeL = self%xLgT - xLgF ! ligand-bound iron concentration
+ ! xFeF = (xFeT - xFeL) * 1.e-3_rk! "free" iron concentration (and convert to mmolFe/m3)
+ ! xFree = xFeF / ZFER
+ ! ! Scavenging of iron
+ ! if (self%jiron == 1) then
+ !    ffescav = self%xk_sc_Fe * xFeF
+ !    xmaxFeF = min((xFeF * 1.e3_rk), 0.3_rk)        ! = umol/m3
+ !    fdeltaFe = (xFeT - (xFeL + xmaxFeF)) * 1.e-3   ! = mmol/m3
+ !    ffescav     = ffescav + fdeltaFe               ! = mmol/m3/d
+ !
+ !
+ !    if ((depth .gt. 1000._rk) .and. (xFeT .lt. 0.5_rk)) then
+ !       ffescav = 0._rk
+ !    endif
+ ! elseif (self%jiron == 2) then
+ ! elseif (self%jiron == 3) then
+ ! elseif (self%jiron == 4) then
+ ! else
      ffescav = 0._rk
-  end if
+ ! end if
 
 
   !!Aeolian iron deposition and seafloor iron addition - should be dealt with through model inputs.
@@ -432,10 +455,13 @@ contains
   ! Fast-sinking detritus terms
   ! nitrogen:   diatom and mesozooplankton mortality
   ftempn = (self%xfdfrac1 * fdpd)  + (self%xfdfrac2 * fdzme)
+  _SET_DIAGNOSTIC_(self%id_ftempn,ftempn)
   ! silicon:    diatom mortality and grazed diatoms
   ftempsi = (self%xfdfrac1 * fdpds) + (self%xfdfrac3 * fgmepds)
+  _SET_DIAGNOSTIC_(self%id_ftempsi,ftempsi)
   ! iron:       diatom and mesozooplankton mortality
   ftempfe = ((self%xfdfrac1 * fdpd) + (self%xfdfrac2 * fdzme)) * self%xrfn
+  _SET_DIAGNOSTIC_(self%id_ftempfe,ftempfe)
   ! carbon:     diatom and mesozooplankton mortality
   ftempc = (self%xfdfrac1 * self%xthetapd * fdpd) + (self%xfdfrac2 * self%xthetazme * fdzme)
   _SET_DIAGNOSTIC_(self%id_ftempc,ftempc)
@@ -475,7 +501,7 @@ contains
    fn_prod = + (self%xphi * (fgmipn + fgmid))                     &  ! messy feeding remin.
              + (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed))  &  ! messy feeding remin.
              + fmiexcr + fmeexcr + fdd                            &  ! excretion and remin.
-            !+ freminn (fast-detritus contribution!!!)            &      
+             + freminn                                            &  ! fast mineralisation
              + fdpn2 + fdpd2 + fdzmi2 + fdzme2                       ! metab. losses
 
    _SET_ODE_(self%id_ZDIN,fn_prod + fn_cons)
@@ -485,7 +511,7 @@ contains
    fs_prod = + fsdiss                                             &  ! opal dissolution
              + ((1.0 - self%xfdfrac1) * fdpds)                    &  ! mort. loss
              + ((1.0 - self%xfdfrac3) * fgmepds)                  &  ! egestion of grazed Si
-             !+ freminsi (fast-detritus contribution!!!)          &  ! fast dissolution
+             + freminsi                                           &  ! fast dissolution
              + fdpds2                                                ! metab. losses
    _SET_ODE_(self%id_ZSIL,fs_prod + fs_cons)
 
@@ -504,10 +530,10 @@ contains
    fc_prod = + (self%xthetapn * self%xphi * fgmipn) + (self%xphi * fgmidc)                     &  ! messy feeding remin
              + (self%xthetapn * self%xphi * fgmepn) + (self%xthetapd * self%xphi * fgmepd)     &  ! messy feeding remin
              + (self%xthetazmi * self%xphi * fgmezmi) + (self%xphi * fgmedc)                   &  ! messy feeding remin
-             + fmiresp + fmeresp + fddc &
-             !+ freminc 
+             + fmiresp + fmeresp + fddc                                                        &
+             + freminc                                                                         &
              + (self%xthetapn * fdpn2)                                                         &  ! resp., remin., losses
-             + (self%xthetapd * fdpd2) + (self%xthetazmi * fdzmi2)                              &  ! losses
+             + (self%xthetapd * fdpd2) + (self%xthetazmi * fdzmi2)                             &  ! losses
              + (self%xthetazme * fdzme2)                                                          ! losses
                
   ! fc_prod = fc_prod - ftempca + freminca         ! CaCO3
@@ -534,7 +560,7 @@ contains
                - (self%xthetanit * fmiexcr)                                               & ! microzoo excretion, N
                - (self%xthetanit * fmeexcr)                                               & ! mesozoo  excretion, N
                - (self%xthetanit * fdd)                                                   & ! slow detritus remin., N 
-               !- (self%xthetanit * freminn)                                               & ! fast detritus remin., N
+               - (self%xthetanit * freminn)                                               & ! fast detritus remin., N
                - (self%xthetanit * fdpn2)                                                 & ! Pn  losses, N
                - (self%xthetanit * fdpd2)                                                 & ! Pd  losses, N
                - (self%xthetanit * fdzmi2)                                                & ! Zmi losses, N
@@ -549,7 +575,7 @@ contains
                - (self%xthetarem * fmiresp)                                               & ! microzoo respiration, C
                - (self%xthetarem * fmeresp)                                               & ! mesozoo  respiration, C
                - (self%xthetarem * fddc)                                                  & ! slow detritus remin., C
-               !- (self%xthetarem * freminc)                                               & ! fast detritus remin., C
+               - (self%xthetarem * freminc)                                               & ! fast detritus remin., C
                - (self%xthetarem * self%xthetapn * fdpn2)                                 & ! Pn  losses, C
                - (self%xthetarem * self%xthetapd * fdpd2)                                 & ! Pd  losses, C
                - (self%xthetarem * self%xthetazmi * fdzmi2)                               & ! Zmi losses, C
@@ -570,9 +596,9 @@ contains
 
    end subroutine do
 
-   subroutine fast_detritus(self,_ARGUMENTS_VERTICAL_)
+   subroutine do_fast_detritus(self,_ARGUMENTS_VERTICAL_)
    class(type_medusa_pelagic),intent(in) :: self
-
+   
    _DECLARE_ARGUMENTS_VERTICAL_  
 
    real(rk) :: dz,fq0,fq1,fq2,fq3,fq4,fq5,fq6,fq7,fq8,fprotf
@@ -581,33 +607,37 @@ contains
    real(rk) :: xmasssi = 60.084_rk
    real(rk) :: xprotca = 0.07_rk
    real(rk) :: xprotsi = 0.026_rk
-   real(rk) :: xfastc = 188._rk
+   real(rk) :: xfastc = 188._rk, xfastsi = 2000._rk
    real(rk) :: freminc,freminn,freminfe,freminsi,freminca
-   real(rk) :: ffastc=0._rk,ffastn=0._rk,ffastca=0._rk,ffastsi=0._rk
-   real(rk) :: ftempc
-   
+   real(rk) :: ffastc=0._rk,ffastn=0._rk,ffastca=0._rk,ffastsi=0._rk,ffastfe=0._rk
+   real(rk) :: ftempc,ftempn,ftempfe,ftempsi,ftempca
 
    _VERTICAL_LOOP_BEGIN_
 
-   _GET_(self%id_dz,dz)
-   _GET_(self%id_ftempc,ftempc)
+    _GET_(self%id_ftempc1,ftempc)
+    _GET_(self%id_ftempn1,ftempn)
+    _GET_(self%id_ftempfe1,ftempfe)
+    _GET_(self%id_ftempsi1,ftempsi)
+    _GET_(self%id_ftempca1,ftempca)
+    _SET_DIAGNOSTIC_(self%id_aaa,ftempc)
 
-   !Carbon
+    _GET_(self%id_dz,dz) 
+
+!   !Carbon
    fq0      = ffastc      !! how much organic C enters this box        (mol)
    fq1      = (fq0 * xmassc)     !! how much it weighs                        (mass)
-   fq2      = (ffastca * xmassca)        !! how much CaCO3 enters this box            (mass)
-   fq3      = (ffastsi * xmasssi)        !! how much opal enters this box            (mass)
+   fq2      = 0. !(ffastca * xmassca)        !! how much CaCO3 enters this box            (mass)
+   fq3      = 0. !(ffastsi * xmasssi)        !! how much opal enters this box            (mass)
    fq4      = (fq2 * xprotca) + (fq3 * xprotsi) !! total protected organic C                 (mass)
-
-   !! this next term is calculated for C but used for N and Fe as well
-   !! it needs to be protected in case ALL C is protected
-
+!
+!   !! this next term is calculated for C but used for N and Fe as well
+!   !! it needs to be protected in case ALL C is protected
+!
    if (fq4.lt.fq1) then
      fprotf   = (fq4 / (fq1 + tiny(fq1)))      !! protected fraction of total organic C     (non-dim)
    else
      fprotf   = 1._rk                            !! all organic C is protected                (non-dim)
    endif
-
    fq5      = (1._rk - fprotf)                    !! unprotected fraction of total organic C   (non-dim)
    fq6      = (fq0 * fq5)                       !! how much organic C is unprotected         (mol)
    fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected C leaves this box    (mol)
@@ -622,13 +652,54 @@ contains
    fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected N leaves this box    (mol)
    fq8      = (fq7 + (fq0 * fprotf))            !! how much total N leaves this box          (mol)
    freminn  = (fq0 - fq8) / dz                !! N remineralisation in this box            (mol)
-   ffastn = fq8 
+   ffastn = fq8
+
+   !Iron
+   fq0      = ffastfe                     !! how much organic Fe enters this box       (mol)
+   fq5      = (1._rk - fprotf)                    !! unprotected fraction of total organic Fe  (non-dim)
+   fq6      = (fq0 * fq5)                       !! how much organic Fe is unprotected        (mol)
+   fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected Fe leaves this box   (mol)
+   fq8      = (fq7 + (fq0 * fprotf))            !! how much total Fe leaves this box         (mol)            
+   freminfe = (fq0 - fq8) / dz                !! Fe remineralisation in this box           (mol)
+   ffastfe = fq8
+
+   !biogenic silicon
+   fq0      = ffastsi                       !! how much  opal centers this box           (mol) 
+   fq1      = fq0 * exp(-(dz / xfastsi))         !! how much  opal leaves this box            (mol)
+   freminsi = (fq0 - fq1) / dz                   !! Si remineralisation in this box           (mol)
+   ffastsi = fq1
    
-    ffastc  = ffastc + ftempc
+   !biogenic calcium carbonate
+  ! fq0      = ffastca                       !! how much CaCO3 enters this box            (mol)
+  ! if (fdep.le.fccd_dep) then
+  ! !! whole grid cell above CCD
+  ! fq1      = fq0                               !! above lysocline, no Ca dissolves          (mol)
+  ! freminca = 0.0                               !! above lysocline, no Ca dissolves          (mol)
+  ! fccd = real(jk)                       !! which is the last level above the CCD?    (#)
+  ! elseif (fdep.ge.fccd_dep) then
+  ! !! whole grid cell below CCD
+  ! fq1      = fq0 * exp(-(dz / xfastca))      !! how much CaCO3 leaves this box            (mol)
+  ! freminca = (fq0 - fq1) / dz                !! Ca remineralisation in this box           (mol)
+  ! else
+  ! !! partial grid cell below CCD
+  ! fq2      = fdep1 - fccd_dep                  !! amount of grid cell below CCD             (m)
+  ! fq1      = fq0 * exp(-(fq2 / xfastca))       !! how much CaCO3 leaves this box            (mol)
+  ! freminca = (fq0 - fq1) / dz                !! Ca remineralisation in this box           (mol)
+  ! endif
+  ! ffastca = fq1 
+
+    ffastc  = ffastc + ftempc * dz
+    ffastn  = ffastn  + ftempn * dz
+    ffastfe = ffastfe + ftempfe * dz
+    ffastsi = ffastsi + ftempsi * dz
+  !  ffastca = ffastca + ftempca
+    _SET_DIAGNOSTIC_(self%id_freminc,freminc)
+    _SET_DIAGNOSTIC_(self%id_freminn,freminn)
+    _SET_DIAGNOSTIC_(self%id_freminsi,freminsi)
 
    _VERTICAL_LOOP_END_
 
-   end subroutine fast_detritus
+   end subroutine do_fast_detritus
 
    subroutine do_surface(self,_ARGUMENTS_DO_SURFACE_)
 
@@ -706,7 +777,6 @@ contains
       ans1 = a0 + a1*ts + a2*ts2 + a3*ts3 + a4*ts4 + a5*ts5  &
              + ps*(b0 + b1*ts + b2*ts2 + b3*ts3)             &
              + c0*(ps*ps)
-
       ans2 = exp(ans1)
 
 !  Convert from ml/l to mol/m3
