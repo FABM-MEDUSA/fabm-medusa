@@ -3,6 +3,7 @@ module medusa_model_library
    use fabm_types, only: type_base_model_factory,type_base_model
 
    use medusa_pelagic
+   use medusa_oxygen
 
    implicit none
 
@@ -24,7 +25,7 @@ contains
 
       select case (name)
          case ('medusa_pelagic');                          allocate(type_medusa_pelagic::model)
-
+         case ('medusa_oxygen');                           allocate(type_medusa_oxygen::model)
          ! Add new models here
       end select
    end subroutine create

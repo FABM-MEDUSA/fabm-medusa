@@ -18,7 +18,6 @@ module medusa_pelagic
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
       type (type_dependency_id)            :: id_temp,id_par,id_depth,id_salt,id_dz,id_ftempc1,id_ftempn1,id_ftempsi1,id_ftempfe1,id_ftempca1,id_freminn1,id_freminc1,id_freminsi1
       type (type_diagnostic_variable_id)   :: id_dPAR,id_ftempc,id_ftempn,id_ftempfe,id_ftempsi,id_ftempca,id_aaa,id_freminn,id_freminc,id_freminsi
-      type (type_horizontal_diagnostic_variable_id) ::  id_fair
       type (type_horizontal_dependency_id)    :: id_apress,id_wnd
 
       ! Parameters
@@ -38,7 +37,6 @@ module medusa_pelagic
 
       procedure :: initialize
       procedure :: do
-      procedure :: do_surface
       procedure :: get_light => do_fast_detritus
 
   end type type_medusa_pelagic
@@ -141,7 +139,6 @@ contains
    call self%register_state_variable(self%id_ZOXY,'ZOXY','mmol O_2/m**3', 'dissolved oxygen', minimum=0.0_rk)
    ! Register diagnostic variables
    call self%register_diagnostic_variable(self%id_dPAR,'PAR','W m-2',       'photosynthetically active radiation', output=output_time_step_averaged)
-   call self%register_diagnostic_variable(self%id_fair,'fair','mmol O_2/m^2/d','Air-sea flux of oxygen')
    call self%register_diagnostic_variable(self%id_ftempc,'ftempc','mmol C/m^3/d','fast detritus carbon',missing_value=0._rk)
    call self%register_diagnostic_variable(self%id_ftempn,'ftempn','mmol N/m^3/d','fast detritus carbon',missing_value=0._rk)
    call self%register_diagnostic_variable(self%id_ftempsi,'ftempsi','mmol Si/m^3/d','fast detritus carbon',missing_value=0._rk)
@@ -192,6 +189,7 @@ contains
     real(rk) :: fslowc,fslown,fregen,fregensi,fregenc,ftempn,ftempsi,ftempfe,ftempc,fq1,fcaco3,ftempca
     real(rk) :: fn_prod,fn_cons,fs_cons,fs_prod,fc_cons,fc_prod,fa_prod,fa_cons,fo2_ccons,fo2_ncons,fo2_cons,fo2_prod
     real(rk) :: freminc,freminn,freminsi
+    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
     _LOOP_BEGIN_
 
@@ -434,37 +432,36 @@ contains
   fslown  = fdpn + fdzmi + ((1._rk - self%xfdfrac1) * fdpd) + ((1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetan) * (finmi + finme))
   fslowc  = (self%xthetapn * fdpn) + (self%xthetazmi * fdzmi) + (self%xthetapd * (1._rk - self%xfdfrac1) * fdpd) + (self%xthetazme * (1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetac) * (ficmi + ficme))
 
-  !Nutrient regeneration !Not necessary at all, should be saved as diagnostic of 
-  !nitrogen
-  fregen = (( (self%xphi * (fgmipn + fgmid)) +                            &  ! messy feeding
-  (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed)) +                     &  ! messy feeding
-  fmiexcr + fmeexcr + fdd +                                               &  ! excretion + D remin.
-  fdpn2 + fdpd2 + fdzmi2 + fdzme2))                                          ! linear mortality
+  !Nutrient regeneration !Should be saved as diagnostics
+!  fregen = (( (self%xphi * (fgmipn + fgmid)) +                            &  ! messy feeding
+!  (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed)) +                     &  ! messy feeding
+!  fmiexcr + fmeexcr + fdd +                                               &  ! excretion + D remin.
+!  fdpn2 + fdpd2 + fdzmi2 + fdzme2))                                          ! linear mortality
   !silicon
-  fregensi = (( fsdiss + ((1._rk - self%xfdfrac1) * fdpds) +              &  ! dissolution + non-lin. mortality
-  ((1._rk - self%xfdfrac3) * fgmepds) +                                   &  ! egestion by zooplankton
-  fdpds2))                                                                   ! linear mortality
+!  fregensi = (( fsdiss + ((1._rk - self%xfdfrac1) * fdpds) +              &  ! dissolution + non-lin. mortality
+!  ((1._rk - self%xfdfrac3) * fgmepds) +                                   &  ! egestion by zooplankton
+!  fdpds2))                                                                   ! linear mortality
   !carbon
-  fregenc  = (( (self%xphi * ((self%xthetapn * fgmipn) + fgmidc)) +       &  ! messy feeding
-  (self%xphi * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) +     &  ! messy feeding
-  (self%xthetazmi * fgmezmi) + fgmedc)) +                                 &  ! messy feeding
-  fmiresp + fmeresp + fddc +                                              &  ! respiration + D remin.
-  (self%xthetapn * fdpn2) + (self%xthetapd * fdpd2) +                     &  ! linear mortality
-  (self%xthetazmi * fdzmi2) + (self%xthetazme * fdzme2)))                    ! linear mortality
+!  fregenc  = (( (self%xphi * ((self%xthetapn * fgmipn) + fgmidc)) +       &  ! messy feeding
+!  (self%xphi * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) +     &  ! messy feeding
+! (self%xthetazmi * fgmezmi) + fgmedc)) +                                 &  ! messy feeding
+!  fmiresp + fmeresp + fddc +                                              &  ! respiration + D remin.
+!  (self%xthetapn * fdpn2) + (self%xthetapd * fdpd2) +                     &  ! linear mortality
+!  (self%xthetazmi * fdzmi2) + (self%xthetazme * fdzme2)))                    ! linear mortality
 
   ! Fast-sinking detritus terms
   ! nitrogen:   diatom and mesozooplankton mortality
   ftempn = (self%xfdfrac1 * fdpd)  + (self%xfdfrac2 * fdzme)
-  _SET_DIAGNOSTIC_(self%id_ftempn,ftempn)
+  _SET_DIAGNOSTIC_(self%id_ftempn,ftempn/d_per_s)
   ! silicon:    diatom mortality and grazed diatoms
   ftempsi = (self%xfdfrac1 * fdpds) + (self%xfdfrac3 * fgmepds)
-  _SET_DIAGNOSTIC_(self%id_ftempsi,ftempsi)
+  _SET_DIAGNOSTIC_(self%id_ftempsi,ftempsi/d_per_s)
   ! iron:       diatom and mesozooplankton mortality
   ftempfe = ((self%xfdfrac1 * fdpd) + (self%xfdfrac2 * fdzme)) * self%xrfn
-  _SET_DIAGNOSTIC_(self%id_ftempfe,ftempfe)
+  _SET_DIAGNOSTIC_(self%id_ftempfe,ftempfe/d_per_s)
   ! carbon:     diatom and mesozooplankton mortality
   ftempc = (self%xfdfrac1 * self%xthetapd * fdpd) + (self%xfdfrac2 * self%xthetazme * fdzme)
-  _SET_DIAGNOSTIC_(self%id_ftempc,ftempc)
+  _SET_DIAGNOSTIC_(self%id_ftempc,ftempc/d_per_s)
 
   ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
   !if (f3_omcal .ge. 1._rk) then !get f3_omcal!
@@ -509,8 +506,8 @@ contains
   ! dissolved silicic acid
    fs_cons = - (fprds * ZPDS)                                       ! opal production
    fs_prod = + fsdiss                                             &  ! opal dissolution
-             + ((1.0 - self%xfdfrac1) * fdpds)                    &  ! mort. loss
-             + ((1.0 - self%xfdfrac3) * fgmepds)                  &  ! egestion of grazed Si
+             + ((1.0_rk - self%xfdfrac1) * fdpds)                    &  ! mort. loss
+             + ((1.0_rk - self%xfdfrac3) * fgmepds)                  &  ! egestion of grazed Si
              + freminsi                                           &  ! fast dissolution
              + fdpds2                                                ! metab. losses
    _SET_ODE_(self%id_ZSIL,fs_prod + fs_cons)
@@ -611,9 +608,12 @@ contains
    real(rk) :: freminc,freminn,freminfe,freminsi,freminca
    real(rk) :: ffastc=0._rk,ffastn=0._rk,ffastca=0._rk,ffastsi=0._rk,ffastfe=0._rk
    real(rk) :: ftempc,ftempn,ftempfe,ftempsi,ftempca
+   real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
    _VERTICAL_LOOP_BEGIN_
 
+  ! NB: mineralisation in surface box must be 0._rk
+ 
     _GET_(self%id_ftempc1,ftempc)
     _GET_(self%id_ftempn1,ftempn)
     _GET_(self%id_ftempfe1,ftempfe)
@@ -624,67 +624,67 @@ contains
     _GET_(self%id_dz,dz) 
 
 !   !Carbon
-   fq0      = ffastc      !! how much organic C enters this box        (mol)
-   fq1      = (fq0 * xmassc)     !! how much it weighs                        (mass)
-   fq2      = 0. !(ffastca * xmassca)        !! how much CaCO3 enters this box            (mass)
-   fq3      = 0. !(ffastsi * xmasssi)        !! how much opal enters this box            (mass)
+   fq0      = ffastc                            !! how much organic C enters this box        (mol)
+   fq1      = (fq0 * xmassc)                    !! how much it weighs                        (mass)
+   fq2      = 0._rk !(ffastca * xmassca)           !! how much CaCO3 enters this box            (mass)
+   fq3      = 0._rk !(ffastsi * xmasssi)           !! how much opal enters this box            (mass)
    fq4      = (fq2 * xprotca) + (fq3 * xprotsi) !! total protected organic C                 (mass)
 !
 !   !! this next term is calculated for C but used for N and Fe as well
 !   !! it needs to be protected in case ALL C is protected
 !
    if (fq4.lt.fq1) then
-     fprotf   = (fq4 / (fq1 + tiny(fq1)))      !! protected fraction of total organic C     (non-dim)
+     fprotf   = (fq4 / (fq1 + tiny(fq1)))     !! protected fraction of total organic C     (non-dim)
    else
-     fprotf   = 1._rk                            !! all organic C is protected                (non-dim)
+     fprotf   = 1._rk                         !! all organic C is protected                (non-dim)
    endif
-   fq5      = (1._rk - fprotf)                    !! unprotected fraction of total organic C   (non-dim)
-   fq6      = (fq0 * fq5)                       !! how much organic C is unprotected         (mol)
+   fq5      = (1._rk - fprotf)                !! unprotected fraction of total organic C   (non-dim)
+   fq6      = (fq0 * fq5)                     !! how much organic C is unprotected         (mol)
    fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected C leaves this box    (mol)
-   fq8      = (fq7 + (fq0 * fprotf))            !! how much total C leaves this box          (mol)
-   freminc  = (fq0 - fq8) / dz            !! C remineralisation in this box            (mol)
+   fq8      = (fq7 + (fq0 * fprotf))          !! how much total C leaves this box          (mol)
+   freminc  = (fq0 - fq8) / dz                !! C remineralisation in this box            (mol)
    ffastc = fq8
                            
    !Nitrogen
-   fq0      = ffastn   !! how much organic N enters this box        (mol)
-   fq5      = (1._rk - fprotf)   !! unprotected fraction of total organic N   (non-dim)
-   fq6      = (fq0 * fq5)      !! how much organic N is unprotected         (mol)
+   fq0      = ffastn                          !! how much organic N enters this box        (mol)
+   fq5      = (1._rk - fprotf)                !! unprotected fraction of total organic N   (non-dim)
+   fq6      = (fq0 * fq5)                     !! how much organic N is unprotected         (mol)
    fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected N leaves this box    (mol)
-   fq8      = (fq7 + (fq0 * fprotf))            !! how much total N leaves this box          (mol)
+   fq8      = (fq7 + (fq0 * fprotf))          !! how much total N leaves this box          (mol)
    freminn  = (fq0 - fq8) / dz                !! N remineralisation in this box            (mol)
    ffastn = fq8
 
    !Iron
-   fq0      = ffastfe                     !! how much organic Fe enters this box       (mol)
-   fq5      = (1._rk - fprotf)                    !! unprotected fraction of total organic Fe  (non-dim)
-   fq6      = (fq0 * fq5)                       !! how much organic Fe is unprotected        (mol)
+   fq0      = ffastfe                         !! how much organic Fe enters this box       (mol)
+   fq5      = (1._rk - fprotf)                !! unprotected fraction of total organic Fe  (non-dim)
+   fq6      = (fq0 * fq5)                     !! how much organic Fe is unprotected        (mol)
    fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected Fe leaves this box   (mol)
-   fq8      = (fq7 + (fq0 * fprotf))            !! how much total Fe leaves this box         (mol)            
+   fq8      = (fq7 + (fq0 * fprotf))          !! how much total Fe leaves this box         (mol)            
    freminfe = (fq0 - fq8) / dz                !! Fe remineralisation in this box           (mol)
    ffastfe = fq8
 
    !biogenic silicon
-   fq0      = ffastsi                       !! how much  opal centers this box           (mol) 
-   fq1      = fq0 * exp(-(dz / xfastsi))         !! how much  opal leaves this box            (mol)
-   freminsi = (fq0 - fq1) / dz                   !! Si remineralisation in this box           (mol)
+   fq0      = ffastsi                         !! how much  opal centers this box           (mol) 
+   fq1      = fq0 * exp(-(dz / xfastsi))      !! how much  opal leaves this box            (mol)
+   freminsi = (fq0 - fq1) / dz                !! Si remineralisation in this box           (mol)
    ffastsi = fq1
    
    !biogenic calcium carbonate
-  ! fq0      = ffastca                       !! how much CaCO3 enters this box            (mol)
+  ! fq0      = ffastca                           !! how much CaCO3 enters this box            (mol)
   ! if (fdep.le.fccd_dep) then
   ! !! whole grid cell above CCD
   ! fq1      = fq0                               !! above lysocline, no Ca dissolves          (mol)
   ! freminca = 0.0                               !! above lysocline, no Ca dissolves          (mol)
-  ! fccd = real(jk)                       !! which is the last level above the CCD?    (#)
+  ! fccd = real(jk)                              !! which is the last level above the CCD?    (#)
   ! elseif (fdep.ge.fccd_dep) then
   ! !! whole grid cell below CCD
-  ! fq1      = fq0 * exp(-(dz / xfastca))      !! how much CaCO3 leaves this box            (mol)
-  ! freminca = (fq0 - fq1) / dz                !! Ca remineralisation in this box           (mol)
+  ! fq1      = fq0 * exp(-(dz / xfastca))        !! how much CaCO3 leaves this box            (mol)
+  ! freminca = (fq0 - fq1) / dz                  !! Ca remineralisation in this box           (mol)
   ! else
   ! !! partial grid cell below CCD
   ! fq2      = fdep1 - fccd_dep                  !! amount of grid cell below CCD             (m)
   ! fq1      = fq0 * exp(-(fq2 / xfastca))       !! how much CaCO3 leaves this box            (mol)
-  ! freminca = (fq0 - fq1) / dz                !! Ca remineralisation in this box           (mol)
+  ! freminca = (fq0 - fq1) / dz                  !! Ca remineralisation in this box           (mol)
   ! endif
   ! ffastca = fq1 
 
@@ -693,108 +693,12 @@ contains
     ffastfe = ffastfe + ftempfe * dz
     ffastsi = ffastsi + ftempsi * dz
   !  ffastca = ffastca + ftempca
-    _SET_DIAGNOSTIC_(self%id_freminc,freminc)
-    _SET_DIAGNOSTIC_(self%id_freminn,freminn)
-    _SET_DIAGNOSTIC_(self%id_freminsi,freminsi)
+    _SET_DIAGNOSTIC_(self%id_freminc,freminc*d_per_s)
+    _SET_DIAGNOSTIC_(self%id_freminn,freminn*d_per_s)
+    _SET_DIAGNOSTIC_(self%id_freminsi,freminsi*d_per_s)
 
    _VERTICAL_LOOP_END_
 
    end subroutine do_fast_detritus
-
-   subroutine do_surface(self,_ARGUMENTS_DO_SURFACE_)
-
-   class(type_medusa_pelagic),intent(in) :: self
-
-   _DECLARE_ARGUMENTS_DO_SURFACE_
-
-   real(rk) :: pt,ps,o2,o2_sato,o2_schmidt,kwo2,o2_sat,pp0,kw660,wnd,o2flux,o2sat
-   real(rk) :: a0 = 2.00907_rk
-   real(rk) :: a1 = 3.22014_rk
-   real(rk) :: a2 = 4.05010_rk
-   real(rk) :: a3 = 4.94457_rk
-   real(rk) :: a4 = -2.56847E-1_rk
-   real(rk) :: a5 = 3.88767_rk
-   real(rk) :: b0 = -6.24523E-3_rk
-   real(rk) :: b1 = -7.37614E-3_rk
-   real(rk) :: b2 = -1.03410E-2_rk
-   real(rk) :: b3 = -8.17083E-3_rk
-   real(rk) :: c0 = -4.88682E-7_rk
-   real(rk) :: tt,tk,ts,ts2,ts3,ts4,ts5
-   real(rk) :: ans1, ans2
-  ! Wanninkhof (2014) coefficients
-   real(rk) :: as0 = 1920.4_rk
-   real(rk) :: as1 = -135.6_rk
-   real(rk) :: as2 = 5.2121_rk
-   real(rk) :: as3 = -0.10939_rk
-   real(rk) :: as4 = 0.00093777_rk
-   real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
-   real(rk) :: a(7)
-   real(rk) :: b(7)
-   real(rk) :: tmp_k
-   data a(1) / 0.166_rk /  ! Liss & Merlivat (1986)    [approximated]
-   data a(2) / 0.3_rk /    ! Wanninkhof (1992)         [sans enhancement]
-   data a(3) / 0.23_rk /   ! Nightingale et al. (2000) [good]
-   data a(4) / 0.23_rk /   ! Nightingale et al. (2000) [better]
-   data a(5) / 0.222_rk /  ! Nightingale et al. (2000) [best]
-   data a(6) / 0.337_rk /  ! OCMIP-2                   [sans variability]
-   data a(7) / 0.251_rk /  ! Wanninkhof (2014)         [assumes 6h avg winds]
-   data b(1) / 0.133_rk /
-   data b(2) / 0.0_rk /
-   data b(3) / 0.0_rk /
-   data b(4) / 0.1_rk /
-   data b(5) / 0.333_rk /
-   data b(6) / 0.0_rk /
-   data b(7) / 0.0_rk /
-
-
-   _HORIZONTAL_LOOP_BEGIN_
-
-   _GET_(self%id_temp,pt)
-   _GET_(self%id_salt,ps)
-   _GET_(self%id_ZOXY,o2)
-   _GET_HORIZONTAL_(self%id_apress,pp0)
-   _GET_HORIZONTAL_(self%id_wnd,wnd)
-
-      o2 = o2/1000._rk
-
-! Calculate gas transfer velocity (cm/h)
-
-      tmp_k = (a(7) * wnd**2) + (b(7) * wnd)
-
-! Convert tmp_k from cm/h to m/s
-      kw660 = tmp_k / (3600._rk * 100._rk)
-
- !note: air-sea fluxes must be corrected for sea ice
-
-      tt   = 298.15_rk - pt
-      tk   = 273.15_rk + pt
-      ts   = log(tt / tk)
-      ts2  = ts**2_rk
-      ts3  = ts**3_rk
-      ts4  = ts**4_rk
-      ts5  = ts**5_rk
-
-      ans1 = a0 + a1*ts + a2*ts2 + a3*ts3 + a4*ts4 + a5*ts5  &
-             + ps*(b0 + b1*ts + b2*ts2 + b3*ts3)             &
-             + c0*(ps*ps)
-      ans2 = exp(ans1)
-
-!  Convert from ml/l to mol/m3
-   o2_sato = (ans2 / 22391.6_rk) * 1000.0_rk
-
-   o2_schmidt = as0 + pt*(as1 + pt*(as2 + pt*(as3 + pt*as4)))
-   kwo2 = kw660 * (660._rk / o2_schmidt)**0.5_rk
-   o2sat = o2_sato * pp0 / 101325._rk
-   !print*,pp0
-   
-   o2flux = kwo2 * (o2sat - o2)
-   o2flux = o2flux *1000.
-
-   _SET_SURFACE_EXCHANGE_(self%id_ZOXY, o2flux)
-   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fair, o2flux)
-
-   _HORIZONTAL_LOOP_END_
-
-   end subroutine do_surface
 
   end module medusa_pelagic

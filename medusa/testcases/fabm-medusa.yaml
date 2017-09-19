@@ -1,4 +1,9 @@
+check_conservation: true
 instances:
+  medusa_oxygen:
+    model: medusa/medusa_oxygen
+    coupling:
+      ZOXY: medusa_pelagic/ZOXY
   medusa_pelagic:
     model: medusa/medusa_pelagic
     parameters:
