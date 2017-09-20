@@ -123,6 +123,99 @@ contains
    end subroutine CO2_dynamics
 !----------------------------------------------------------------------
 !----------------------------------------------------------------------
+
+  subroutine CO2SET(P,T,S,AKVAL,NKVAL,IC) 
+
+      INTEGER             :: MAXK, MAXCON, NKVAL, ICON, IC, IK 
+      PARAMETER(MAXK=4,MAXCON=3) 
+      REAL(rk), DIMENSION(MAXK)        :: A, B, C 
+      REAL(rk), DIMENSION(MAXK,MAXCON) :: A0, A1, A2 
+      REAL(rk), DIMENSION(MAXK,MAXCON) :: B0, B1, B2 
+      REAL(rk), DIMENSION(NKVAL)       :: AKVAL 
+      REAL(rk)            :: P,T,S,VAL,TK, delta, kappa, Rgas 
+      REAL(rk)            :: dlogTK, S2, sqrtS, S15, k1, k2, kb 
+
+      DATA Rgas/83.131_rk/ 
+      DATA A/-167.8108_rk, 290.9097_rk, 207.6548_rk, 148.0248_rk/ 
+      DATA B/9345.17_rk, -14554.21_rk, -11843.79_rk, -8966.9_rk/ 
+      DATA C/23.3585_rk, -45.0575_rk, -33.6485_rk, -24.4344_rk/ 
+      DATA (A0(1,ICON),ICON=1,MAXCON) /3*0.0_rk/ 
+      DATA (A0(2,ICON),ICON=1,MAXCON) /0.0221_rk, 0.5709_rk, -45.8076_rk/ 
+      DATA (A0(3,ICON),ICON=1,MAXCON) /0.9805_rk, 1.4853_rk, -39.5492_rk/ 
+      DATA (A0(4,ICON),ICON=1,MAXCON) /0.0473_rk, 0.5998_rk, 0.5998_rk/ 
+      DATA (A1(1,ICON),ICON=1,MAXCON) /3*0.0_rk/ 
+      DATA (A1(2,ICON),ICON=1,MAXCON) /34.02_rk, -84.25_rk, 1935.07_rk/ 
+      DATA (A1(3,ICON),ICON=1,MAXCON) /-92.65_rk, -192.69_rk, 1590.14_rk/ 
+      DATA (A1(4,ICON),ICON=1,MAXCON) /49.10_rk, -75.25_rk, -75.25_rk/ 
+      DATA (A2(1,ICON),ICON=1,MAXCON) /3*0.0_rk/ 
+      DATA (A2(2,ICON),ICON=1,MAXCON) /2*0.0_rk,6.9513_rk/ 
+      DATA (A2(3,ICON),ICON=1,MAXCON) /2*0.0_rk,6.1523_rk/ 
+      DATA (A2(4,ICON),ICON=1,MAXCON) /3*0.0_rk/ 
+      DATA (B0(1,ICON),ICON=1,MAXCON) /3*0.023517_rk/ 
+      DATA (B0(2,ICON),ICON=1,MAXCON) /0.0_rk,-0.01632_rk,-0.01566_rk/ 
+      DATA (B0(3,ICON),ICON=1,MAXCON) /-0.03294_rk,-0.05058_rk,-0.04997_rk/ 
+      DATA (B0(4,ICON),ICON=1,MAXCON) /0.0_rk, -0.01767_rk, -0.01767_rk/ 
+      DATA (B1(1,ICON),ICON=1,MAXCON) /3*-2.3656e-4_rk/ 
+      DATA (B1(2,ICON),ICON=1,MAXCON) /3*0.0_rk/ 
+      DATA (B1(3,ICON),ICON=1,MAXCON) /3*0.0_rk/ 
+      DATA (B1(4,ICON),ICON=1,MAXCON) /3*0.0_rk/ 
+      DATA (B2(1,ICON),ICON=1,MAXCON) /3*4.7036e-7_rk/ 
+      DATA (B2(2,ICON),ICON=1,MAXCON) /3*0.0_rk/ 
+      DATA (B2(3,ICON),ICON=1,MAXCON) /3*0.0_rk/ 
+      DATA (B2(4,ICON),ICON=1,MAXCON) /3*0.0_rk/ 
+
+      TK=T+273.15_rk 
+
+      DO 100 IK=1,NKVAL 
+        VAL=A(IK) + B(IK)/TK + C(IK)*LOG(TK) 
+        VAL=VAL + (A0(IK,IC) + A1(IK,IC)/TK + A2(IK,IC)*LOG(TK))*SQRT(S) 
+        VAL=VAL + (B0(IK,IC) + B1(IK,IC)*TK + B2(IK,IC)*TK*TK)*S 
+        AKVAL(IK)=EXP(VAL)
+100    CONTINUE 
+
+      IF (IC .EQ. 3) THEN 
+
+        dlogTK = log(TK)
+        S2 = S*S
+        sqrtS = sqrt(S)
+        S15 = S**1.5_rk
+
+        k1=10.**(-1.*(3670.7/TK - 62.008 + 9.7944*dlogTK - &
+     &          0.0118 * S + 0.000116*S2))
+
+        k2=10.**(-1.*(1394.7/TK + 4.777 - &
+     &          0.0184*S + 0.000118*S2))
+
+        delta=-25.5+0.1271*T
+        kappa=(-3.08+0.0877*T)/1000.0
+        k1=k1*exp((-delta+0.5*kappa*P)*P/(Rgas*TK))
+
+        delta=-15.82-0.0219*T
+        kappa=(1.13-0.1475*T)/1000.0
+        k2=k2*exp((-delta+0.5*kappa*P)*P/(Rgas*TK))
+
+        kb=exp((-8966.90 - 2890.53*sqrtS - 77.942*S + &
+     &          1.728*S15 - 0.0996*S2)/TK + &
+     &          (148.0248 + 137.1942*sqrtS + 1.62142*S) + &
+     &          (-24.4344 - 25.085*sqrtS - 0.2474*S) * &
+     &          dlogTK + 0.053105*sqrtS*TK)
+
+        delta=-29.48+0.1622*T-0.002608*T**2.0 
+        kappa=-2.84/1000.0 
+        kb=kb*exp((-delta+0.5*kappa*P)*P/(Rgas*TK)) 
+
+        delta=-25.60+0.2324*T-0.0036246*T**2 
+        kappa=(-5.13+0.0794*T)/1000.0 
+
+      AKVAL(1)=AKVAL(1)*exp((-delta+0.5*kappa*P)*P/(Rgas*TK))
+      AKVAL(2) = k1
+      AKVAL(3) = k2
+      AKVAL(4) = kb 
+
+      end if
+   end subroutine
+!----------------------------------------------------------------------
+!----------------------------------------------------------------------
    subroutine CaCO3_Saturation (Tc, S, D, CO3, Om_cal, Om_arg)
          real(rk),intent(in)  :: Tc, S, D, CO3
          real(rk),intent(out) :: Om_cal, Om_arg
@@ -173,6 +266,5 @@ contains
         Om_arg = (CO3 * Ca) / Kspa
 
       end subroutine CaCO3_SATURATION
-
 
 end module
