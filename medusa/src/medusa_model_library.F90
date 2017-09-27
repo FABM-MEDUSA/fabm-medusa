@@ -4,6 +4,7 @@ module medusa_model_library
 
    use medusa_pelagic
    use medusa_oxygen
+   use medusa_carbonate
 
    implicit none
 
@@ -26,6 +27,7 @@ contains
       select case (name)
          case ('medusa_pelagic');                          allocate(type_medusa_pelagic::model)
          case ('medusa_oxygen');                           allocate(type_medusa_oxygen::model)
+         case ('medusa_carbonate');                        allocate(type_medusa_carbonate::model)
          ! Add new models here
       end select
    end subroutine create
