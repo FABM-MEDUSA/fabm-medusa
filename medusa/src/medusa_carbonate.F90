@@ -71,8 +71,13 @@ contains
          _GET_(self%id_dens,density)
          _GET_(self%id_pres,pres)
 
-   call CO2_dynamics(temp,salt,depth,ZDIC,ZALK,pCO2a,pco2w,ph,h2co3,hco3,co3,henry,om_cal,om_arg,TDIC,TALK,dcf,iters) 
+   call CO2_dynamics(temp,salt,depth,ZDIC,ZALK,pCO2a,pco2w,ph,h2co3,hco3,co3,henry,om_cal,om_arg,TDIC,TALK,dcf,iters)
 
+    _SET_DIAGNOSTIC_(self%id_ph,pH)
+    _SET_DIAGNOSTIC_(self%id_pco2,pco2w)
+    _SET_DIAGNOSTIC_(self%id_CarbA, h2co3)
+    _SET_DIAGNOSTIC_(self%id_Bicarb,hco3)
+    _SET_DIAGNOSTIC_(self%id_Carb,  co3)
     _SET_DIAGNOSTIC_(self%id_Om_cal,Om_cal)
     _SET_DIAGNOSTIC_(self%id_Om_arg,Om_arg)
 
@@ -464,9 +469,7 @@ contains
 ! ACCEPTABLE ITTERATIONS.  SET C_SW TO LET MODEL KNOW
 ! WHAT TO DO AT THE END OF THE SUBROUTINE 
 
-
           if(counter.ge.c_check)then
-
              c_sw=1
              GOTO 123
 
