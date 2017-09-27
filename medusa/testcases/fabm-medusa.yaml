@@ -94,8 +94,18 @@ instances:
       ZDTC: 0.5
       ZZMI: 0.5
       ZZME: 0.5
-      ZALK: 0.5
+      ZALK: 2200.
       ZDIC: 2000.
       ZOXY: 300.
-
-
+    coupling:
+      freminc: medusa_fast_detritus/freminc
+      freminn: medusa_fast_detritus/freminn
+      freminsi: medusa_fast_detritus/freminsi
+  medusa_fast_detritus:
+    model: medusa/medusa_fast_detritus
+    coupling:
+      ftempc: medusa_pelagic/ftempc
+      ftempn: medusa_pelagic/ftempn
+      ftempfe: medusa_pelagic/ftempfe
+      ftempsi: medusa_pelagic/ftempsi
+      ftempca: medusa_pelagic/ftempca

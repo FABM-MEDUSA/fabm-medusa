@@ -17,7 +17,7 @@ module medusa_fast_detritus
   type,extends(type_base_model),public :: type_medusa_fast_detritus
       ! Variable identifiers
       type (type_dependency_id)            :: id_dz
-      type (type_dependency_id)            :: id_ftempc1,id_ftempn1,id_ftempsi1,id_ftempfe1,id_ftempca1
+      type (type_dependency_id)            :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca
       type (type_diagnostic_variable_id)   :: id_freminc,id_freminn,id_freminsi
       ! Parameters
 
@@ -37,11 +37,11 @@ contains
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
 
-   call self%register_dependency(self%id_ftempc1, 'ftempc', '', 'sth')
-   call self%register_dependency(self%id_ftempn1, 'ftempn', '', 'sth')
-   call self%register_dependency(self%id_ftempfe1, 'ftempfe', '', 'sth')
-   call self%register_dependency(self%id_ftempsi1, 'ftempsi', '', 'sth')
-   call self%register_dependency(self%id_ftempca1, 'ftempca', '', 'sth')
+   call self%register_dependency(self%id_ftempc, 'ftempc', '', 'sth')
+   call self%register_dependency(self%id_ftempn, 'ftempn', '', 'sth')
+   call self%register_dependency(self%id_ftempfe, 'ftempfe', '', 'sth')
+   call self%register_dependency(self%id_ftempsi, 'ftempsi', '', 'sth')
+   call self%register_dependency(self%id_ftempca, 'ftempca', '', 'sth')
 
    call self%register_diagnostic_variable(self%id_freminc,'freminc','mmol C/m^3/d','ccc',missing_value=0._rk)
    call self%register_diagnostic_variable(self%id_freminn,'freminn','mmol N/m^3/d','ccc',missing_value=0._rk)
@@ -71,11 +71,11 @@ contains
 
   ! NB: mineralisation in surface box must be 0._rk
  
-    _GET_(self%id_ftempc1,ftempc)
-    _GET_(self%id_ftempn1,ftempn)
-    _GET_(self%id_ftempfe1,ftempfe)
-    _GET_(self%id_ftempsi1,ftempsi)
-    _GET_(self%id_ftempca1,ftempca)
+    _GET_(self%id_ftempc,ftempc)
+    _GET_(self%id_ftempn,ftempn)
+    _GET_(self%id_ftempfe,ftempfe)
+    _GET_(self%id_ftempsi,ftempsi)
+    _GET_(self%id_ftempca,ftempca)
 
     _GET_(self%id_dz,dz)
 

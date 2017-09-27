@@ -16,7 +16,7 @@ module medusa_pelagic
   type,extends(type_base_model),public :: type_medusa_pelagic
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
-      type (type_dependency_id)            :: id_temp,id_par,id_depth,id_salt,id_freminn1,id_freminc1,id_freminsi1
+      type (type_dependency_id)            :: id_temp,id_par,id_depth,id_salt,id_freminn,id_freminc,id_freminsi
       type (type_diagnostic_variable_id)   :: id_dPAR,id_ftempc,id_ftempn,id_ftempfe,id_ftempsi,id_ftempca
 
       ! Parameters
@@ -144,9 +144,9 @@ contains
    call self%register_diagnostic_variable(self%id_ftempsi,'ftempsi','mmol Si/m^3/d','fast detritus carbon',missing_value=0._rk)
    call self%register_diagnostic_variable(self%id_ftempfe,'ftempfe','mmol Fe/m^3/d','fast detritus carbon',missing_value=0._rk)
    call self%register_diagnostic_variable(self%id_ftempca,'ftempca','mmol CaCO3/m^3/d','fast detritus carbon',missing_value=0._rk)
-   call self%register_dependency(self%id_freminc1, 'freminc', '', 'sth')
-   call self%register_dependency(self%id_freminn1, 'freminn', '', 'sth')
-   call self%register_dependency(self%id_freminsi1, 'freminsi', '', 'sth')
+   call self%register_dependency(self%id_freminc, 'freminc', '', 'sth')
+   call self%register_dependency(self%id_freminn, 'freminn', '', 'sth')
+   call self%register_dependency(self%id_freminsi, 'freminsi', '', 'sth')
 
    ! Register environmental dependencies
    call self%register_dependency(self%id_temp, standard_variables%temperature)
@@ -203,9 +203,9 @@ contains
     _GET_(self%id_par,par) !check PAR // what about self-shading?
     _GET_(self%id_depth,depth)
 
-    _GET_(self%id_freminc1,freminc)
-    _GET_(self%id_freminn1,freminn)
-    _GET_(self%id_freminsi1,freminsi)
+    _GET_(self%id_freminc,freminc)
+    _GET_(self%id_freminn,freminn)
+    _GET_(self%id_freminsi,freminsi)
 
    !PHYTOPLANKTON GROWTH
    !Chlorophyll
