@@ -3,6 +3,7 @@ module medusa_model_library
    use fabm_types, only: type_base_model_factory,type_base_model
 
    use medusa_pelagic
+   use medusa_fast_detritus
    use medusa_oxygen
    use medusa_carbonate
 
@@ -26,6 +27,8 @@ contains
 
       select case (name)
          case ('medusa_pelagic');                          allocate(type_medusa_pelagic::model)
+         case ('medusa_fast_detritus');
+allocate(type_medusa_fast_detritus::model)
          case ('medusa_oxygen');                           allocate(type_medusa_oxygen::model)
          case ('medusa_carbonate');                        allocate(type_medusa_carbonate::model)
          ! Add new models here

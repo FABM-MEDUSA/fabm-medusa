@@ -1,0 +1,160 @@
+#include "fabm_driver.h"
+
+!
+!*********************************************************
+!            FABM-MEDUSA fast detritus mineralisation
+!                    and implicit sinking
+!*********************************************************
+
+module medusa_fast_detritus
+
+   use fabm_types
+
+   implicit none
+
+   private
+
+  type,extends(type_base_model),public :: type_medusa_fast_detritus
+      ! Variable identifiers
+      type (type_dependency_id)            :: id_dz
+      type (type_dependency_id)            :: id_ftempc1,id_ftempn1,id_ftempsi1,id_ftempfe1,id_ftempca1
+      type (type_diagnostic_variable_id)   :: id_freminc,id_freminn,id_freminsi
+      ! Parameters
+
+   contains
+
+      procedure :: initialize
+      procedure :: get_light => do_fast_detritus
+
+  end type type_medusa_fast_detritus
+
+contains
+
+   subroutine initialize(self,configunit)
+
+   class(type_medusa_fast_detritus),intent(inout),target :: self
+   integer,               intent(in)           :: configunit
+   real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
+
+
+   call self%register_dependency(self%id_ftempc1, 'ftempc', '', 'sth')
+   call self%register_dependency(self%id_ftempn1, 'ftempn', '', 'sth')
+   call self%register_dependency(self%id_ftempfe1, 'ftempfe', '', 'sth')
+   call self%register_dependency(self%id_ftempsi1, 'ftempsi', '', 'sth')
+   call self%register_dependency(self%id_ftempca1, 'ftempca', '', 'sth')
+
+   call self%register_diagnostic_variable(self%id_freminc,'freminc','mmol C/m^3/d','ccc',missing_value=0._rk)
+   call self%register_diagnostic_variable(self%id_freminn,'freminn','mmol N/m^3/d','ccc',missing_value=0._rk)
+   call self%register_diagnostic_variable(self%id_freminsi,'freminsi','mmol Si/m^3/d','ccc',missing_value=0._rk)
+
+   call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
+   end subroutine initialize
+
+   subroutine do_fast_detritus(self,_ARGUMENTS_VERTICAL_)
+   class(type_medusa_fast_detritus),intent(in) :: self
+   
+   _DECLARE_ARGUMENTS_VERTICAL_
+
+   real(rk) :: dz,fq0,fq1,fq2,fq3,fq4,fq5,fq6,fq7,fq8,fprotf
+   real(rk) :: xmassc = 12.011_rk
+   real(rk) :: xmassca = 100.086_rk
+   real(rk) :: xmasssi = 60.084_rk
+   real(rk) :: xprotca = 0.07_rk
+   real(rk) :: xprotsi = 0.026_rk
+   real(rk) :: xfastc = 188._rk, xfastsi = 2000._rk
+   real(rk) :: freminc,freminn,freminfe,freminsi,freminca
+   real(rk) :: ffastc=0._rk,ffastn=0._rk,ffastca=0._rk,ffastsi=0._rk,ffastfe=0._rk
+   real(rk) :: ftempc,ftempn,ftempfe,ftempsi,ftempca
+   real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
+
+   _VERTICAL_LOOP_BEGIN_
+
+  ! NB: mineralisation in surface box must be 0._rk
+ 
+    _GET_(self%id_ftempc1,ftempc)
+    _GET_(self%id_ftempn1,ftempn)
+    _GET_(self%id_ftempfe1,ftempfe)
+    _GET_(self%id_ftempsi1,ftempsi)
+    _GET_(self%id_ftempca1,ftempca)
+
+    _GET_(self%id_dz,dz)
+
+!   !Carbon
+   fq0      = ffastc                            !! how much organic C enters this box        (mol)
+   fq1      = (fq0 * xmassc)                    !! how much it weighs                        (mass)
+   fq2      = 0._rk !(ffastca * xmassca)           !! how much CaCO3 enters this box            (mass)
+   fq3      = 0._rk !(ffastsi * xmasssi)           !! how much opal enters this box            (mass)
+   fq4      = (fq2 * xprotca) + (fq3 * xprotsi) !! total protected organic C                 (mass)
+!
+!   !! this next term is calculated for C but used for N and Fe as well
+!   !! it needs to be protected in case ALL C is protected
+!
+   if (fq4.lt.fq1) then
+     fprotf   = (fq4 / (fq1 + tiny(fq1)))     !! protected fraction of total organic C     (non-dim)
+   else
+     fprotf   = 1._rk                         !! all organic C is protected                (non-dim)
+   endif
+   fq5      = (1._rk - fprotf)                !! unprotected fraction of total organic C   (non-dim)
+   fq6      = (fq0 * fq5)                     !! how much organic C is unprotected         (mol)
+   fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected C leaves this box    (mol)
+   fq8      = (fq7 + (fq0 * fprotf))          !! how much total C leaves this box          (mol)
+   freminc  = (fq0 - fq8) / dz                !! C remineralisation in this box            (mol)
+   ffastc = fq8
+
+   !Nitrogen
+   fq0      = ffastn                          !! how much organic N enters this box        (mol)
+   fq5      = (1._rk - fprotf)                !! unprotected fraction of total organic N   (non-dim)
+   fq6      = (fq0 * fq5)                     !! how much organic N is unprotected         (mol)
+   fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected N leaves this box    (mol)
+   fq8      = (fq7 + (fq0 * fprotf))          !! how much total N leaves this box          (mol)
+   freminn  = (fq0 - fq8) / dz                !! N remineralisation in this box            (mol)
+   ffastn = fq8
+
+   !Iron
+   fq0      = ffastfe                         !! how much organic Fe enters this box       (mol)
+   fq5      = (1._rk - fprotf)                !! unprotected fraction of total organic Fe  (non-dim)
+   fq6      = (fq0 * fq5)                     !! how much organic Fe is unprotected        (mol)
+   fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected Fe leaves this box   (mol)
+   fq8      = (fq7 + (fq0 * fprotf))          !! how much total Fe leaves this box         (mol)            
+   freminfe = (fq0 - fq8) / dz                !! Fe remineralisation in this box           (mol)
+   ffastfe = fq8
+
+   !biogenic silicon
+   fq0      = ffastsi                         !! how much  opal centers this box           (mol) 
+   fq1      = fq0 * exp(-(dz / xfastsi))      !! how much  opal leaves this box            (mol)
+   freminsi = (fq0 - fq1) / dz                !! Si remineralisation in this box           (mol)
+   ffastsi = fq1
+
+   !biogenic calcium carbonate
+  ! fq0      = ffastca                           !! how much CaCO3 enters this box            (mol)
+  ! if (fdep.le.fccd_dep) then
+  ! !! whole grid cell above CCD
+  ! fq1      = fq0                               !! above lysocline, no Ca dissolves          (mol)
+  ! freminca = 0.0                               !! above lysocline, no Ca dissolves          (mol)
+  ! fccd = real(jk)                              !! which is the last level above the CCD?    (#)
+  ! elseif (fdep.ge.fccd_dep) then
+  ! !! whole grid cell below CCD
+  ! fq1      = fq0 * exp(-(dz / xfastca))        !! how much CaCO3 leaves this box            (mol)
+  ! freminca = (fq0 - fq1) / dz                  !! Ca remineralisation in this box           (mol)
+  ! else
+  ! !! partial grid cell below CCD
+  ! fq2      = fdep1 - fccd_dep                  !! amount of grid cell below CCD             (m)
+  ! fq1      = fq0 * exp(-(fq2 / xfastca))       !! how much CaCO3 leaves this box            (mol)
+  ! freminca = (fq0 - fq1) / dz                  !! Ca remineralisation in this box           (mol)
+  ! endif
+  ! ffastca = fq1 
+
+    ffastc  = ffastc + ftempc * dz
+    ffastn  = ffastn  + ftempn * dz
+    ffastfe = ffastfe + ftempfe * dz
+    ffastsi = ffastsi + ftempsi * dz
+  !  ffastca = ffastca + ftempca
+    _SET_DIAGNOSTIC_(self%id_freminc,freminc*d_per_s)
+    _SET_DIAGNOSTIC_(self%id_freminn,freminn*d_per_s)
+    _SET_DIAGNOSTIC_(self%id_freminsi,freminsi*d_per_s)
+
+   _VERTICAL_LOOP_END_
+
+   end subroutine do_fast_detritus
+
+end module medusa_fast_detritus
