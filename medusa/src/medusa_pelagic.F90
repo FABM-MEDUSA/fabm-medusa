@@ -16,9 +16,9 @@ module medusa_pelagic
   type,extends(type_base_model),public :: type_medusa_pelagic
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
-      type (type_dependency_id)            :: id_temp,id_par,id_depth,id_salt,id_freminn,id_freminc,id_freminsi
-      type (type_diagnostic_variable_id)   :: id_dPAR,id_ftempc,id_ftempn,id_ftempfe,id_ftempsi,id_ftempca
-
+      type (type_dependency_id)            :: id_temp,id_par,id_depth,id_salt
+      type (type_diagnostic_variable_id)   :: id_dPAR
+      type (type_diagnostic_variable_id)   :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca
       ! Parameters
       logical :: jliebig
       real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xnsi0,xuif,xthetam,xthetamd
@@ -139,14 +139,10 @@ contains
    ! Register diagnostic variables
    call self%register_diagnostic_variable(self%id_dPAR,'PAR','W m-2',       'photosynthetically active radiation', output=output_time_step_averaged)
 
-   call self%register_diagnostic_variable(self%id_ftempc,'ftempc','mmol C/m^3/d','fast detritus carbon',missing_value=0._rk)
-   call self%register_diagnostic_variable(self%id_ftempn,'ftempn','mmol N/m^3/d','fast detritus carbon',missing_value=0._rk)
-   call self%register_diagnostic_variable(self%id_ftempsi,'ftempsi','mmol Si/m^3/d','fast detritus carbon',missing_value=0._rk)
-   call self%register_diagnostic_variable(self%id_ftempfe,'ftempfe','mmol Fe/m^3/d','fast detritus carbon',missing_value=0._rk)
-   call self%register_diagnostic_variable(self%id_ftempca,'ftempca','mmol CaCO3/m^3/d','fast detritus carbon',missing_value=0._rk)
-   call self%register_dependency(self%id_freminc, 'freminc', '', 'sth')
-   call self%register_dependency(self%id_freminn, 'freminn', '', 'sth')
-   call self%register_dependency(self%id_freminsi, 'freminsi', '', 'sth')
+   call self%register_diagnostic_variable(self%id_ftempn,'ftempn','-','-', output=output_time_step_averaged)
+   call self%register_diagnostic_variable(self%id_ftempc,'ftempc','-','-', output=output_time_step_averaged)
+   call self%register_diagnostic_variable(self%id_ftempsi,'ftempsi','-','-', output=output_time_step_averaged)
+   call self%register_diagnostic_variable(self%id_ftempfe,'ftempfe','-','-', output=output_time_step_averaged)
 
    ! Register environmental dependencies
    call self%register_dependency(self%id_temp, standard_variables%temperature)
@@ -202,10 +198,6 @@ contains
     _GET_(self%id_temp,loc_T)
     _GET_(self%id_par,par) !check PAR // what about self-shading?
     _GET_(self%id_depth,depth)
-
-    _GET_(self%id_freminc,freminc)
-    _GET_(self%id_freminn,freminn)
-    _GET_(self%id_freminsi,freminsi)
 
    !PHYTOPLANKTON GROWTH
    !Chlorophyll
@@ -441,16 +433,16 @@ contains
   ! Fast-sinking detritus terms
   ! nitrogen:   diatom and mesozooplankton mortality
   ftempn = (self%xfdfrac1 * fdpd)  + (self%xfdfrac2 * fdzme)
-  _SET_DIAGNOSTIC_(self%id_ftempn,ftempn/d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ftempn,ftempn)
   ! silicon:    diatom mortality and grazed diatoms
   ftempsi = (self%xfdfrac1 * fdpds) + (self%xfdfrac3 * fgmepds)
-  _SET_DIAGNOSTIC_(self%id_ftempsi,ftempsi/d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ftempsi,ftempsi)
   ! iron:       diatom and mesozooplankton mortality
   ftempfe = ((self%xfdfrac1 * fdpd) + (self%xfdfrac2 * fdzme)) * self%xrfn
-  _SET_DIAGNOSTIC_(self%id_ftempfe,ftempfe/d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ftempfe,ftempfe)
   ! carbon:     diatom and mesozooplankton mortality
   ftempc = (self%xfdfrac1 * self%xthetapd * fdpd) + (self%xfdfrac2 * self%xthetazme * fdzme)
-  _SET_DIAGNOSTIC_(self%id_ftempc,ftempc/d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ftempc,ftempc)
 
   ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
   !if (f3_omcal .ge. 1._rk) then !get f3_omcal!
@@ -487,7 +479,7 @@ contains
    fn_prod = + (self%xphi * (fgmipn + fgmid))                     &  ! messy feeding remin.
              + (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed))  &  ! messy feeding remin.
              + fmiexcr + fmeexcr + fdd                            &  ! excretion and remin.
-             + freminn                                            &  ! fast mineralisation
+          !   + freminn                                            &  ! fast mineralisation
              + fdpn2 + fdpd2 + fdzmi2 + fdzme2                       ! metab. losses
 
    _SET_ODE_(self%id_ZDIN,fn_prod + fn_cons)
@@ -497,7 +489,7 @@ contains
    fs_prod = + fsdiss                                             &  ! opal dissolution
              + ((1.0_rk - self%xfdfrac1) * fdpds)                    &  ! mort. loss
              + ((1.0_rk - self%xfdfrac3) * fgmepds)                  &  ! egestion of grazed Si
-             + freminsi                                           &  ! fast dissolution
+        !     + freminsi                                           &  ! fast dissolution
              + fdpds2                                                ! metab. losses
    _SET_ODE_(self%id_ZSIL,fs_prod + fs_cons)
 
@@ -517,7 +509,7 @@ contains
              + (self%xthetapn * self%xphi * fgmepn) + (self%xthetapd * self%xphi * fgmepd)     &  ! messy feeding remin
              + (self%xthetazmi * self%xphi * fgmezmi) + (self%xphi * fgmedc)                   &  ! messy feeding remin
              + fmiresp + fmeresp + fddc                                                        &
-             + freminc                                                                         &
+           !  + freminc                                                                         &
              + (self%xthetapn * fdpn2)                                                         &  ! resp., remin., losses
              + (self%xthetapd * fdpd2) + (self%xthetazmi * fdzmi2)                             &  ! losses
              + (self%xthetazme * fdzme2)                                                          ! losses
@@ -546,7 +538,7 @@ contains
                - (self%xthetanit * fmiexcr)                                               & ! microzoo excretion, N
                - (self%xthetanit * fmeexcr)                                               & ! mesozoo  excretion, N
                - (self%xthetanit * fdd)                                                   & ! slow detritus remin., N
-               - (self%xthetanit * freminn)                                               & ! fast detritus remin., N
+         !      - (self%xthetanit * freminn)                                               & ! fast detritus remin., N
                - (self%xthetanit * fdpn2)                                                 & ! Pn  losses, N
                - (self%xthetanit * fdpd2)                                                 & ! Pd  losses, N
                - (self%xthetanit * fdzmi2)                                                & ! Zmi losses, N
@@ -561,7 +553,7 @@ contains
                - (self%xthetarem * fmiresp)                                               & ! microzoo respiration, C
                - (self%xthetarem * fmeresp)                                               & ! mesozoo  respiration, C
                - (self%xthetarem * fddc)                                                  & ! slow detritus remin., C
-               - (self%xthetarem * freminc)                                               & ! fast detritus remin., C
+         !      - (self%xthetarem * freminc)                                               & ! fast detritus remin., C
                - (self%xthetarem * self%xthetapn * fdpn2)                                 & ! Pn  losses, C
                - (self%xthetarem * self%xthetapd * fdpd2)                                 & ! Pd  losses, C
                - (self%xthetarem * self%xthetazmi * fdzmi2)                               & ! Zmi losses, C
@@ -569,7 +561,7 @@ contains
 
    fo2_cons = fo2_ncons + fo2_ccons
 
-   if (zoxy .lt. self%xo2min) then                     ! deficient O2; production fluxes only
+   if (ZOXY .lt. self%xo2min) then                     ! deficient O2; production fluxes only
       _SET_ODE_(self%id_ZOXY, fo2_prod )
    else                                                ! sufficient O2; production + consumption fluxes
       _SET_ODE_(self%id_ZOXY, fo2_prod + fo2_cons )

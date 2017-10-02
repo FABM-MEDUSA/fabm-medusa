@@ -16,15 +16,18 @@ module medusa_fast_detritus
 
   type,extends(type_base_model),public :: type_medusa_fast_detritus
       ! Variable identifiers
+      type (type_state_variable_id)        :: id_ZDIC,id_ZDIN,id_ZSIL,id_ZOXY
       type (type_dependency_id)            :: id_dz
-      type (type_dependency_id)            :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca
-      type (type_diagnostic_variable_id)   :: id_freminc,id_freminn,id_freminsi
+      type (type_dependency_id)            :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca,id_freminc1,id_freminn1,id_freminsi1 
+      type (type_diagnostic_variable_id)   :: id_freminc,id_freminn,id_freminsi  
       ! Parameters
+      real(rk) :: xthetanit,xthetarem,xo2min
 
    contains
 
       procedure :: initialize
       procedure :: get_light => do_fast_detritus
+      procedure :: do
 
   end type type_medusa_fast_detritus
 
@@ -35,17 +38,28 @@ contains
    class(type_medusa_fast_detritus),intent(inout),target :: self
    integer,               intent(in)           :: configunit
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
-
+   call self%get_parameter(self%xthetanit,'xthetanit','mol O_2 mol N-1','O2 consumption by N remineralisation',default=2.0_rk)
+   call self%get_parameter(self%xthetarem,'xthetarem','mol O_2 mol C-1','O2 consumption by C remineralisation',default=1.1226_rk)
+   call self%get_parameter(self%xo2min,'xo2min','mmol O_2 m-3','minimum O2 concentration',default=4.0_rk)
 
    call self%register_dependency(self%id_ftempc, 'ftempc', '', 'sth')
    call self%register_dependency(self%id_ftempn, 'ftempn', '', 'sth')
-   call self%register_dependency(self%id_ftempfe, 'ftempfe', '', 'sth')
-   call self%register_dependency(self%id_ftempsi, 'ftempsi', '', 'sth')
-   call self%register_dependency(self%id_ftempca, 'ftempca', '', 'sth')
+   call self%register_dependency(self%id_ftempfe,'ftempfe', '', 'sth')
+   call self%register_dependency(self%id_ftempsi,'ftempsi', '', 'sth')
+  ! call self%register_dependency(self%id_ftempca,'ftempca', '', 'sth')
 
-   call self%register_diagnostic_variable(self%id_freminc,'freminc','mmol C/m^3/d','ccc',missing_value=0._rk)
-   call self%register_diagnostic_variable(self%id_freminn,'freminn','mmol N/m^3/d','ccc',missing_value=0._rk)
-   call self%register_diagnostic_variable(self%id_freminsi,'freminsi','mmol Si/m^3/d','ccc',missing_value=0._rk)
+   call self%register_state_dependency(self%id_ZOXY,'ZOXY','mmol O_2/m**3', 'dissolved oxygen')
+   call self%register_state_dependency(self%id_ZDIN,'ZDIN','mmol N/m**3', 'nitrogen nutrient')
+   call self%register_state_dependency(self%id_ZSIL,'ZSIL','mmol Si/m**3', 'silicic acid')
+   call self%register_state_dependency(self%id_ZDIC,'ZDIC','mmol C/m**3', 'dissolved inorganic carbon')
+
+   call self%register_diagnostic_variable(self%id_freminc,'freminc','-','-')
+   call self%register_diagnostic_variable(self%id_freminn,'freminn','-','-')
+   call self%register_diagnostic_variable(self%id_freminsi,'freminsi','-','-')
+
+   call self%register_dependency(self%id_freminc1,'freminc','-','-')
+   call self%register_dependency(self%id_freminn1,'freminn','-','-')
+   call self%register_dependency(self%id_freminsi1,'freminsi','-','-')
 
    call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
    end subroutine initialize
@@ -61,29 +75,22 @@ contains
    real(rk) :: xmasssi = 60.084_rk
    real(rk) :: xprotca = 0.07_rk
    real(rk) :: xprotsi = 0.026_rk
-   real(rk) :: xfastc = 188._rk, xfastsi = 2000._rk
-   real(rk) :: freminc,freminn,freminfe,freminsi,freminca
+   real(rk) :: xfastc = 188_rk, xfastsi = 2000_rk
+
    real(rk) :: ffastc=0._rk,ffastn=0._rk,ffastca=0._rk,ffastsi=0._rk,ffastfe=0._rk
    real(rk) :: ftempc,ftempn,ftempfe,ftempsi,ftempca
+   real(rk) :: freminc,freminn,freminfe,freminsi,freminca
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
    _VERTICAL_LOOP_BEGIN_
-
-  ! NB: mineralisation in surface box must be 0._rk
- 
-    _GET_(self%id_ftempc,ftempc)
-    _GET_(self%id_ftempn,ftempn)
-    _GET_(self%id_ftempfe,ftempfe)
-    _GET_(self%id_ftempsi,ftempsi)
-    _GET_(self%id_ftempca,ftempca)
 
     _GET_(self%id_dz,dz)
 
 !   !Carbon
    fq0      = ffastc                            !! how much organic C enters this box        (mol)
    fq1      = (fq0 * xmassc)                    !! how much it weighs                        (mass)
-   fq2      = 0._rk !(ffastca * xmassca)           !! how much CaCO3 enters this box            (mass)
-   fq3      = 0._rk !(ffastsi * xmasssi)           !! how much opal enters this box            (mass)
+   fq2      = 0._rk !(ffastca * xmassca)        !! how much CaCO3 enters this box            (mass)
+   fq3      = ffastsi * xmasssi                 !! how much opal enters this box            (mass)
    fq4      = (fq2 * xprotca) + (fq3 * xprotsi) !! total protected organic C                 (mass)
 !
 !   !! this next term is calculated for C but used for N and Fe as well
@@ -99,6 +106,7 @@ contains
    fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected C leaves this box    (mol)
    fq8      = (fq7 + (fq0 * fprotf))          !! how much total C leaves this box          (mol)
    freminc  = (fq0 - fq8) / dz                !! C remineralisation in this box            (mol)
+   _SET_DIAGNOSTIC_(self%id_freminc,freminc)
    ffastc = fq8
 
    !Nitrogen
@@ -108,6 +116,7 @@ contains
    fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected N leaves this box    (mol)
    fq8      = (fq7 + (fq0 * fprotf))          !! how much total N leaves this box          (mol)
    freminn  = (fq0 - fq8) / dz                !! N remineralisation in this box            (mol)
+   _SET_DIAGNOSTIC_(self%id_freminn,freminn)
    ffastn = fq8
 
    !Iron
@@ -120,10 +129,11 @@ contains
    ffastfe = fq8
 
    !biogenic silicon
-   fq0      = ffastsi                         !! how much  opal centers this box           (mol) 
-   fq1      = fq0 * exp(-(dz / xfastsi))      !! how much  opal leaves this box            (mol)
-   freminsi = (fq0 - fq1) / dz                !! Si remineralisation in this box           (mol)
-   ffastsi = fq1
+   !fq0      = ffastsi                         !! how much  opal centers this box           (mol) 
+   !fq1      = fq0 * exp(-(dz / xfastsi))      !! how much  opal leaves this box            (mol)
+   !freminsi = (fq0 - fq1) / dz                !! Si remineralisation in this box           (mol)
+   !_SET_DIAGNOSTIC_(self%id_freminsi,freminsi)
+   !ffastsi = fq1
 
    !biogenic calcium carbonate
   ! fq0      = ffastca                           !! how much CaCO3 enters this box            (mol)
@@ -142,19 +152,44 @@ contains
   ! fq1      = fq0 * exp(-(fq2 / xfastca))       !! how much CaCO3 leaves this box            (mol)
   ! freminca = (fq0 - fq1) / dz                  !! Ca remineralisation in this box           (mol)
   ! endif
-  ! ffastca = fq1 
+  ! ffastca = fq1
+
+    _GET_(self%id_ftempc,ftempc)
+    _GET_(self%id_ftempn,ftempn)
+    _GET_(self%id_ftempfe,ftempfe)
+    _GET_(self%id_ftempsi,ftempsi)
+   !_GET_(self%id_ftempca,ftempca)
 
     ffastc  = ffastc + ftempc * dz
     ffastn  = ffastn  + ftempn * dz
     ffastfe = ffastfe + ftempfe * dz
-    ffastsi = ffastsi + ftempsi * dz
+  !  ffastsi = ffastsi + ftempsi * dz
   !  ffastca = ffastca + ftempca
-    _SET_DIAGNOSTIC_(self%id_freminc,freminc*d_per_s)
-    _SET_DIAGNOSTIC_(self%id_freminn,freminn*d_per_s)
-    _SET_DIAGNOSTIC_(self%id_freminsi,freminsi*d_per_s)
 
    _VERTICAL_LOOP_END_
 
    end subroutine do_fast_detritus
 
+   subroutine do(self,_ARGUMENTS_DO_)
+
+   class(type_medusa_fast_detritus), INTENT(IN) :: self
+  _DECLARE_ARGUMENTS_DO_
+
+     real(rk) :: ZOXY
+     real(rk) :: freminc,freminn,freminsi
+    _LOOP_BEGIN_
+
+    _GET_(self%id_ZOXY,ZOXY)
+    _GET_(self%id_freminc1,freminc)
+    _GET_(self%id_freminn1,freminn)
+    _GET_(self%id_freminsi1,freminsi)
+
+       _SET_ODE_(self%id_ZDIC, + freminc)
+       _SET_ODE_(self%id_ZDIN, + freminn)
+       _SET_ODE_(self%id_ZSIL, + freminsi)
+       if (ZOXY .ge. self%xo2min) _SET_ODE_(self%id_ZOXY, - self%xthetarem * freminc - self%xthetanit * freminn)
+    
+   _LOOP_END_
+
+   end subroutine do
 end module medusa_fast_detritus
