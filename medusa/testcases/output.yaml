@@ -1,0 +1,39 @@
+L4_medusa:
+   time_unit: day
+   time_step: 1
+   time_method: 2
+   variables:
+       - source: *
+L4_medusay:
+   time_unit: year
+   time_step: 1
+   k_start: 30
+   k_stop: 30
+   k_stride: 1
+   time_method: 2
+   variables:
+       - source: *
+L4_medusas:
+   time_unit: day
+   time_step: 1
+   k_start: 30
+   k_stop: 30
+   k_stride: 1
+   time_method: 2
+   variables:
+       - source: *
+L4_medusab:
+   time_unit: day
+   time_step: 1
+   k_start: 1
+   k_stop: 1
+   k_stride: 1
+   time_method: 2
+   variables:
+       - source: *
+L4_time_monthly_mean:
+   time_unit: month
+   time_step: 1
+   variables:
+      - source: *
+        time_method: 2
