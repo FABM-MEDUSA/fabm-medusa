@@ -18,7 +18,7 @@ module medusa_pelagic
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
       type (type_dependency_id)            :: id_temp,id_par,id_depth,id_salt
       type (type_diagnostic_variable_id)   :: id_dPAR
-      type (type_diagnostic_variable_id)   :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca
+      type (type_state_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
       ! Parameters
       logical :: jliebig
       real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xnsi0,xuif,xthetam,xthetamd
@@ -136,13 +136,28 @@ contains
    call self%register_state_variable(self%id_ZDIC,'ZDIC','mmol C/m**3', 'dissolved inorganic carbon', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZOXY,'ZOXY','mmol O_2/m**3', 'dissolved oxygen', minimum=0.0_rk)
 
+   call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZPHN)
+   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZPHN, scale_factor=self%xthetapn)
+   call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZPHD)
+   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZPHD, scale_factor=self%xthetapd)
+   call self%add_to_aggregate_variable(standard_variables%total_silicate, self%id_ZPDS)
+   call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZDIN)
+   call self%add_to_aggregate_variable(standard_variables%total_silicate, self%id_ZSIL)
+   call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZDET)
+   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZDTC)
+   call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZZMI)
+   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZZME, scale_factor=self%xthetazmi)
+   call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZZME)
+   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZZME, scale_factor=self%xthetazme)
+   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZDIC)
+
    ! Register diagnostic variables
    call self%register_diagnostic_variable(self%id_dPAR,'PAR','W m-2',       'photosynthetically active radiation', output=output_time_step_averaged)
 
-   call self%register_diagnostic_variable(self%id_ftempn,'ftempn','-','-', output=output_time_step_averaged)
-   call self%register_diagnostic_variable(self%id_ftempc,'ftempc','-','-', output=output_time_step_averaged)
-   call self%register_diagnostic_variable(self%id_ftempsi,'ftempsi','-','-', output=output_time_step_averaged)
-   call self%register_diagnostic_variable(self%id_ftempfe,'ftempfe','-','-', output=output_time_step_averaged)
+   call self%register_state_dependency(self%id_tempn,'tempn','mmol N/m**3', 'fast-sinking detritus (N)')
+   call self%register_state_dependency(self%id_tempc,'tempc','mmol C/m**3', 'fast-sinking detritus (C)')
+   call self%register_state_dependency(self%id_tempsi,'tempsi','mmol Si/m**3', 'fast-sinking detritus (Si)')
+   call self%register_state_dependency(self%id_tempfe,'tempfe','mmol Fe/m**3', 'fast-sinking detritus (Fe)')
 
    ! Register environmental dependencies
    call self%register_dependency(self%id_temp, standard_variables%temperature)
@@ -433,16 +448,16 @@ contains
   ! Fast-sinking detritus terms
   ! nitrogen:   diatom and mesozooplankton mortality
   ftempn = (self%xfdfrac1 * fdpd)  + (self%xfdfrac2 * fdzme)
-  _SET_DIAGNOSTIC_(self%id_ftempn,ftempn)
+  _SET_ODE_(self%id_tempn,ftempn)
   ! silicon:    diatom mortality and grazed diatoms
   ftempsi = (self%xfdfrac1 * fdpds) + (self%xfdfrac3 * fgmepds)
-  _SET_DIAGNOSTIC_(self%id_ftempsi,ftempsi)
+  _SET_ODE_(self%id_tempsi,ftempsi)
   ! iron:       diatom and mesozooplankton mortality
   ftempfe = ((self%xfdfrac1 * fdpd) + (self%xfdfrac2 * fdzme)) * self%xrfn
-  _SET_DIAGNOSTIC_(self%id_ftempfe,ftempfe)
+  _SET_ODE_(self%id_tempfe,ftempfe)
   ! carbon:     diatom and mesozooplankton mortality
   ftempc = (self%xfdfrac1 * self%xthetapd * fdpd) + (self%xfdfrac2 * self%xthetazme * fdzme)
-  _SET_DIAGNOSTIC_(self%id_ftempc,ftempc)
+  _SET_ODE_(self%id_tempc,ftempc)
 
   ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
   !if (f3_omcal .ge. 1._rk) then !get f3_omcal!
