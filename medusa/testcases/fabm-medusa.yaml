@@ -97,6 +97,11 @@ instances:
       ZALK: 2200.
       ZDIC: 2000.
       ZOXY: 300.
+    coupling:
+      tempn: medusa_fast_detritus/tempn
+      tempc: medusa_fast_detritus/tempc
+      tempsi: medusa_fast_detritus/tempsi
+      tempfe: medusa_fast_detritus/tempfe
   medusa_fast_detritus:
     model: medusa/medusa_fast_detritus
     coupling:
@@ -104,8 +109,3 @@ instances:
       ZDIN: medusa_pelagic/ZDIN
       ZSIL: medusa_pelagic/ZSIL
       ZDIC: medusa_pelagic/ZDIC
-      ftempc: medusa_pelagic/ftempc
-      ftempn: medusa_pelagic/ftempn
-      ftempfe: medusa_pelagic/ftempfe
-      ftempsi: medusa_pelagic/ftempsi
-   #   ftempca: medusa_pelagic/ftempca
