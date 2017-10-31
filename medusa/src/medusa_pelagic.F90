@@ -146,7 +146,7 @@ contains
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZDET)
    call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZDTC)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZZMI)
-   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZZME, scale_factor=self%xthetazmi)
+   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZZMI, scale_factor=self%xthetazmi)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZZME)
    call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZZME, scale_factor=self%xthetazme)
    call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZDIC)
