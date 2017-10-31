@@ -185,7 +185,7 @@ contains
     ffastc  = ffastc + ftempc * dz
     ffastn  = ffastn  + ftempn * dz
     ffastfe = ffastfe + ftempfe * dz
-  !  ffastsi = ffastsi + ftempsi * dz
+    ffastsi = ffastsi + ftempsi * dz
   !  ffastca = ffastca + ftempca
 
    _VERTICAL_LOOP_END_
