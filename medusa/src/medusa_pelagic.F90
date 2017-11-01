@@ -509,7 +509,7 @@ contains
    _SET_ODE_(self%id_ZSIL,fs_prod + fs_cons)
 
   ! dissolved iron
-   _SET_ODE_(self%id_ZFER, (self%xrfn * (fn_prod-fn_cons)) - ffescav)
+   _SET_ODE_(self%id_ZFER, (self%xrfn * (fn_prod + fn_cons)) - ffescav)
                                                !+ ffetop     &
                                                !+ ffebot     &
 
