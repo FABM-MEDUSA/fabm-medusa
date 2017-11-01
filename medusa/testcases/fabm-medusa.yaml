@@ -76,7 +76,7 @@ instances:
       xfdfrac1: 0.33            # fast detritus fraction of diatom losses, default=0.33
       xfdfrac2: 1.              # fast detritus fraction of mesozooplankton losses, default=1.
       xfdfrac3: 0.8             # fast detritus fraction of mesozooplankton grazing, default=0.8
-      xrfn: 30.                 # phytoplankton Fe:N uptake ratio (umol Fe mol N-1 m), default=30.
+      xrfn: 0.03 #30.                 # phytoplankton Fe:N uptake ratio (umol Fe mol N-1 m), default=30.
       xridg_r0: 0.026           # CaCO3:POC export rain ratio scalar, Ridgwell et al (2007), default=0.026
       xthetanit: 2.0            # O2 consumption by N remineralisation (mol O_2 mol N-1), default=2.0
       xthetarem: 1.1226         # O2 consumption by C remineralisation (mol O_2 mol C-1), default=1.1226
@@ -88,7 +88,7 @@ instances:
       ZPHD: 0.5
       ZPDS: 0.5
       ZDIN: 8.0
-      ZFER: 0.5
+      ZFER: 0.5 
       ZSIL: 4.0
       ZDET: 0.5
       ZDTC: 0.5
@@ -108,4 +108,5 @@ instances:
       ZOXY: medusa_pelagic/ZOXY
       ZDIN: medusa_pelagic/ZDIN
       ZSIL: medusa_pelagic/ZSIL
+      ZFER: medusa_pelagic/ZFER
       ZDIC: medusa_pelagic/ZDIC
