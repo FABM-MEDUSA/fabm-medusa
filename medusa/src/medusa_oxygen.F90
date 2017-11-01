@@ -129,7 +129,6 @@ contains
    o2_schmidt = as0 + pt*(as1 + pt*(as2 + pt*(as3 + pt*as4)))
    kwo2 = kw660 * (660._rk / o2_schmidt)**0.5_rk
    o2sat = o2_sato * pp0 / 101325._rk
-   !print*,pp0
 
    o2flux = kwo2 * (o2sat - o2)
    o2flux = o2flux *1000._rk
