@@ -16,10 +16,12 @@ module medusa_fast_detritus
 
   type,extends(type_base_model),public :: type_medusa_fast_detritus
       ! Variable identifiers
-      type (type_state_variable_id)        :: id_ZDIC,id_ZDIN,id_ZSIL,id_ZOXY
+      type (type_state_variable_id)        :: id_ZDIC,id_ZDIN,id_ZSIL,id_ZOXY,id_ZFER
       type (type_dependency_id)            :: id_dz
-      type (type_dependency_id)            :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca,id_freminc1,id_freminn1,id_freminsi1 
-      type (type_diagnostic_variable_id)   :: id_freminc,id_freminn,id_freminsi  
+      type (type_dependency_id)            :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca,id_freminc1,id_freminn1,id_freminsi1,id_freminfe1
+      type (type_diagnostic_variable_id)   :: id_freminc,id_freminn,id_freminsi,id_freminfe
+      type (type_horizontal_diagnostic_variable_id) :: id_ffastc,id_ffastn,id_ffastsi,id_ffastfe
+      type (type_horizontal_dependency_id) :: id_ffastc1,id_ffastn1,id_ffastfe1,id_ffastsi1
       type (type_diagnostic_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
       ! Parameters
       real(rk) :: xthetanit,xthetarem,xo2min
@@ -29,6 +31,7 @@ module medusa_fast_detritus
       procedure :: initialize
       procedure :: get_light => do_fast_detritus
       procedure :: do
+      procedure :: do_bottom
 
   end type type_medusa_fast_detritus
 
@@ -66,15 +69,28 @@ contains
    call self%register_state_dependency(self%id_ZOXY,'ZOXY','mmol O_2 m-3', 'dissolved oxygen')
    call self%register_state_dependency(self%id_ZDIN,'ZDIN','mmol N m-3', 'nitrogen nutrient')
    call self%register_state_dependency(self%id_ZSIL,'ZSIL','mmol Si m-3', 'silicic acid')
+   call self%register_state_dependency(self%id_ZFER,'ZFER','mmol Fe m-3', 'iron nutrient')
    call self%register_state_dependency(self%id_ZDIC,'ZDIC','mmol C m-3', 'dissolved inorganic carbon')
 
    call self%register_diagnostic_variable(self%id_freminc,'freminc','mmol C m-3 s-1','remineralisation of detritus (C)',missing_value=0.0_rk,source=source_do_column,output=output_none)
    call self%register_diagnostic_variable(self%id_freminn,'freminn','mmol N m-3 s-1','remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column,output=output_none)
    call self%register_diagnostic_variable(self%id_freminsi,'freminsi','mmol Si m-3 s-1','remineralisation of detritus (Si)',missing_value=0.0_rk,source=source_do_column,output=output_none)
+   call self%register_diagnostic_variable(self%id_freminfe,'freminfe','mmol Fe m-3 s-1','remineralisation of detritus (Fe)',missing_value=0.0_rk,source=source_do_column,output=output_none)
 
    call self%register_dependency(self%id_freminc1,'freminc','mmol C m-3 s-1','remineralisation of detritus (C)')
    call self%register_dependency(self%id_freminn1,'freminn','mmol N m-3 s-1','remineralisation of detritus (N)')
    call self%register_dependency(self%id_freminsi1,'freminsi','mmol Si m-3 s-1','remineralisation of detritus (Si)')
+   call self%register_dependency(self%id_freminfe1,'freminfe','mmol Fe m-3 s-1','remineralisation of detritus (Fe)')
+
+   call self%register_diagnostic_variable(self%id_ffastc,'ffastc','mmol C m-2 s-1','remineralisation of detritus (C)',missing_value=0.0_rk,source=source_do_column,output=output_none)
+   call self%register_diagnostic_variable(self%id_ffastn,'ffastn','mmol N m-2 s-1','remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column,output=output_none)
+   call self%register_diagnostic_variable(self%id_ffastfe,'ffastfe','mmol Fe m-2 s-1','remineralisation of detritus (Fe)',missing_value=0.0_rk,source=source_do_column,output=output_none)
+   call self%register_diagnostic_variable(self%id_ffastsi,'ffastsi','mmol Si m-2 s-1','remineralisation of detritus (Si)',missing_value=0.0_rk,source=source_do_column,output=output_none)
+
+   call self%register_horizontal_dependency(self%id_ffastc1,'ffastc','mmol C m-2 s-1','remineralisation of detritus (C)')
+   call self%register_horizontal_dependency(self%id_ffastn1,'ffastn','mmol N m-2 s-1','remineralisation of detritus (N)')
+   call self%register_horizontal_dependency(self%id_ffastfe1,'ffastfe','mmol Fe m-2 s-1','remineralisation of detritus (Si)')
+   call self%register_horizontal_dependency(self%id_ffastsi1,'ffastsi','mmol Si m-2 s-1','remineralisation of detritus (Si)')
 
    call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
 
@@ -148,6 +164,7 @@ contains
    fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected Fe leaves this box   (mol)
    fq8      = (fq7 + (fq0 * fprotf))          !! how much total Fe leaves this box         (mol)            
    freminfe = (fq0 - fq8) / dz                !! Fe remineralisation in this box           (mol)
+   _SET_DIAGNOSTIC_(self%id_freminfe,freminfe)
    ffastfe = fq8
 
    !biogenic silicon
@@ -190,6 +207,12 @@ contains
 
    _VERTICAL_LOOP_END_
 
+   ! store horizontal diagnostics of ffast[c,n,..]
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastc,ffastc)
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastn,ffastn)
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastfe,ffastfe)
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastsi,ffastsi)
+
    end subroutine do_fast_detritus
 
    subroutine do(self,_ARGUMENTS_DO_)
@@ -198,7 +221,7 @@ contains
      _DECLARE_ARGUMENTS_DO_
 
      real(rk) :: ZOXY
-     real(rk) :: freminc,freminn,freminsi
+     real(rk) :: freminc,freminn,freminsi,freminfe
 
     _LOOP_BEGIN_
 
@@ -206,14 +229,40 @@ contains
        _GET_(self%id_freminc1,freminc)
        _GET_(self%id_freminn1,freminn)
        _GET_(self%id_freminsi1,freminsi)
+       _GET_(self%id_freminfe1,freminfe)
 
        _SET_ODE_(self%id_ZDIC, + freminc)
        _SET_ODE_(self%id_ZDIN, + freminn)
        _SET_ODE_(self%id_ZSIL, + freminsi)
+       _SET_ODE_(self%id_ZFER, + freminfe)
+
        if (ZOXY .ge. self%xo2min) _SET_ODE_(self%id_ZOXY, - self%xthetarem * freminc - self%xthetanit * freminn)
 
    _LOOP_END_
 
    end subroutine do
+
+   subroutine do_bottom(self,_ARGUMENTS_DO_BOTTOM_)
+
+     class(type_medusa_fast_detritus), intent(in) :: self
+     _DECLARE_ARGUMENTS_DO_BOTTOM_
+     
+     real(rk) :: ffastc,ffastn,ffastfe,ffastsi
+
+    _HORIZONTAL_LOOP_BEGIN_
+
+    _GET_HORIZONTAL_(self%id_ffastc1,ffastc)
+    _GET_HORIZONTAL_(self%id_ffastn1,ffastn)
+    _GET_HORIZONTAL_(self%id_ffastfe1,ffastfe)
+    _GET_HORIZONTAL_(self%id_ffastsi1,ffastsi)
+
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, + ffastc)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDIN, + ffastn)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, + ffastsi)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZFER, + ffastfe)
+
+    _HORIZONTAL_LOOP_END_
+
+   end subroutine do_bottom
 
 end module medusa_fast_detritus
