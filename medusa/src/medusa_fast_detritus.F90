@@ -16,7 +16,7 @@ module medusa_fast_detritus
 
   type,extends(type_base_model),public :: type_medusa_fast_detritus
       ! Variable identifiers
-      type (type_state_variable_id)        :: id_ZDIC,id_ZDIN,id_ZSIL,id_ZOXY,id_ZFER
+      type (type_state_variable_id)        :: id_ZDIC,id_ZDIN,id_ZSIL,id_ZOXY,id_ZFER,id_ZDET,id_ZDTC
       type (type_dependency_id)            :: id_dz
       type (type_dependency_id)            :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca,id_freminc1,id_freminn1,id_freminsi1,id_freminfe1
       type (type_diagnostic_variable_id)   :: id_freminc,id_freminn,id_freminsi,id_freminfe
@@ -25,6 +25,7 @@ module medusa_fast_detritus
       type (type_diagnostic_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
       ! Parameters
       real(rk) :: xthetanit,xthetarem,xo2min
+      integer :: seafloor
 
    contains
 
@@ -51,6 +52,7 @@ contains
    call self%register_diagnostic_variable(self%id_tempn,'tempn','mmol N m-3','fast-sinking detritus (N)', act_as_state_variable=.true., missing_value=0.0_rk,source=source_none, output=output_none)
    call self%register_diagnostic_variable(self%id_tempfe,'tempfe','-','fast-sinking detritus (Fe)', act_as_state_variable=.true., missing_value=0.0_rk,source=source_none, output=output_none)
    call self%register_diagnostic_variable(self%id_tempsi,'tempsi','mmol Si m-3','fast-sinking detritus (Si)', act_as_state_variable=.true., missing_value=0.0_rk,source=source_none, output=output_none)
+
    call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_tempc)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_tempn)
    call self%add_to_aggregate_variable(standard_variables%total_silicate, self%id_tempsi)
@@ -71,6 +73,8 @@ contains
    call self%register_state_dependency(self%id_ZSIL,'ZSIL','mmol Si m-3', 'silicic acid')
    call self%register_state_dependency(self%id_ZFER,'ZFER','mmol Fe m-3', 'iron nutrient')
    call self%register_state_dependency(self%id_ZDIC,'ZDIC','mmol C m-3', 'dissolved inorganic carbon')
+   call self%register_state_dependency(self%id_ZDET,'ZDET','mmol N m-3', 'detritus nitrogen')
+   call self%register_state_dependency(self%id_ZDTC,'ZDTC','mmol C m-3', 'detritus carbon')
 
    call self%register_diagnostic_variable(self%id_freminc,'freminc','mmol C m-3 s-1','remineralisation of detritus (C)',missing_value=0.0_rk,source=source_do_column,output=output_none)
    call self%register_diagnostic_variable(self%id_freminn,'freminn','mmol N m-3 s-1','remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column,output=output_none)
@@ -93,6 +97,8 @@ contains
    call self%register_horizontal_dependency(self%id_ffastsi1,'ffastsi','mmol Si m-2 s-1','remineralisation of detritus (Si)')
 
    call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
+
+   call self%get_parameter(self%seafloor,'seafloor','-','seafloor handling: 1-immediate remineralisation, 2-fast2slow, 3-couple benthos (nothing to do here)', default = 1)
 
    end subroutine initialize
 
@@ -207,7 +213,6 @@ contains
 
    _VERTICAL_LOOP_END_
 
-   ! store horizontal diagnostics of ffast[c,n,..]
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastc,ffastc)
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastn,ffastn)
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastfe,ffastfe)
@@ -256,11 +261,25 @@ contains
     _GET_HORIZONTAL_(self%id_ffastfe1,ffastfe)
     _GET_HORIZONTAL_(self%id_ffastsi1,ffastsi)
 
+     if (self%seafloor .eq. 1) then
+
     _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, + ffastc)
     _SET_BOTTOM_EXCHANGE_(self%id_ZDIN, + ffastn)
     _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, + ffastsi)
     _SET_BOTTOM_EXCHANGE_(self%id_ZFER, + ffastfe)
 
+     elseif (self%seafloor .eq. 2) then
+
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDTC, + ffastc)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDET, + ffastn)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, + ffastsi)
+
+     else
+
+     !nothing to do here, couple benthic module
+
+     end if
+ 
     _HORIZONTAL_LOOP_END_
 
    end subroutine do_bottom
