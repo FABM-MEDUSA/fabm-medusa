@@ -104,9 +104,13 @@ instances:
       tempfe: medusa_fast_detritus/tempfe
   medusa_fast_detritus:
     model: medusa/medusa_fast_detritus
+    parameters:
+      seafloor: 2              # seafloor handling (1-immediate remineralisation, 2-fast2slow, 3-couple benthos (nothing to do in this model)', default = 1)
     coupling:
       ZOXY: medusa_pelagic/ZOXY
       ZDIN: medusa_pelagic/ZDIN
       ZSIL: medusa_pelagic/ZSIL
       ZFER: medusa_pelagic/ZFER
       ZDIC: medusa_pelagic/ZDIC
+      ZDET: medusa_pelagic/ZDET
+      ZDTC: medusa_pelagic/ZDTC
