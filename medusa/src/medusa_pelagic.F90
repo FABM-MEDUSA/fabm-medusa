@@ -219,10 +219,21 @@ contains
 
    !PHYTOPLANKTON GROWTH
    !Chlorophyll
-   fthetan = max(tiny(ZCHN),(ZCHN * self%xxi) / (ZPHN + tiny(ZPHN)))
-   faln = self%xaln * fthetan
-   fthetad = max(tiny(ZCHD),(ZCHD * self%xxi) / (ZPHD + tiny(ZPHD)))
-   fald = self%xald * fthetad
+   if (ZPHN.gt.0.5 * EPSILON( 1._rk )) then
+    fthetan = max(tiny(ZCHN),(ZCHN * self%xxi) / (ZPHN + tiny(ZPHN)))
+    faln = self%xaln * fthetan
+   else
+    fthetan = 0.
+    faln    = 0.
+   end if
+
+   if (ZPHD.gt.0.5 * EPSILON( 1._rk )) then
+    fthetad = max(tiny(ZCHD),(ZCHD * self%xxi) / (ZPHD + tiny(ZPHD)))
+    fald = self%xald * fthetad
+   else
+    fthetad = 0.
+    fald    = 0.
+   end if
 
   !Temperature limitation
    fun_T = 1.066_rk**loc_T
@@ -239,21 +250,29 @@ contains
    endif
   !Phytoplankton light limitation
    fchn1 = (xvpnT * xvpnT) + (faln * faln * par * par)
-   fchn = xvpnT / (sqrt(fchn1) + tiny(fchn1))
+   if (fchn1.gt.0.5 * EPSILON( 1._rk )) then
+    fchn = xvpnT / (sqrt(fchn1) + tiny(fchn1))
+   else
+    fchn    = 0.
+   endif
    fjln = fchn * faln * par !non-diatom J term
 
    fchd1 = (xvpdT * xvpdT) + (fald * fald * par * par)
-   fchd = xvpdT / (sqrt(fchd1) + tiny(fchd1))
+   if (fchd1.gt.0.5 * EPSILON( 1._rk )) then
+    fchd = xvpdT / (sqrt(fchd1) + tiny(fchd1))
+   else
+    fchd = 0.
+   end if
    fjld = fchd * fald * par !diatom J term
 
    ! Phytoplankton nutrient limitation
    !! Non-diatoms (N, Fe)
    fnln = ZDIN / (ZDIN + self%xnln) !non-diatom Qn term
-   ffln = 1. !ZFER / (ZFER + self%xfln) !non-diatom Qf term
+   ffln = ZFER / (ZFER + self%xfln) !non-diatom Qf term
    !! Diatoms (N, Si, Fe)
    fnld = ZDIN / (ZDIN + self%xnld) !diatom Qn term
    fsld = ZSIL / (ZSIL + self%xsld) !diatom Qs term
-   ffld = 1. !ZFER / (ZFER + self%xfld) !diatom Qf term
+   ffld = ZFER / (ZFER + self%xfld) !diatom Qf term
 
    ! Primary production (non-diatoms)
    if (self%jliebig.eqv..false.) then
@@ -271,8 +290,8 @@ contains
      fpdlim = min(fnld,ffld)
    end if
 
-   fsin = ZPDS / ZPHD
-   fnsi = ZPHD / ZPDS
+   if ( zphd .gt. 0.5 * EPSILON( 1._rk )) fsin = ZPDS / ZPHD
+   if ( zpds .gt. 0.5 * EPSILON( 1._rk )) fnsi = ZPHD / ZPDS
    fsin1 = 3.0_rk * self%xsin0 !! = 0.6
    fnsi1 = 1.0_rk / fsin1      !! = 1.667
    fnsi2 = 1.0_rk / self%xsin0 !! = 5.0
@@ -306,7 +325,7 @@ contains
   fmi = self%xgmi * ZZMI / fmi1
   fgmipn = fmi * self%xpmipn * ZPHN * ZPHN !grazing on non-diatoms
   fgmid = fmi * self%xpmid * ZDET * ZDET   !grazing on detrital nitrogen
-  fgmidc = (ZDTC / (ZDET + tiny(ZDET))) * fgmid !ROAM formulation
+  if (ZDET .gt. 0.5 * EPSILON( 1._rk )) fgmidc = (ZDTC / (ZDET + tiny(ZDET))) * fgmid !ROAM formulation
   finmi = (1.0_rk - self%xphi) * (fgmipn + fgmid)
   ficmi = (1.0_rk - self%xphi) * ((self%xthetapn * fgmipn) + fgmidc)
   fstarmi = (self%xbetan * self%xthetazmi) / (self%xbetac * self%xkc) !the ideal food C : N ratio for microzooplankton
@@ -328,7 +347,7 @@ contains
   fgmepds = fsin * fgmepd
   fgmezmi = fme * self%xpmezmi * ZZMI * ZZMI
   fgmed = fme * self%xpmed * ZDET * ZDET
-  fgmedc = (ZDTC / (ZDET + tiny(ZDET))) * fgmed !ROAM formulation
+  if (ZDET .gt. 0.5 * EPSILON( 1._rk )) fgmedc = (ZDTC / (ZDET + tiny(ZDET))) * fgmed !ROAM formulation
   finme = (1.0_rk - self%xphi) * (fgmepn + fgmepd + fgmezmi + fgmed)
   ficme = (1.0_rk - self%xphi) * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc) 
   fstarme = (self%xbetan * self%xthetazme) / (self%xbetac * self%xkc)
