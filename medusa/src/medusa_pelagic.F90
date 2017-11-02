@@ -137,19 +137,22 @@ contains
    call self%register_state_variable(self%id_ZOXY,'ZOXY','mmol O_2/m**3', 'dissolved oxygen', minimum=0.0_rk)
 
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZPHN)
-   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZPHN, scale_factor=self%xthetapn)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZPHD)
-   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZPHD, scale_factor=self%xthetapd)
-   call self%add_to_aggregate_variable(standard_variables%total_silicate, self%id_ZPDS)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZDIN)
-   call self%add_to_aggregate_variable(standard_variables%total_silicate, self%id_ZSIL)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZDET)
-   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZDTC)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZZMI)
-   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZZMI, scale_factor=self%xthetazmi)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZZME)
+
+   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZPHN, scale_factor=self%xthetapn)
+   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZPHD, scale_factor=self%xthetapd)
+   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZZMI, scale_factor=self%xthetazmi)
    call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZZME, scale_factor=self%xthetazme)
+   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZDTC)
    call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZDIC)
+
+   call self%add_to_aggregate_variable(standard_variables%total_silicate, self%id_ZPDS)
+   call self%add_to_aggregate_variable(standard_variables%total_silicate, self%id_ZSIL)
+
 
    ! Register diagnostic variables
    call self%register_diagnostic_variable(self%id_dPAR,'PAR','W m-2',       'photosynthetically active radiation', output=output_time_step_averaged)
