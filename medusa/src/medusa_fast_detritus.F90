@@ -269,7 +269,6 @@ contains
     _HORIZONTAL_LOOP_BEGIN_
 
     _GET_HORIZONTAL_(self%id_ffastc1,ffastc)
-    print*,'ffastc',ffastc
     _GET_HORIZONTAL_(self%id_ffastn1,ffastn)
    ! _GET_HORIZONTAL_(self%id_ffastfe1,ffastfe)
     _GET_HORIZONTAL_(self%id_ffastsi1,ffastsi)
