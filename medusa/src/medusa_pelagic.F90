@@ -412,7 +412,7 @@ contains
     fddc = self%xmdc * ZDTC
   end if
 
-  !Original contains accelerated detrital remineralisation in the bottom box (how do I let model know it is a bottom box?)
+  !Original contains accelerated detrital remineralisation in the bottom box
 
   !Diatom frustule dissolution
   fsdiss = self%xsdiss * ZPDS
@@ -490,8 +490,6 @@ contains
   !   fcaco3 = self%xridg_r0 * fq1
   !ftempca = ftempc * fcaco3
 
-  !Fast-sinking detritus magic...
-
   !LOCAL SMS TRENDS
   ! chlorophyll
   _SET_ODE_(self%id_ZCHN,((frn * fprn * ZPHN) - fgmipn - fgmepn - fdpn - fdpn2) * (fthetan / self%xxi))
@@ -508,15 +506,12 @@ contains
 
   ! detritus
   _SET_ODE_(self%id_ZDET,fdpn + ((1._rk - self%xfdfrac1) * fdpd) + fdzmi + ((1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetan) * (finmi + finme))-fgmid-fgmed-fdd)
-        
-         !+ ffast2slown                                        ! seafloor fast->slow
 
   !dissolved inorganic nitrogen
    fn_cons = - (fprn * ZPHN) - (fprd * ZPHD)                         ! primary production
    fn_prod = + (self%xphi * (fgmipn + fgmid))                     &  ! messy feeding remin.
              + (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed))  &  ! messy feeding remin.
              + fmiexcr + fmeexcr + fdd                            &  ! excretion and remin.
-          !   + freminn                                            &  ! fast mineralisation
              + fdpn2 + fdpd2 + fdzmi2 + fdzme2                       ! metab. losses
 
    _SET_ODE_(self%id_ZDIN,fn_prod + fn_cons)
@@ -526,7 +521,6 @@ contains
    fs_prod = + fsdiss                                             &  ! opal dissolution
              + ((1.0_rk - self%xfdfrac1) * fdpds)                    &  ! mort. loss
              + ((1.0_rk - self%xfdfrac3) * fgmepds)                  &  ! egestion of grazed Si
-        !     + freminsi                                           &  ! fast dissolution
              + fdpds2                                                ! metab. losses
    _SET_ODE_(self%id_ZSIL,fs_prod + fs_cons)
 
@@ -538,15 +532,13 @@ contains
 
   ! detrital carbon
    _SET_ODE_(self%id_ZDTC, (self%xthetapn * fdpn) + ((1._rk - self%xfdfrac1) * (self%xthetapd * fdpd)) + (self%xthetazmi * fdzmi) + ((1._rk - self%xfdfrac2) * (self%xthetazme * fdzme)) + ((1._rk - self%xbetac) * (ficmi + ficme))- fgmidc - fgmedc - fddc)
-                 !+ ffast2slowc                             ! seafloor fast->slow
-
+                 
   ! dissolved inorganic carbon
    fc_cons = - (self%xthetapn * fprn * ZPHN) - (self%xthetapd * fprd * ZPHD)                      ! primary production
    fc_prod = + (self%xthetapn * self%xphi * fgmipn) + (self%xphi * fgmidc)                     &  ! messy feeding remin
              + (self%xthetapn * self%xphi * fgmepn) + (self%xthetapd * self%xphi * fgmepd)     &  ! messy feeding remin
              + (self%xthetazmi * self%xphi * fgmezmi) + (self%xphi * fgmedc)                   &  ! messy feeding remin
              + fmiresp + fmeresp + fddc                                                        &
-           !  + freminc                                                                         &
              + (self%xthetapn * fdpn2)                                                         &  ! resp., remin., losses
              + (self%xthetapd * fdpd2) + (self%xthetazmi * fdzmi2)                             &  ! losses
              + (self%xthetazme * fdzme2)                                                          ! losses
@@ -575,7 +567,6 @@ contains
                - (self%xthetanit * fmiexcr)                                               & ! microzoo excretion, N
                - (self%xthetanit * fmeexcr)                                               & ! mesozoo  excretion, N
                - (self%xthetanit * fdd)                                                   & ! slow detritus remin., N
-         !      - (self%xthetanit * freminn)                                               & ! fast detritus remin., N
                - (self%xthetanit * fdpn2)                                                 & ! Pn  losses, N
                - (self%xthetanit * fdpd2)                                                 & ! Pd  losses, N
                - (self%xthetanit * fdzmi2)                                                & ! Zmi losses, N
@@ -590,7 +581,6 @@ contains
                - (self%xthetarem * fmiresp)                                               & ! microzoo respiration, C
                - (self%xthetarem * fmeresp)                                               & ! mesozoo  respiration, C
                - (self%xthetarem * fddc)                                                  & ! slow detritus remin., C
-         !      - (self%xthetarem * freminc)                                               & ! fast detritus remin., C
                - (self%xthetarem * self%xthetapn * fdpn2)                                 & ! Pn  losses, C
                - (self%xthetarem * self%xthetapd * fdpd2)                                 & ! Pd  losses, C
                - (self%xthetarem * self%xthetazmi * fdzmi2)                               & ! Zmi losses, C
