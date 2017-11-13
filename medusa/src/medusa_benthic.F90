@@ -16,14 +16,14 @@ module medusa_benthic
   type,extends(type_base_model),public :: type_medusa_benthic
       ! Variable identifiers
       type (type_bottom_state_variable_id)        :: id_ZSEDC,id_ZSEDN,id_ZSEDFE,id_ZSEDSI,id_ZSEDCA
+      type (type_state_variable_id)               :: id_ZDIN,id_ZSIL,id_ZFER,id_ZDIC,id_ZDET,id_ZDTC,id_ZOXY,id_ZALK
      ! type (type_dependency_id)            ::
      ! type (type_diagnostic_variable_id)   ::
-     ! type (type_state_variable_id)   ::
 
       ! Parameters
       real(rk) :: xsedn,xsedc,xsedfe,xsedsi,xsedca
       real(rk) :: wdep,xrfn
-
+      real(rk) :: xthetanit,xthetarem,xo2min
 
    contains
 
@@ -41,6 +41,9 @@ contains
 
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
+   call self%get_parameter(self%xthetanit,'xthetanit','mol O_2 mol N-1','O2 consumption by N remineralisation',default=2.0_rk)
+   call self%get_parameter(self%xthetarem,'xthetarem','mol O_2 mol C-1','O2 consumption by C remineralisation',default=1.1226_rk)
+   call self%get_parameter(self%xo2min,'xo2min','mmol O_2 m-3','minimum O2 concentration',default=4.0_rk)
    call self%get_parameter(self%xsedc, 'xsedc', 'd-1','benthic C remineralisation rate', default=0.05_rk,scale_factor=d_per_s)
    call self%get_parameter(self%xsedn, 'xsedn', 'd-1','benthic N remineralisation rate', default=0.05_rk,scale_factor=d_per_s)
    call self%get_parameter(self%xsedfe, 'xsedfe', 'd-1','benthic Fe remineralisation rate', default=0.01_rk,scale_factor=d_per_s) !NB: check default value
@@ -52,8 +55,17 @@ contains
    call self%register_state_variable(self%id_ZSEDC,'ZSEDC','mmol C/m**2', 'sediment organic carbon pool', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZSEDN,'ZSEDN','mmol N/m**2', 'sediment organic nitrogen pool', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZSEDFE,'ZSEDFE','mmol Fe/m**2', 'sediment organic iron pool', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZSEDC,'ZSEDSI','mmol Si/m**2', 'sediment organic silica pool', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZSEDC,'ZSEDCA','mmol C/m**2', 'sediment organic calcite pool', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZSEDSI,'ZSEDSI','mmol Si/m**2', 'sediment organic silica pool', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZSEDCA,'ZSEDCA','mmol C/m**2', 'sediment organic calcite pool', minimum=0.0_rk)
+
+   call self%register_state_dependency(self%id_ZOXY,'ZOXY','mmol O_2 m-3', 'dissolved oxygen')
+   call self%register_state_dependency(self%id_ZDIN,'ZDIN','mmol N m-3', 'nitrogen nutrient')
+   call self%register_state_dependency(self%id_ZSIL,'ZSIL','mmol Si m-3', 'silicic acid')
+   call self%register_state_dependency(self%id_ZFER,'ZFER','mmol Fe m-3', 'iron nutrient')
+   call self%register_state_dependency(self%id_ZDIC,'ZDIC','mmol C m-3', 'dissolved inorganic carbon')
+   call self%register_state_dependency(self%id_ZDET,'ZDET','mmol N m-3', 'detritus nitrogen')
+   call self%register_state_dependency(self%id_ZDTC,'ZDTC','mmol C m-3', 'detritus carbon')
+   call self%register_state_dependency(self%id_ZALK,'ZALK','meq m-3', 'total alkalinity')
 
    end subroutine initialize
 
@@ -64,7 +76,7 @@ contains
 
 ! !LOCAL VARIABLES:
 
-    real(rk) :: ZSEDC,ZSEDN,ZSEDFE,ZSEDSI,ZSEDCA,ZDET,ZDTC,ZSIL,ZALK
+    real(rk) :: ZSEDC,ZSEDN,ZSEDFE,ZSEDSI,ZSEDCA,ZDET,ZDTC,ZSIL,ZALK,ZOXY
     real(rk) :: fluxc,fluxn,fluxfe
     real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
@@ -77,8 +89,6 @@ contains
     _GET_HORIZONTAL_(self%id_ZSEDCA,ZSEDCA)
     _GET_(self%id_ZDET,ZDET)
     _GET_(self%id_ZDTC,ZDTC)
-    _GET_(self%id_ZSIL,ZSIL)
-    _GET_(self%id_ZALK,ZALK)
 
      fluxc = self%wdep * ZDTC
      fluxn = self%wdep * ZDET
@@ -92,6 +102,8 @@ contains
 
     _SET_BOTTOM_ODE_(self%id_ZSEDN,  -self%xsedn * ZSEDN + fluxn)
     _SET_BOTTOM_EXCHANGE_(self%id_ZDIN, + self%xsedn * ZSEDN)
+
+     if (ZOXY .ge. self%xo2min) _SET_BOTTOM_EXCHANGE_(self%id_ZOXY, - self%xthetanit * fluxn - self%xthetarem * fluxc)
 
     _SET_BOTTOM_ODE_(self%id_ZSEDFE, -self%xsedfe * ZSEDFE + fluxfe)
 

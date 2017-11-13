@@ -17,6 +17,7 @@ module medusa_fast_detritus
   type,extends(type_base_model),public :: type_medusa_fast_detritus
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZDIC,id_ZDIN,id_ZSIL,id_ZOXY,id_ZFER,id_ZDET,id_ZDTC
+      type (type_bottom_state_variable_id) :: id_ZSEDSI,id_ZSEDC,id_ZSEDN
       type (type_dependency_id)            :: id_dz
       type (type_dependency_id)            :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca,id_freminc1,id_freminn1,id_freminsi1,id_freminfe1
       type (type_diagnostic_variable_id)   :: id_freminc,id_freminn,id_freminsi,id_freminfe
@@ -98,9 +99,11 @@ contains
 
    call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
 
-   call self%get_parameter(self%seafloor,'seafloor','-','seafloor handling: 1-inorganic returns, 2-organic returns, 3-couple benthos (nothing to do here)', default = 1)
+   call self%get_parameter(self%seafloor,'seafloor','-','seafloor handling: 1-inorganic returns, 2-organic returns, 3-coupled benthic model', default = 1)
    call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=0.03_rk) !worth to double-check
-
+   if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDSI,'ZSEDSI','mmol Si m-2', 'sediment (Si)')
+   if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDC,'ZSEDC','mmol C m-2', 'sediment (C)')
+   if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDN,'ZSEDN','mmol N m-2', 'sediment (N)')
    end subroutine initialize
 
    subroutine do_fast_detritus(self,_ARGUMENTS_VERTICAL_)
@@ -215,10 +218,11 @@ contains
     _GET_(self%id_ftempsi,ftempsi)
    !_GET_(self%id_ftempca,ftempca)
 
-    ffastc  = ffastc + ftempc/2. * dz
-    ffastn  = ffastn  + ftempn/2. * dz
-    ffastfe = ffastfe + ftempfe/2. * dz
-    ffastsi = ffastsi + ftempsi/2. * dz
+  ! print*,'fast:',ftempc
+    ffastc  = ffastc + ftempc * dz
+    ffastn  = ffastn  + ftempn * dz
+    ffastfe = ffastfe + ftempfe * dz
+    ffastsi = ffastsi + ftempsi * dz
   !  ffastca = ffastca + ftempca
 
    _VERTICAL_LOOP_END_
@@ -270,8 +274,9 @@ contains
 
     _GET_HORIZONTAL_(self%id_ffastc1,ffastc)
     _GET_HORIZONTAL_(self%id_ffastn1,ffastn)
-   ! _GET_HORIZONTAL_(self%id_ffastfe1,ffastfe)
     _GET_HORIZONTAL_(self%id_ffastsi1,ffastsi)
+
+   ! _GET_HORIZONTAL_(self%id_ffastfe1,ffastfe)
 
      if (self%seafloor .eq. 1) then
 
@@ -287,9 +292,12 @@ contains
      _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, + ffastsi)
      _SET_BOTTOM_EXCHANGE_(self%id_ZFER, + ffastn * self%xrfn)
 
-     else
+     elseif (self%seafloor .eq. 3) then !medusa_benthic is coupled
 
-     !nothing to do here, couple benthic module
+     _SET_BOTTOM_ODE_(self%id_ZSEDC, + ffastc)
+     _SET_BOTTOM_ODE_(self%id_ZSEDN, + ffastn)
+     _SET_BOTTOM_ODE_(self%id_ZSEDSI, + ffastsi)
+
 
      end if
  
