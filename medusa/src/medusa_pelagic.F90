@@ -191,7 +191,7 @@ contains
     real(rk) :: xFeT,xb_coef_tmp,xb2M4ac,xLgF,xFel,xFeF,xFree,ffescav,xmaxFeF,fdeltaFe
     real(rk) :: fslowc,fslown,fregen,fregensi,fregenc,ftempn,ftempsi,ftempfe,ftempc,fq1,fcaco3,ftempca
     real(rk) :: fn_prod,fn_cons,fs_cons,fs_prod,fc_cons,fc_prod,fa_prod,fa_cons,fo2_ccons,fo2_ncons,fo2_cons,fo2_prod
-    real(rk) :: freminc,freminn,freminsi
+    real(rk) :: freminc,freminn,freminsi, rsmall
     real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
     _LOOP_BEGIN_
@@ -217,9 +217,11 @@ contains
     _GET_(self%id_par,par) !check PAR // what about self-shading?
     _GET_(self%id_depth,depth)
 
+   rsmall = 0.5 * EPSILON( 1._rk )
+
    !PHYTOPLANKTON GROWTH
    !Chlorophyll
-   if (ZPHN.gt.0.5 * EPSILON( 1._rk )) then
+   if (ZPHN .gt. rsmall) then
     fthetan = max(tiny(ZCHN),(ZCHN * self%xxi) / (ZPHN + tiny(ZPHN)))
     faln = self%xaln * fthetan
    else
@@ -227,7 +229,7 @@ contains
     faln    = 0.
    end if
 
-   if (ZPHD.gt.0.5 * EPSILON( 1._rk )) then
+   if (ZPHD .gt. rsmall) then
     fthetad = max(tiny(ZCHD),(ZCHD * self%xxi) / (ZPHD + tiny(ZPHD)))
     fald = self%xald * fthetad
    else
@@ -250,7 +252,7 @@ contains
    endif
   !Phytoplankton light limitation
    fchn1 = (xvpnT * xvpnT) + (faln * faln * par * par)
-   if (fchn1.gt.0.5 * EPSILON( 1._rk )) then
+   if (fchn1 .gt. rsmall) then
     fchn = xvpnT / (sqrt(fchn1) + tiny(fchn1))
    else
     fchn    = 0.
@@ -258,7 +260,7 @@ contains
    fjln = fchn * faln * par !non-diatom J term
 
    fchd1 = (xvpdT * xvpdT) + (fald * fald * par * par)
-   if (fchd1.gt.0.5 * EPSILON( 1._rk )) then
+   if (fchd1 .gt. rsmall) then
     fchd = xvpdT / (sqrt(fchd1) + tiny(fchd1))
    else
     fchd = 0.
@@ -290,8 +292,8 @@ contains
      fpdlim = min(fnld,ffld)
    end if
 
-   if ( zphd .gt. 0.5 * EPSILON( 1._rk )) fsin = ZPDS / ZPHD
-   if ( zpds .gt. 0.5 * EPSILON( 1._rk )) fnsi = ZPHD / ZPDS
+   if ( zphd .gt. rsmall) fsin = ZPDS / ZPHD
+   if ( zpds .gt. rsmall) fnsi = ZPHD / ZPDS
    fsin1 = 3.0_rk * self%xsin0 !! = 0.6
    fnsi1 = 1.0_rk / fsin1      !! = 1.667
    fnsi2 = 1.0_rk / self%xsin0 !! = 5.0
@@ -325,7 +327,7 @@ contains
   fmi = self%xgmi * ZZMI / fmi1
   fgmipn = fmi * self%xpmipn * ZPHN * ZPHN !grazing on non-diatoms
   fgmid = fmi * self%xpmid * ZDET * ZDET   !grazing on detrital nitrogen
-  if (ZDET .gt. 0.5 * EPSILON( 1._rk )) fgmidc = (ZDTC / (ZDET + tiny(ZDET))) * fgmid !ROAM formulation
+  if (ZDET .gt. rsmall) fgmidc = (ZDTC / (ZDET + tiny(ZDET))) * fgmid !ROAM formulation
   finmi = (1.0_rk - self%xphi) * (fgmipn + fgmid)
   ficmi = (1.0_rk - self%xphi) * ((self%xthetapn * fgmipn) + fgmidc)
   fstarmi = (self%xbetan * self%xthetazmi) / (self%xbetac * self%xkc) !the ideal food C : N ratio for microzooplankton
@@ -347,7 +349,7 @@ contains
   fgmepds = fsin * fgmepd
   fgmezmi = fme * self%xpmezmi * ZZMI * ZZMI
   fgmed = fme * self%xpmed * ZDET * ZDET
-  if (ZDET .gt. 0.5 * EPSILON( 1._rk )) fgmedc = (ZDTC / (ZDET + tiny(ZDET))) * fgmed !ROAM formulation
+  if (ZDET .gt. rsmall) fgmedc = (ZDTC / (ZDET + tiny(ZDET))) * fgmed !ROAM formulation
   finme = (1.0_rk - self%xphi) * (fgmepn + fgmepd + fgmezmi + fgmed)
   ficme = (1.0_rk - self%xphi) * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc) 
   fstarme = (self%xbetan * self%xthetazme) / (self%xbetac * self%xkc)
@@ -480,6 +482,7 @@ contains
   ! carbon:     diatom and mesozooplankton mortality
   ftempc = (self%xfdfrac1 * self%xthetapd * fdpd) + (self%xfdfrac2 * self%xthetazme * fdzme)
   _SET_ODE_(self%id_tempc,ftempc)
+  !print*,'pel:',ftempc
 
   ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
   !if (f3_omcal .ge. 1._rk) then !get f3_omcal!
@@ -527,7 +530,7 @@ contains
   ! dissolved iron
    _SET_ODE_(self%id_ZFER, (self%xrfn * (fn_prod + fn_cons)) - ffescav)
                                                !+ ffetop     &
-                                               !+ ffebot     &
+                                               !+ ffebot     & GL: external sources of iron
 
 
   ! detrital carbon
