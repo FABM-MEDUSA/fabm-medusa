@@ -4,11 +4,14 @@ L4_medusa:
    time_method: 2
    variables:
        - source: *
+       - source: int_change_in_total_carbon
+       - source: int_change_in_total_nitrogen
+       - source: int_change_in_total_silicate
 L4_medusay:
    time_unit: year
    time_step: 1
-   k_start: 30
-   k_stop: 30
+   k_start: 50
+   k_stop: 50
    k_stride: 1
    time_method: 2
    variables:
@@ -16,8 +19,8 @@ L4_medusay:
 L4_medusas:
    time_unit: day
    time_step: 1
-   k_start: 30
-   k_stop: 30
+   k_start: 50
+   k_stop: 50
    k_stride: 1
    time_method: 2
    variables:
