@@ -4,6 +4,7 @@ add_library(fabm_models_medusa OBJECT
             medusa_fast_detritus.F90
             medusa_oxygen.F90
             medusa_carbonate.F90
+            medusa_benthic.F90
            )
 
 add_dependencies(fabm_models_medusa fabm_base)
