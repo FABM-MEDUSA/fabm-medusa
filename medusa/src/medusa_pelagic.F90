@@ -508,7 +508,7 @@ contains
   _SET_ODE_(self%id_ZZME, fmegrow - fdzme - fdzme2 )
 
   ! detritus
-  _SET_ODE_(self%id_ZDET,fdpn + ((1._rk - self%xfdfrac1) * fdpd) + fdzmi + ((1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetan) * (finmi + finme))-fgmid-fgmed-fdd)
+  _SET_ODE_(self%id_ZDET,fslown-fgmid-fgmed-fdd)
 
   !dissolved inorganic nitrogen
    fn_cons = - (fprn * ZPHN) - (fprd * ZPHD)                         ! primary production
@@ -534,7 +534,7 @@ contains
 
 
   ! detrital carbon
-   _SET_ODE_(self%id_ZDTC, (self%xthetapn * fdpn) + ((1._rk - self%xfdfrac1) * (self%xthetapd * fdpd)) + (self%xthetazmi * fdzmi) + ((1._rk - self%xfdfrac2) * (self%xthetazme * fdzme)) + ((1._rk - self%xbetac) * (ficmi + ficme))- fgmidc - fgmedc - fddc)
+   _SET_ODE_(self%id_ZDTC, fslowc - fgmidc - fgmedc - fddc)
                  
   ! dissolved inorganic carbon
    fc_cons = - (self%xthetapn * fprn * ZPHN) - (self%xthetapd * fprd * ZPHD)                      ! primary production
