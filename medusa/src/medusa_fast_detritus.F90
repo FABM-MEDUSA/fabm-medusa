@@ -17,7 +17,7 @@ module medusa_fast_detritus
   type,extends(type_base_model),public :: type_medusa_fast_detritus
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZDIC,id_ZDIN,id_ZSIL,id_ZOXY,id_ZFER,id_ZDET,id_ZDTC,id_ZALK
-      type (type_bottom_state_variable_id) :: id_ZSEDSI,id_ZSEDC,id_ZSEDN
+      type (type_bottom_state_variable_id) :: id_ZSEDSI,id_ZSEDC,id_ZSEDN,id_ZSEDCA
       type (type_dependency_id)            :: id_dz
       type (type_dependency_id)            :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca
       type (type_dependency_id)            :: id_freminc1,id_freminn1,id_freminsi1,id_freminfe1,id_freminca1
@@ -116,6 +116,8 @@ contains
    if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDSI,'ZSEDSI','mmol Si m-2', 'sediment (Si)')
    if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDC,'ZSEDC','mmol C m-2', 'sediment (C)')
    if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDN,'ZSEDN','mmol N m-2', 'sediment (N)')
+   if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDCA,'ZSEDCA','mmol N m-2', 'sediment (CaCO3)')
+
    end subroutine initialize
 
    subroutine do_fast_detritus(self,_ARGUMENTS_VERTICAL_)
@@ -275,7 +277,7 @@ contains
      class(type_medusa_fast_detritus), intent(in) :: self
      _DECLARE_ARGUMENTS_DO_BOTTOM_
      
-     real(rk) :: ffastc,ffastn,ffastsi !ffastfe
+     real(rk) :: ffastc,ffastn,ffastsi,ffastca !ffastfe
 
      !TO-DO: oxygen consumption
 
@@ -284,6 +286,7 @@ contains
     _GET_HORIZONTAL_(self%id_ffastc1,ffastc)
     _GET_HORIZONTAL_(self%id_ffastn1,ffastn)
     _GET_HORIZONTAL_(self%id_ffastsi1,ffastsi)
+    _GET_HORIZONTAL_(self%id_ffastca1,ffastca)
 
    ! _GET_HORIZONTAL_(self%id_ffastfe1,ffastfe)
 
@@ -306,7 +309,7 @@ contains
      _SET_BOTTOM_ODE_(self%id_ZSEDC, + ffastc)
      _SET_BOTTOM_ODE_(self%id_ZSEDN, + ffastn)
      _SET_BOTTOM_ODE_(self%id_ZSEDSI, + ffastsi)
-
+     _SET_BOTTOM_ODE_(self%id_ZSEDCA, + ffastca)
 
      end if
  
