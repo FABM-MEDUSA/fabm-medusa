@@ -19,7 +19,9 @@ module medusa_fast_detritus
       type (type_state_variable_id)        :: id_ZDIC,id_ZDIN,id_ZSIL,id_ZOXY,id_ZFER,id_ZDET,id_ZDTC
       type (type_bottom_state_variable_id) :: id_ZSEDSI,id_ZSEDC,id_ZSEDN
       type (type_dependency_id)            :: id_dz
-      type (type_dependency_id)            :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca,id_freminc1,id_freminn1,id_freminsi1,id_freminfe1
+      type (type_dependency_id)            :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca
+      type (type_dependency_id)            :: id_freminc1,id_freminn1,id_freminsi1,id_freminfe1
+      type (type_dependency_id)            :: id_om_cal
       type (type_diagnostic_variable_id)   :: id_freminc,id_freminn,id_freminsi,id_freminfe
       type (type_horizontal_diagnostic_variable_id) :: id_ffastc,id_ffastn,id_ffastsi,id_ffastfe
       type (type_horizontal_dependency_id) :: id_ffastc1,id_ffastn1,id_ffastfe1,id_ffastsi1
@@ -92,6 +94,8 @@ contains
    call self%register_diagnostic_variable(self%id_ffastfe,'ffastfe','mmol Fe m-2 s-1','remineralisation of detritus (Fe)',missing_value=0.0_rk,source=source_do_column,output=output_none)
    call self%register_diagnostic_variable(self%id_ffastsi,'ffastsi','mmol Si m-2 s-1','remineralisation of detritus (Si)',missing_value=0.0_rk,source=source_do_column,output=output_none)
 
+   call self%register_dependency(self%id_om_cal,'om_cal','-','calcite saturation')
+
    call self%register_horizontal_dependency(self%id_ffastc1,'ffastc','mmol C m-2 s-1','remineralisation of detritus (C)')
    call self%register_horizontal_dependency(self%id_ffastn1,'ffastn','mmol N m-2 s-1','remineralisation of detritus (N)')
    call self%register_horizontal_dependency(self%id_ffastfe1,'ffastfe','mmol Fe m-2 s-1','remineralisation of detritus (Si)')
@@ -123,6 +127,7 @@ contains
    real(rk) :: ftempc,ftempn,ftempfe,ftempsi,ftempca
    real(rk) :: freminc,freminn,freminfe,freminsi,freminca
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
+   real(rk) :: om_cal
 
    ffastc=0._rk
    ffastn=0._rk
@@ -194,36 +199,29 @@ contains
    ffastsi = fq1
 
    !biogenic calcium carbonate
-  ! fq0      = ffastca                           !! how much CaCO3 enters this box            (mol)
-  ! if (fdep.le.fccd_dep) then
-  ! !! whole grid cell above CCD
-  ! fq1      = fq0                               !! above lysocline, no Ca dissolves          (mol)
-  ! freminca = 0.0                               !! above lysocline, no Ca dissolves          (mol)
-  ! fccd = real(jk)                              !! which is the last level above the CCD?    (#)
-  ! elseif (fdep.ge.fccd_dep) then
-  ! !! whole grid cell below CCD
-  ! fq1      = fq0 * exp(-(dz / xfastca))        !! how much CaCO3 leaves this box            (mol)
-  ! freminca = (fq0 - fq1) / dz                  !! Ca remineralisation in this box           (mol)
-  ! else
-  ! !! partial grid cell below CCD
-  ! fq2      = fdep1 - fccd_dep                  !! amount of grid cell below CCD             (m)
-  ! fq1      = fq0 * exp(-(fq2 / xfastca))       !! how much CaCO3 leaves this box            (mol)
-  ! freminca = (fq0 - fq1) / dz                  !! Ca remineralisation in this box           (mol)
-  ! endif
-  ! ffastca = fq1
+  
+   _GET_(self%id_om_cal,om_cal)
+   fq0      = ffastca                           !! how much CaCO3 enters this box            (mol)
+   if (om_cal .ge. 1._rk) then
+   fq1      = fq0                               !! above lysocline, no Ca dissolves          (mol)
+   freminca = 0.0                               !! above lysocline, no Ca dissolves          (mol)
+   elseif (om_cal.lt. 1._rk) then
+   fq1      = fq0 * exp(-(dz / xfastca))        !! how much CaCO3 leaves this box            (mol)
+   freminca = (fq0 - fq1) / dz                  !! Ca remineralisation in this box           (mol)
+   endif
+   ffastca = fq1
 
     _GET_(self%id_ftempc,ftempc)
     _GET_(self%id_ftempn,ftempn)
     _GET_(self%id_ftempfe,ftempfe)
     _GET_(self%id_ftempsi,ftempsi)
-   !_GET_(self%id_ftempca,ftempca)
+    _GET_(self%id_ftempca,ftempca)
 
-  ! print*,'fast:',ftempc
     ffastc  = ffastc + ftempc * dz
     ffastn  = ffastn  + ftempn * dz
     ffastfe = ffastfe + ftempfe * dz
     ffastsi = ffastsi + ftempsi * dz
-  !  ffastca = ffastca + ftempca
+    ffastca = ffastca + ftempca * dz
 
    _VERTICAL_LOOP_END_
 
@@ -231,7 +229,7 @@ contains
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastn,ffastn)
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastfe,ffastfe)
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastsi,ffastsi)
-
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastca,ffastca)
    end subroutine do_fast_detritus
 
    subroutine do(self,_ARGUMENTS_DO_)
