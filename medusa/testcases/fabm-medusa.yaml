@@ -120,6 +120,7 @@ instances:
   medusa_fast_detritus:
     model: medusa/medusa_fast_detritus
     parameters:
+      iball: 2                 # ballast model formulation
       seafloor: 3              # seafloor handling (1-inorganic returns, 2-organic returns, 3-couple benthos (nothing to do in this model)', default = 1)
       xrfn: 0.03               # phytoplankton Fe:N uptake ratio (umol Fe mol N-1 m), default=30.
     coupling:
