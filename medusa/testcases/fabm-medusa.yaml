@@ -1,5 +1,16 @@
 check_conservation: true
 instances:
+  gas_transfer:
+    model: medusa/gas_transfer
+    parameters:
+      eqn: 7  #choice of gas transfer coefficients, default = 7
+  # 1 Liss & Merlivat (1986)    [approximated]
+  # 2 Wanninkhof (1992)         [sans enhancement]
+  # 3 Nightingale et al. (2000) [good]
+  # 4 Nightingale et al. (2000) [better]
+  # 5 Nightingale et al. (2000) [best]
+  # 6 OCMIP-2                   [sans variability]
+  # 7 Wanninkhof (2014)         [assumes 6h avg winds]
   medusa_carbonate:
     model: medusa/medusa_carbonate
     coupling:
@@ -9,6 +20,7 @@ instances:
     model: medusa/medusa_oxygen
     coupling:
       ZOXY: medusa_pelagic/ZOXY
+      kw660: gas_transfer/kw660
   medusa_pelagic:
     model: medusa/medusa_pelagic
     parameters:
@@ -118,9 +130,11 @@ instances:
       ZDIC: medusa_pelagic/ZDIC
       ZDET: medusa_pelagic/ZDET
       ZDTC: medusa_pelagic/ZDTC
+      ZALK: medusa_pelagic/ZALK
       ZSEDSI: medusa_benthic/ZSEDSI
       ZSEDC: medusa_benthic/ZSEDC
       ZSEDN: medusa_benthic/ZSEDN
+      ZSEDCA: medusa_benthic/ZSEDCA
       om_cal: medusa_carbonate/Om_cal
   medusa_benthic:
     model: medusa/medusa_benthic

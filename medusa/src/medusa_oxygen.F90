@@ -19,7 +19,7 @@ module medusa_oxygen
       type (type_state_variable_id)                 :: id_ZOXY
       type (type_horizontal_diagnostic_variable_id) ::  id_fair
       type (type_dependency_id)                     :: id_temp,id_salt
-      type (type_horizontal_dependency_id)          :: id_apress,id_wnd
+      type (type_horizontal_dependency_id)          :: id_apress,id_kw660
 
    contains
 
@@ -40,8 +40,9 @@ contains
    call self%register_dependency(self%id_temp, standard_variables%temperature)
    call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
    call self%register_dependency(self%id_apress, standard_variables%surface_air_pressure)
-   call self%register_dependency(self%id_wnd,standard_variables%wind_speed)
    call self%register_diagnostic_variable(self%id_fair,'fair','mmol O_2/m^2/d','Air-sea flux of oxygen')
+
+   call self%register_horizontal_dependency(self%id_kw660, 'kw660', 'm/s', 'gas transfer velocity')
 
    end subroutine initialize
 
@@ -51,7 +52,7 @@ contains
 
    _DECLARE_ARGUMENTS_DO_SURFACE_
 
-   real(rk) :: pt,ps,o2,o2_sato,o2_schmidt,kwo2,o2_sat,pp0,kw660,wnd,o2flux,o2sat
+   real(rk) :: pt,ps,o2,o2_sato,o2_schmidt,kwo2,o2_sat,pp0,kw660,o2flux,o2sat
    real(rk) :: a0 = 2.00907_rk
    real(rk) :: a1 = 3.22014_rk
    real(rk) :: a2 = 4.05010_rk
@@ -72,24 +73,6 @@ contains
    real(rk) :: as3 = -0.10939_rk
    real(rk) :: as4 = 0.00093777_rk
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
-   real(rk) :: a(7)
-   real(rk) :: b(7)
-   real(rk) :: tmp_k
-   data a(1) / 0.166_rk /  ! Liss & Merlivat (1986)    [approximated]
-   data a(2) / 0.3_rk /    ! Wanninkhof (1992)         [sans enhancement]
-   data a(3) / 0.23_rk /   ! Nightingale et al. (2000) [good]
-   data a(4) / 0.23_rk /   ! Nightingale et al. (2000) [better]
-   data a(5) / 0.222_rk /  ! Nightingale et al. (2000) [best]
-   data a(6) / 0.337_rk /  ! OCMIP-2                   [sans variability]
-   data a(7) / 0.251_rk /  ! Wanninkhof (2014)         [assumes 6h avg winds]
-   data b(1) / 0.133_rk /
-   data b(2) / 0.0_rk /
-   data b(3) / 0.0_rk /
-   data b(4) / 0.1_rk /
-   data b(5) / 0.333_rk /
-   data b(6) / 0.0_rk /
-   data b(7) / 0.0_rk /
-
 
    _HORIZONTAL_LOOP_BEGIN_
 
@@ -97,16 +80,9 @@ contains
    _GET_(self%id_salt,ps)
    _GET_(self%id_ZOXY,o2)
    _GET_HORIZONTAL_(self%id_apress,pp0)
-   _GET_HORIZONTAL_(self%id_wnd,wnd)
+   _GET_HORIZONTAL_(self%id_kw660,kw660)
 
       o2 = o2/1000._rk
-
-! Calculate gas transfer velocity (cm/h)
-
-      tmp_k = (a(7) * wnd**2) + (b(7) * wnd)
-
-! Convert tmp_k from cm/h to m/s
-      kw660 = tmp_k / (3600._rk * 100._rk)
 
  !note: air-sea fluxes must be corrected for sea ice
 

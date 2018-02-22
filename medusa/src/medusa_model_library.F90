@@ -7,6 +7,7 @@ module medusa_model_library
    use medusa_oxygen
    use medusa_carbonate
    use medusa_benthic
+   use gas_transfer
 
    implicit none
 
@@ -33,7 +34,8 @@ allocate(type_medusa_fast_detritus::model)
          case ('medusa_oxygen');                           allocate(type_medusa_oxygen::model)
          case ('medusa_carbonate');                        allocate(type_medusa_carbonate::model)
          case ('medusa_benthic');                          allocate(type_medusa_benthic::model)
-         ! Add new models here
+         case ('gas_transfer');                            allocate(type_gas_transfer::model)
+        ! Add new models here
       end select
    end subroutine create
 
