@@ -103,6 +103,8 @@ instances:
       tempc: medusa_fast_detritus/tempc
       tempsi: medusa_fast_detritus/tempsi
       tempfe: medusa_fast_detritus/tempfe
+      tempca: medusa_fast_detritus/tempca
+      om_cal: medusa_carbonate/Om_cal
   medusa_fast_detritus:
     model: medusa/medusa_fast_detritus
     parameters:
@@ -119,6 +121,7 @@ instances:
       ZSEDSI: medusa_benthic/ZSEDSI
       ZSEDC: medusa_benthic/ZSEDC
       ZSEDN: medusa_benthic/ZSEDN
+      om_cal: medusa_carbonate/Om_cal
   medusa_benthic:
     model: medusa/medusa_benthic
     use: true
