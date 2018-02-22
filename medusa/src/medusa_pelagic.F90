@@ -553,7 +553,7 @@ contains
              + (self%xthetapd * fdpd2) + (self%xthetazmi * fdzmi2)                             &  ! losses
              + (self%xthetazme * fdzme2)                                                          ! losses
 
-  ! fc_prod = fc_prod - ftempca + freminca         ! CaCO3
+   fc_prod = fc_prod - ftempca !+ freminca         ! CaCO3
 
    _SET_ODE_(self%id_ZDIC,fc_prod + fc_cons)
 
