@@ -245,7 +245,7 @@ contains
      _DECLARE_ARGUMENTS_DO_
 
      real(rk) :: ZOXY
-     real(rk) :: freminc,freminn,freminsi,freminfe
+     real(rk) :: freminc,freminn,freminsi,freminfe,freminca
 
     _LOOP_BEGIN_
 
@@ -254,8 +254,9 @@ contains
        _GET_(self%id_freminn1,freminn)
        _GET_(self%id_freminsi1,freminsi)
        _GET_(self%id_freminfe1,freminfe)
+       _GET_(self%id_freminca1,freminca)
 
-       _SET_ODE_(self%id_ZDIC, + freminc)
+       _SET_ODE_(self%id_ZDIC, + freminc + freminca)
        _SET_ODE_(self%id_ZDIN, + freminn)
        _SET_ODE_(self%id_ZSIL, + freminsi)
        _SET_ODE_(self%id_ZFER, + freminfe)
