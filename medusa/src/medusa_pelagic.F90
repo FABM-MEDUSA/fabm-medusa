@@ -16,7 +16,7 @@ module medusa_pelagic
   type,extends(type_base_model),public :: type_medusa_pelagic
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
-      type (type_dependency_id)            :: id_temp,id_par,id_depth,id_salt
+      type (type_dependency_id)            :: id_temp,id_par,id_depth,id_salt, id_om_cal
       type (type_diagnostic_variable_id)   :: id_dPAR
       type (type_state_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
       ! Parameters
@@ -161,12 +161,16 @@ contains
    call self%register_state_dependency(self%id_tempc,'tempc','mmol C/m**3', 'fast-sinking detritus (C)')
    call self%register_state_dependency(self%id_tempsi,'tempsi','mmol Si/m**3', 'fast-sinking detritus (Si)')
    call self%register_state_dependency(self%id_tempfe,'tempfe','mmol Fe/m**3', 'fast-sinking detritus (Fe)')
+   call self%register_state_dependency(self%id_tempca,'tempca','mmol CaCO3/m**3', 'fast-sinking detritus (CaCO3)')
 
    ! Register environmental dependencies
    call self%register_dependency(self%id_temp, standard_variables%temperature)
    call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
    call self%register_dependency(self%id_par, standard_variables%downwelling_photosynthetic_radiative_flux)
    call self%register_dependency(self%id_depth, standard_variables%depth)
+
+   call self%register_dependency(self%id_om_cal,'om_cal','-','calcite saturation')
+
 
    end subroutine initialize
 
@@ -191,7 +195,7 @@ contains
     real(rk) :: xFeT,xb_coef_tmp,xb2M4ac,xLgF,xFel,xFeF,xFree,ffescav,xmaxFeF,fdeltaFe
     real(rk) :: fslowc,fslown,fregen,fregensi,fregenc,ftempn,ftempsi,ftempfe,ftempc,fq1,fcaco3,ftempca
     real(rk) :: fn_prod,fn_cons,fs_cons,fs_prod,fc_cons,fc_prod,fa_prod,fa_cons,fo2_ccons,fo2_ncons,fo2_cons,fo2_prod
-    real(rk) :: freminc,freminn,freminsi, rsmall
+    real(rk) :: rsmall, om_cal
     real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
     _LOOP_BEGIN_
@@ -485,13 +489,16 @@ contains
   !print*,'pel:',ftempc
 
   ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
-  !if (f3_omcal .ge. 1._rk) then !get f3_omcal!
-  !   fq1 = (f3_omcal - 1._rk)**0.81
-  !else
-  !   fq1 = 0.
-  !endif
-  !   fcaco3 = self%xridg_r0 * fq1
-  !ftempca = ftempc * fcaco3
+
+  _GET_(self%id_om_cal,om_cal)
+  if (om_cal .ge. 1._rk) then !get f3_omcal!
+     fq1 = (om_cal - 1._rk)**0.81
+  else
+     fq1 = 0.
+  endif
+  fcaco3 = self%xridg_r0 * fq1
+  ftempca = ftempc * fcaco3
+  _SET_ODE_(self%id_tempca,ftempca)
 
   !LOCAL SMS TRENDS
   ! chlorophyll

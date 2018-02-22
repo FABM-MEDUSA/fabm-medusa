@@ -20,11 +20,11 @@ module medusa_fast_detritus
       type (type_bottom_state_variable_id) :: id_ZSEDSI,id_ZSEDC,id_ZSEDN
       type (type_dependency_id)            :: id_dz
       type (type_dependency_id)            :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca
-      type (type_dependency_id)            :: id_freminc1,id_freminn1,id_freminsi1,id_freminfe1
+      type (type_dependency_id)            :: id_freminc1,id_freminn1,id_freminsi1,id_freminfe1,id_freminca1
       type (type_dependency_id)            :: id_om_cal
-      type (type_diagnostic_variable_id)   :: id_freminc,id_freminn,id_freminsi,id_freminfe
-      type (type_horizontal_diagnostic_variable_id) :: id_ffastc,id_ffastn,id_ffastsi,id_ffastfe
-      type (type_horizontal_dependency_id) :: id_ffastc1,id_ffastn1,id_ffastfe1,id_ffastsi1
+      type (type_diagnostic_variable_id)   :: id_freminc,id_freminn,id_freminsi,id_freminfe,id_freminca
+      type (type_horizontal_diagnostic_variable_id) :: id_ffastc,id_ffastn,id_ffastsi,id_ffastfe,id_ffastca
+      type (type_horizontal_dependency_id) :: id_ffastc1,id_ffastn1,id_ffastfe1,id_ffastsi1,id_ffastca1
       type (type_diagnostic_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
       ! Parameters
       real(rk) :: xthetanit,xthetarem,xo2min,xrfn
@@ -55,6 +55,7 @@ contains
    call self%register_diagnostic_variable(self%id_tempn,'tempn','mmol N m-3','fast-sinking detritus (N)', act_as_state_variable=.true., missing_value=0.0_rk,source=source_none, output=output_none)
    call self%register_diagnostic_variable(self%id_tempfe,'tempfe','-','fast-sinking detritus (Fe)', act_as_state_variable=.true., missing_value=0.0_rk,source=source_none, output=output_none)
    call self%register_diagnostic_variable(self%id_tempsi,'tempsi','mmol Si m-3','fast-sinking detritus (Si)', act_as_state_variable=.true., missing_value=0.0_rk,source=source_none, output=output_none)
+   call self%register_diagnostic_variable(self%id_tempca,'tempca','mmol CaCO3 m-3','fast-sinking detritus (CaCO3)', act_as_state_variable=.true., missing_value=0.0_rk,source=source_none, output=output_none)
 
    call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_tempc)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_tempn)
@@ -65,7 +66,9 @@ contains
    call self%register_dependency(self%id_ftempn, 'ftempn', 'mmol N m-3 s-1', 'production of fast-sinking detritus (N)')
    call self%register_dependency(self%id_ftempfe,'ftempfe', 'mmol Fe m-3 s-1', 'production of fast-sinking detritus (Fe)')
    call self%register_dependency(self%id_ftempsi,'ftempsi', 'mmol Si m-3 s-1', 'production of fast-sinking detritus (Si)')
-  ! call self%register_dependency(self%id_ftempca,'ftempca', '', 'production of fast-sinking detritus (CaCO3)')
+   call self%register_dependency(self%id_ftempca,'ftempca', 'mmol CaCO3 m-3 s-1', 'production of fast-sinking detritus (CaCO3)')
+
+   call self%request_coupling(self%id_ftempca,'tempca_sms_tot')
    call self%request_coupling(self%id_ftempc, 'tempc_sms_tot')
    call self%request_coupling(self%id_ftempn, 'tempn_sms_tot')
    call self%request_coupling(self%id_ftempfe, 'tempfe_sms_tot')
@@ -83,16 +86,19 @@ contains
    call self%register_diagnostic_variable(self%id_freminn,'freminn','mmol N m-3 s-1','remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column,output=output_none)
    call self%register_diagnostic_variable(self%id_freminsi,'freminsi','mmol Si m-3 s-1','remineralisation of detritus (Si)',missing_value=0.0_rk,source=source_do_column,output=output_none)
    call self%register_diagnostic_variable(self%id_freminfe,'freminfe','mmol Fe m-3 s-1','remineralisation of detritus (Fe)',missing_value=0.0_rk,source=source_do_column,output=output_none)
+   call self%register_diagnostic_variable(self%id_freminca,'freminca','mmol CaCO3 m-3 s-1','remineralisation of calcite (CaCO3)',missing_value=0.0_rk,source=source_do_column,output=output_none)
 
    call self%register_dependency(self%id_freminc1,'freminc','mmol C m-3 s-1','remineralisation of detritus (C)')
    call self%register_dependency(self%id_freminn1,'freminn','mmol N m-3 s-1','remineralisation of detritus (N)')
    call self%register_dependency(self%id_freminsi1,'freminsi','mmol Si m-3 s-1','remineralisation of detritus (Si)')
    call self%register_dependency(self%id_freminfe1,'freminfe','mmol Fe m-3 s-1','remineralisation of detritus (Fe)')
+   call self%register_dependency(self%id_freminca1,'freminca','mmol CaCO3 m-3 s-1','remineralisation of calcite (CaCO3)')
 
    call self%register_diagnostic_variable(self%id_ffastc,'ffastc','mmol C m-2 s-1','remineralisation of detritus (C)',missing_value=0.0_rk,source=source_do_column,output=output_none)
    call self%register_diagnostic_variable(self%id_ffastn,'ffastn','mmol N m-2 s-1','remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column,output=output_none)
    call self%register_diagnostic_variable(self%id_ffastfe,'ffastfe','mmol Fe m-2 s-1','remineralisation of detritus (Fe)',missing_value=0.0_rk,source=source_do_column,output=output_none)
    call self%register_diagnostic_variable(self%id_ffastsi,'ffastsi','mmol Si m-2 s-1','remineralisation of detritus (Si)',missing_value=0.0_rk,source=source_do_column,output=output_none)
+   call self%register_diagnostic_variable(self%id_ffastca,'ffastca','mmol CaCO3 m-2 s-1','remineralisation of calcite (CaCO3)',missing_value=0.0_rk,source=source_do_column,output=output_none)
 
    call self%register_dependency(self%id_om_cal,'om_cal','-','calcite saturation')
 
@@ -100,6 +106,7 @@ contains
    call self%register_horizontal_dependency(self%id_ffastn1,'ffastn','mmol N m-2 s-1','remineralisation of detritus (N)')
    call self%register_horizontal_dependency(self%id_ffastfe1,'ffastfe','mmol Fe m-2 s-1','remineralisation of detritus (Si)')
    call self%register_horizontal_dependency(self%id_ffastsi1,'ffastsi','mmol Si m-2 s-1','remineralisation of detritus (Si)')
+   call self%register_horizontal_dependency(self%id_ffastca1,'ffastca','mmol CaCO3 m-2 s-1','remineralisation of calcite (CaCO3)')
 
    call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
 
@@ -121,7 +128,7 @@ contains
    real(rk) :: xmasssi = 60.084_rk
    real(rk) :: xprotca = 0.07_rk
    real(rk) :: xprotsi = 0.026_rk
-   real(rk) :: xfastc = 188._rk, xfastsi = 2000._rk
+   real(rk) :: xfastc = 188._rk, xfastsi = 2000._rk, xfastca = 3500._rk
 
    real(rk) :: ffastc,ffastn,ffastca,ffastsi,ffastfe
    real(rk) :: ftempc,ftempn,ftempfe,ftempsi,ftempca
