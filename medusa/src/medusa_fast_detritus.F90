@@ -16,7 +16,7 @@ module medusa_fast_detritus
 
   type,extends(type_base_model),public :: type_medusa_fast_detritus
       ! Variable identifiers
-      type (type_state_variable_id)        :: id_ZDIC,id_ZDIN,id_ZSIL,id_ZOXY,id_ZFER,id_ZDET,id_ZDTC
+      type (type_state_variable_id)        :: id_ZDIC,id_ZDIN,id_ZSIL,id_ZOXY,id_ZFER,id_ZDET,id_ZDTC,id_ZALK
       type (type_bottom_state_variable_id) :: id_ZSEDSI,id_ZSEDC,id_ZSEDN
       type (type_dependency_id)            :: id_dz
       type (type_dependency_id)            :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca
@@ -81,6 +81,7 @@ contains
    call self%register_state_dependency(self%id_ZDIC,'ZDIC','mmol C m-3', 'dissolved inorganic carbon')
    call self%register_state_dependency(self%id_ZDET,'ZDET','mmol N m-3', 'detritus nitrogen')
    call self%register_state_dependency(self%id_ZDTC,'ZDTC','mmol C m-3', 'detritus carbon')
+   call self%register_state_dependency(self%id_ZALK,'ZALK','meq/m**3', 'total alkalinity')
 
    call self%register_diagnostic_variable(self%id_freminc,'freminc','mmol C m-3 s-1','remineralisation of detritus (C)',missing_value=0.0_rk,source=source_do_column,output=output_none)
    call self%register_diagnostic_variable(self%id_freminn,'freminn','mmol N m-3 s-1','remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column,output=output_none)
@@ -262,6 +263,8 @@ contains
        _SET_ODE_(self%id_ZFER, + freminfe)
 
        if (ZOXY .ge. self%xo2min) _SET_ODE_(self%id_ZOXY, - self%xthetarem * freminc - self%xthetanit * freminn)
+
+       _SET_ODE_(self%id_ZALK, 2._rk * freminca)
 
    _LOOP_END_
 

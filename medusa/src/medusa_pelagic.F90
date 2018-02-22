@@ -559,9 +559,9 @@ contains
 
   ! alkalinity
   ! fa_prod =  2._rk * freminca                                                   ! CaCO3 dissolution
-  ! fa_cons = -2._rk * ftempca                                                    ! CaCO3 production
+   fa_cons = -2._rk * ftempca                                                    ! CaCO3 production
 
-  ! _SET_ODE_(self%id_ZALK, fa_prod + fa_cons)
+  _SET_ODE_(self%id_ZALK, fa_cons)
 
   ! oxygen
    fo2_prod = + (self%xthetanit * fprn * ZPHN)                                            & ! Pn primary production, N
