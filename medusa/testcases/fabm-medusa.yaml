@@ -84,7 +84,7 @@ instances:
       xk_FeL: 100.0             # dissociation constant for (Fe+ligand), default=100.0
       xLgT: 1.0                 # total ligand concentration (umol m-3), default=1.0	
       xk_sc_Fe: 0.001           # scavenging rate of "free" Fe (d-1), default=0.001
-      jiron: 1                  # iron scavenging scheme, 1-Dutkiewicz et al. (2005),2-Moore et al. (2004),3-Moore et al. (2008),4-Galbraith et al. (2010)',default=1
+      jiron: 5                  # iron scavenging scheme, 1-Dutkiewicz et al. (2005),2-Moore et al. (2004),3-Moore et al. (2008),4-Galbraith et al. (2010)',default=1
       xfdfrac1: 0.33            # fast detritus fraction of diatom losses, default=0.33
       xfdfrac2: 1.              # fast detritus fraction of mesozooplankton losses, default=1.
       xfdfrac3: 0.8             # fast detritus fraction of mesozooplankton grazing, default=0.8
@@ -120,8 +120,8 @@ instances:
   medusa_fast_detritus:
     model: medusa/medusa_fast_detritus
     parameters:
-      iball: 2                 # ballast model formulation
-      seafloor: 3              # seafloor handling (1-inorganic returns, 2-organic returns, 3-couple benthos (nothing to do in this model)', default = 1)
+      iball: 1                 # ballast model formulation (1- ballast model (Yool et al., 2011), 2- ballast-sans-ballast model), default = 1
+      seafloor: 3              # seafloor handling (1-inorganic returns, 2-organic returns, 3-couple benthos (nothing to do in this model), default = 1
       xrfn: 0.03               # phytoplankton Fe:N uptake ratio (umol Fe mol N-1 m), default=30.
     coupling:
       ZOXY: medusa_pelagic/ZOXY

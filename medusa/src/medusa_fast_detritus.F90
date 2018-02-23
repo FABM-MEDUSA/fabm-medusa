@@ -50,7 +50,7 @@ contains
    call self%get_parameter(self%xthetanit,'xthetanit','mol O_2 mol N-1','O2 consumption by N remineralisation',default=2.0_rk)
    call self%get_parameter(self%xthetarem,'xthetarem','mol O_2 mol C-1','O2 consumption by C remineralisation',default=1.1226_rk)
    call self%get_parameter(self%xo2min,'xo2min','mmol O_2 m-3','minimum O2 concentration',default=4.0_rk)
-   call self%get_parameter(self%iball,'iball','Ballast model 1 or 2', default=1)
+   call self%get_parameter(self%iball,'iball','ballast model formulation (1- ballast model (Yool et al., 2011), 2- ballast-sans-ballast model)', default=1)
 
    ! Create diagnostics for fast-sinking detritus that acts as state variables, so they can receive sources.
    call self%register_diagnostic_variable(self%id_tempc,'tempc','mmol C m-3','fast-sinking detritus (C)', act_as_state_variable=.true., missing_value=0.0_rk,source=source_none, output=output_none)
