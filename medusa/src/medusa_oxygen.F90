@@ -17,7 +17,7 @@ module medusa_oxygen
 
       ! Variable identifiers
       type (type_state_variable_id)                 :: id_ZOXY
-      type (type_horizontal_diagnostic_variable_id) ::  id_fair
+      type (type_horizontal_diagnostic_variable_id) ::  id_fairo2
       type (type_dependency_id)                     :: id_temp,id_salt
       type (type_horizontal_dependency_id)          :: id_apress,id_kw660
 
@@ -40,7 +40,7 @@ contains
    call self%register_dependency(self%id_temp, standard_variables%temperature)
    call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
    call self%register_dependency(self%id_apress, standard_variables%surface_air_pressure)
-   call self%register_diagnostic_variable(self%id_fair,'fair','mmol O_2/m^2/d','Air-sea flux of oxygen')
+   call self%register_diagnostic_variable(self%id_fairo2,'fairo2','mmol O_2/m^2/d','Air-sea flux of oxygen')
 
    call self%register_horizontal_dependency(self%id_kw660, 'kw660', 'm/s', 'gas transfer velocity')
 
@@ -99,6 +99,7 @@ contains
              + c0*(ps*ps)
       ans2 = exp(ans1)
 
+
 !  Convert from ml/l to mol/m3
    o2_sato = (ans2 / 22391.6_rk) * 1000.0_rk
 
@@ -109,7 +110,7 @@ contains
    o2flux = o2flux *1000._rk
    
    _SET_SURFACE_EXCHANGE_(self%id_ZOXY, o2flux)
-   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fair, o2flux*86400._rk)
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fairo2, o2flux*86400._rk)
 
    _HORIZONTAL_LOOP_END_
 
