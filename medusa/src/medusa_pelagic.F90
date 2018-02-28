@@ -486,7 +486,6 @@ contains
   ! carbon:     diatom and mesozooplankton mortality
   ftempc = (self%xfdfrac1 * self%xthetapd * fdpd) + (self%xfdfrac2 * self%xthetazme * fdzme)
   _SET_ODE_(self%id_tempc,ftempc)
-  !print*,'pel:',ftempc
 
   ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
 
@@ -535,7 +534,8 @@ contains
    _SET_ODE_(self%id_ZSIL,fs_prod + fs_cons)
 
   ! dissolved iron
-   _SET_ODE_(self%id_ZFER, (self%xrfn * (fn_prod + fn_cons)) - ffescav)
+
+   _SET_ODE_(self%id_ZFER, self%xrfn * (fn_prod + fn_cons) - ffescav)
 
 
   ! detrital carbon
