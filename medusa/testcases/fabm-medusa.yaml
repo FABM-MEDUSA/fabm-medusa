@@ -16,6 +16,7 @@ instances:
     coupling:
       ZDIC: medusa_pelagic/ZDIC
       ZALK: medusa_pelagic/ZALK
+      kw660: gas_transfer/kw660
   medusa_oxygen:
     model: medusa/medusa_oxygen
     coupling:
@@ -29,10 +30,10 @@ instances:
       xald: 11.25               # chl-specific initial slope of P-I curve (diatoms) (g C(g chl)-1 (W m-2)-1 d-1), default=11.25
       jliebig: false            # Liebig''s minimum law for nutrient limitation, 'jliebig'), default= false
       xnln: 0.5                 # N nutrient uptake half-saturation constant (non-diatoms) (mmol N m-3), default=0.5	
-      xfln: 0.33                # Fe nutrient uptake half-saturation constant (non-diatoms) (mmol Fe m-3), default=0.33
+      xfln: 0.00033 #0.33                # Fe nutrient uptake half-saturation constant (non-diatoms) (umol Fe m-3), default=0.33
       xnld: 0.75                # N nutrient uptake half-saturation constant (non-diatoms) (mmol N m-3), default=0.75
       xsld: 3.0                 # Si nutrient uptake half-saturation constant (diatoms) (mmol Si m-3), default=3.0	
-      xfld: 0.67                # Fe nutrient uptake half-saturation constant (diatoms) (mmol Fe m-3), default=0.67
+      xfld: 0.00067 #0.67                # Fe nutrient uptake half-saturation constant (diatoms) (umol Fe m-3), default=0.67
       xvpn: 0.53                # Maximum phytoplankton growth rate (non-diatoms) (d-1), default=0.53
       xvpd: 0.50                # Maximum phytoplankton growth rate (diatoms) (d-1), default=0.50
       jphy: 1                   # Temperature regulation (phyto growth), 1-Eppley,2-q10,default=1
@@ -81,34 +82,34 @@ instances:
       xmd: 0.0158               # detrital N remineralisation rate (d-1), default=0.0158
       xmdc: 0.0127              # detrital C remineralisation rate (d-1), default=0.0127
       xsdiss: 0.006             # diatom frustule dissolution rate (d-1), default=0.006
-      xk_FeL: 100.0             # dissociation constant for (Fe+ligand), default=100.0
-      xLgT: 1.0                 # total ligand concentration (umol m-3), default=1.0	
+      xk_FeL: 0.1               # dissociation constant for (Fe+ligand) (mmol m-3)-1, default=100.0
+      xLgT: 0.001               # total ligand concentration (mmol m-3), default=1.0	
       xk_sc_Fe: 0.001           # scavenging rate of "free" Fe (d-1), default=0.001
       jiron: 5                  # iron scavenging scheme, 1-Dutkiewicz et al. (2005),2-Moore et al. (2004),3-Moore et al. (2008),4-Galbraith et al. (2010)',default=1
       xfdfrac1: 0.33            # fast detritus fraction of diatom losses, default=0.33
       xfdfrac2: 1.              # fast detritus fraction of mesozooplankton losses, default=1.
       xfdfrac3: 0.8             # fast detritus fraction of mesozooplankton grazing, default=0.8
-      xrfn: 0.03 #30.           # phytoplankton Fe:N uptake ratio (umol Fe mol N-1 m), default=30.
+      xrfn: 0.03 #30.           # phytoplankton Fe:N uptake ratio (mmol Fe mol N-1 m), default=30.
       xridg_r0: 0.026           # CaCO3:POC export rain ratio scalar, Ridgwell et al (2007), default=0.026
       xthetanit: 2.0            # O2 consumption by N remineralisation (mol O_2 mol N-1), default=2.0
       xthetarem: 1.1226         # O2 consumption by C remineralisation (mol O_2 mol C-1), default=1.1226
       xo2min: 4.0               # minimum O2 concentration (mmol O_2 m-3), default=4.0
       wg: -2.5                  # detritus sinking rate (m d-1), default = -2.5
     initialization:
-      ZCHN: 0.5
-      ZCHD: 0.5
-      ZPHN: 0.5
-      ZPHD: 0.5
-      ZPDS: 0.5
-      ZDIN: 8.0
-      ZFER: 0.5 
+      ZCHN: 0.1
+      ZCHD: 0.1
+      ZPHN: 0.1
+      ZPHD: 0.1
+      ZPDS: 0.1
+      ZDIN: 4.0
+      ZFER: 0.1
       ZSIL: 4.0
-      ZDET: 0.5
-      ZDTC: 0.5
-      ZZMI: 0.5
-      ZZME: 0.5
+      ZDET: 0.1
+      ZDTC: 0.1
+      ZZMI: 0.1
+      ZZME: 0.1
       ZALK: 2200.
-      ZDIC: 2000.
+      ZDIC: 1500.
       ZOXY: 300.
     coupling:
       tempn: medusa_fast_detritus/tempn
@@ -140,6 +141,12 @@ instances:
   medusa_benthic:
     model: medusa/medusa_benthic
     use: true
+    initialization:
+      ZSEDC: 50.
+      ZSEDN: 0.5
+      ZSEDFE: 0.5
+      ZSEDSI: 0.5
+      ZSEDCA: 10.
     coupling:
       ZDIN: medusa_pelagic/ZDIN
       ZSIL: medusa_pelagic/ZSIL
