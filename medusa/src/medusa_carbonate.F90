@@ -8,16 +8,19 @@ module medusa_carbonate
    private
 
    type,extends(type_base_model),public :: type_medusa_carbonate
-      type (type_dependency_id)     :: id_ZDIC,id_ZALK
-      type (type_dependency_id)         :: id_temp,id_salt,id_dens,id_pres,id_depth
-      type (type_horizontal_dependency_id) :: id_wnd,id_PCO2A
-      type (type_diagnostic_variable_id) :: id_ph,id_pco2,id_CarbA,id_BiCarb,id_Carb,id_TA_diag
-      type (type_diagnostic_variable_id) :: id_Om_cal,id_Om_arg
+      type (type_dependency_id)            :: id_ZALK
+      type (type_state_variable_id)        :: id_ZDIC
+      type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres,id_depth
+      type (type_horizontal_dependency_id) :: id_wnd,id_PCO2A,id_kw660
+      type (type_diagnostic_variable_id)   :: id_ph,id_pco2,id_CarbA,id_BiCarb,id_Carb,id_TA_diag
+      type (type_diagnostic_variable_id)   :: id_Om_cal,id_Om_arg
+      type (type_horizontal_diagnostic_variable_id) ::  id_fairco2
 
    contains
      procedure :: initialize
      procedure :: do
-    ! procedure :: do_surface
+     procedure :: do_surface
+
    end type
 
    public :: CO2_dynamics,co2dyn,polyco,CaCO3_Saturation
@@ -29,7 +32,7 @@ contains
       class (type_medusa_carbonate), intent(inout), target :: self
       integer,                      intent(in)            :: configunit
 
-     call self%register_dependency(self%id_ZDIC,'ZDIC','mmol C/m^3','dissolved inorganic carbon')
+     call self%register_state_dependency(self%id_ZDIC,'ZDIC','mmol C/m^3','dissolved inorganic carbon')
      call self%register_dependency(self%id_ZALK,'ZALK','meq/m**3','total alkalinity')
 
      call self%register_diagnostic_variable(self%id_ph,    'pH',    '-',      'pH',standard_variable=standard_variables%ph_reported_on_total_scale)
@@ -49,6 +52,8 @@ contains
      call self%register_dependency(self%id_dens,standard_variables%density)
      call self%register_dependency(self%id_pres,standard_variables%pressure)
      call self%register_dependency(self%id_wnd,  standard_variables%wind_speed)
+     call self%register_horizontal_dependency(self%id_kw660, 'kw660', 'm/s', 'gas transfer velocity')
+     call self%register_diagnostic_variable(self%id_fairco2,'fairco2','mmol C/m^2/d','Air-sea flux of CO2')
     end subroutine
 
     subroutine do(self,_ARGUMENTS_DO_)
@@ -788,4 +793,43 @@ contains
 
    end subroutine CaCO3_SATURATION
 
+   subroutine do_surface(self,_ARGUMENTS_DO_SURFACE_)
+
+   class(type_medusa_carbonate),intent(in) :: self
+
+   _DECLARE_ARGUMENTS_DO_SURFACE_
+
+    real(rk) :: ZALK,ZDIC,temp,salt,sc,fwind,flux,kw660
+    real(rk) :: henry, pco2a, pco2, dcf, a, b, c, ca, bc, cb, ph, TA, TCO2
+    integer :: iters
+
+   _HORIZONTAL_LOOP_BEGIN_
+
+   _GET_(self%id_temp,temp)
+   _GET_(self%id_salt,salt)
+   _GET_HORIZONTAL_(self%id_kw660,kw660)
+   _GET_(self%id_ZALK,ZALK)
+   _GET_(self%id_ZDIC,ZDIC)
+   _GET_HORIZONTAL_(self%id_pco2a,pco2a)
+
+          a   =  8.24493e-1_rk - 4.0899e-3_rk*temp +  7.6438e-5_rk*temp**2 - 8.2467e-7_rk*temp**3 + 5.3875e-9_rk*temp**4 
+          b   = -5.72466e-3_rk + 1.0227e-4_rk*temp - 1.6546e-6_rk*temp**2  
+          c   = 4.8314e-4_rk
+          dcf = (999.842594_rk + 6.793952e-2_rk*temp- 9.095290e-3_rk*temp**2 + 1.001685e-4_rk*temp**3 & 
+                - 1.120083e-6_rk*temp**4 + 6.536332e-9_rk*temp**5+a*salt+b*salt**1.5_rk+c*salt**2) 
+
+          TA    = ZALK  / (1.0e3_rk*dcf) 
+          TCO2  = ZDIC  / (1.0e3_rk*dcf)
+
+    call CO2dyn ( TCO2, TA, temp, salt, pco2a, PCO2, PH, HENRY, ca, bc, cb, iters )
+
+    sc    = 2073.1_rk-125.62_rk*temp+3.6276_rk*temp**2._rk-0.0432190_rk*temp**3._rk
+    fwind = kw660 * (sc/660._rk)**(-0.5_rk)
+    flux = fwind * henry * ( pco2a/1.e6_rk - pco2) * dcf * 1000.
+    _SET_SURFACE_EXCHANGE_(self%id_ZDIC,flux)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fairco2,flux * 86400._rk)
+
+   _HORIZONTAL_LOOP_END_
+
+   end subroutine do_surface
 end module
