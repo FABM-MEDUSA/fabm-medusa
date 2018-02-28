@@ -74,6 +74,7 @@ contains
          _GET_HORIZONTAL_(self%id_pco2a,pco2a)
 
          _GET_(self%id_dens,density)
+
          _GET_(self%id_pres,pres)
 
    call CO2_dynamics(temp,salt,depth,ZDIC,ZALK,pCO2a,pco2w,ph,h2co3,hco3,co3,henry,om_cal,om_arg,TDIC,TALK,dcf,iters)
@@ -116,10 +117,10 @@ contains
           b   = -5.72466e-3_rk + 1.0227e-4_rk*T - 1.6546e-6_rk*T**2  
           c   = 4.8314e-4_rk
           dcf = (999.842594_rk + 6.793952e-2_rk*T- 9.095290e-3_rk*T**2 + 1.001685e-4_rk*T**3 & 
-                - 1.120083e-6_rk*T**4 + 6.536332e-9_rk*T**5+a*S+b*S**1.5_rk+c*S**2)/1.0e3_rk 
+                - 1.120083e-6_rk*T**4 + 6.536332e-9_rk*T**5+a*S+b*S**1.5_rk+c*S**2)
 
-          TA    = TALK / (1.0e6_rk*dcf) 
-          TCO2  = DIC  / (1.0e6_rk*dcf) 
+          TA    = TALK / (1.0e3_rk*dcf) 
+          TCO2  = DIC  / (1.0e3_rk*dcf) 
 
 ! Call the parent routine for the carbonate system 
 
@@ -128,9 +129,9 @@ contains
 
           pco2w  = pco2water * (1.0e6_rk)  ! partial pressure of co2 in water  
           TA     = TA * (1.0e6_rk)         ! total alkalinity (umol/kg) 
-          h2co3  = ca * (1.0e6_rk*dcf)     ! carbonic acid concentration (mmol/m3) 
-          bicarb = bc * (1.0e6_rk*dcf)     ! bicarbonate ion concentration (mmol/m3) 
-          carb   = cb * (1.0e6_rk*dcf)     ! carbonate ion concentration (mmol/m3) 
+          h2co3  = ca * (1.0e3_rk*dcf)     ! carbonic acid concentration (mmol/m3) 
+          bicarb = bc * (1.0e3_rk*dcf)     ! bicarbonate ion concentration (mmol/m3) 
+          carb   = cb * (1.0e3_rk*dcf)     ! carbonate ion concentration (mmol/m3) 
           TCO2   = TCO2 * (1.0e6_rk)       ! total C or DIC in units of umol/kg 
 
 ! Call carbonate saturation state subroutine to calculate calcite and aragonite calcification states
