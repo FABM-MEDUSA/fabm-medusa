@@ -10,7 +10,7 @@ module medusa_carbonate
    type,extends(type_base_model),public :: type_medusa_carbonate
       type (type_dependency_id)            :: id_ZALK
       type (type_state_variable_id)        :: id_ZDIC
-      type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres,id_depth
+      type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres
       type (type_horizontal_dependency_id) :: id_wnd,id_PCO2A,id_kw660
       type (type_diagnostic_variable_id)   :: id_ph,id_pco2,id_CarbA,id_BiCarb,id_Carb,id_TA_diag
       type (type_diagnostic_variable_id)   :: id_Om_cal,id_Om_arg
@@ -47,7 +47,6 @@ contains
      call self%register_dependency(self%id_temp, standard_variables%temperature)
      call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
      call self%register_dependency(self%id_PCO2A,standard_variables%mole_fraction_of_carbon_dioxide_in_air)
-     call self%register_dependency(self%id_depth,standard_variables%depth)
 
      call self%register_dependency(self%id_dens,standard_variables%density)
      call self%register_dependency(self%id_pres,standard_variables%pressure)
@@ -60,7 +59,7 @@ contains
     class (type_medusa_carbonate), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_
 
-      real(rk) :: ZDIC,ZALK,temp,salt,density,pres,depth
+      real(rk) :: ZDIC,ZALK,temp,salt,density,pres
       real(rk) :: Om_cal,Om_arg,dcf,henry,TDIC,TALK
       real(rk) :: ph,pco2a,pco2w,h2co3,hco3,co3,k0co2
       integer :: iters
@@ -70,14 +69,13 @@ contains
          _GET_(self%id_ZALK,ZALK)
          _GET_(self%id_temp,temp)
          _GET_(self%id_salt,salt)
-         _GET_(self%id_depth,depth)
          _GET_HORIZONTAL_(self%id_pco2a,pco2a)
 
          _GET_(self%id_dens,density)
 
          _GET_(self%id_pres,pres)
 
-   call CO2_dynamics(temp,salt,depth,ZDIC,ZALK,pCO2a,pco2w,ph,h2co3,hco3,co3,henry,om_cal,om_arg,TDIC,TALK,dcf,iters)
+   call CO2_dynamics(temp,salt,pres,ZDIC,ZALK,pCO2a,pco2w,ph,h2co3,hco3,co3,henry,om_cal,om_arg,TDIC,TALK,dcf,iters)
 
     _SET_DIAGNOSTIC_(self%id_ph,pH)
     _SET_DIAGNOSTIC_(self%id_pco2,pco2w)
@@ -90,10 +88,10 @@ contains
       _LOOP_END_
    end subroutine
 
-   subroutine CO2_dynamics( T, S, Z, DIC, TALK, pco2a, pco2w, ph, h2co3, bicarb, &
+   subroutine CO2_dynamics( T, S, Pr, DIC, TALK, pco2a, pco2w, ph, h2co3, bicarb, &
                             carb, henry, om_cal, om_arg, TCO2, TA, dcf, iters ) 
 
-      real(rk),intent( in )    :: T,S,Z
+      real(rk),intent( in )    :: T,S,Pr
       real(rk),intent( in )    :: DIC        ! total dissolved inorganic carbon (mmol.m-3) 
       real(rk),intent( in )    :: TALK       ! total alkalinity (meq.m-3) 
       real(rk),intent( in )    :: pco2a      ! atmospheric pCO2 
@@ -136,7 +134,7 @@ contains
 
 ! Call carbonate saturation state subroutine to calculate calcite and aragonite calcification states
 
-      call CaCO3_Saturation ( T, S, Z, cb, &  ! inputs
+      call CaCO3_Saturation ( T, S, Pr, cb, &  ! inputs
           om_cal, om_arg )                    ! outputs
 
    end subroutine CO2_dynamics
@@ -149,7 +147,7 @@ contains
 
       REAL(rk), INTENT( in )    :: TCO2, TA, T, S, PCO2A 
       REAL(rk), INTENT( inout ) :: PCO2, PH, HENRY, ca, bc, cb 
-      INTEGER,  INTENT( inout ) :: iters 
+      INTEGER,  INTENT( inout ) :: iters
       REAL(rk) :: PRSS 
       INTEGER  :: MCONC, MKVAL, ICONST, ICALC 
       PARAMETER ( MCONC = 9,MKVAL = 4 ) 
