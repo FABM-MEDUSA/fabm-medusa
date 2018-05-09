@@ -29,8 +29,7 @@ contains
 
       select case (name)
          case ('medusa_pelagic');                          allocate(type_medusa_pelagic::model)
-         case ('medusa_fast_detritus');
-allocate(type_medusa_fast_detritus::model)
+         case ('medusa_fast_detritus');                    allocate(type_medusa_fast_detritus::model)
          case ('medusa_oxygen');                           allocate(type_medusa_oxygen::model)
          case ('medusa_carbonate');                        allocate(type_medusa_carbonate::model)
          case ('medusa_benthic');                          allocate(type_medusa_benthic::model)
