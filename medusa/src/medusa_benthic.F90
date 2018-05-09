@@ -106,6 +106,7 @@ contains
      if (ZOXY .ge. self%xo2min) _SET_BOTTOM_EXCHANGE_(self%id_ZOXY, - self%xthetanit * fluxn - self%xthetarem * fluxc)
 
     _SET_BOTTOM_ODE_(self%id_ZSEDFE, -self%xsedfe * ZSEDFE + fluxfe)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZFER, + self%xsedfe * ZSEDFE)
 
     _SET_BOTTOM_ODE_(self%id_ZSEDSI, -self%xsedsi * ZSEDSI)
     _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, + self%xsedsi * ZSEDSI)
