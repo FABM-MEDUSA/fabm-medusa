@@ -53,10 +53,10 @@ contains
    call self%get_parameter(self%xald, 'xald', 'g C(g chl)-1 (W m-2)-1 d-1','chl-specific initial slope of P-I curve (diatoms)', default=11.25_rk,scale_factor=d_per_s)
    call self%get_parameter(self%jliebig, 'jliebig', 'Liebig''s minimum law for nutrient limitation', default=.false.)
    call self%get_parameter(self%xnln, 'xnln', 'mmol N m-3','N nutrient uptake half-saturation constant (non-diatoms)', default=0.5_rk)
-   call self%get_parameter(self%xfln, 'xfln', 'mmol Fe m-3','Fe nutrient uptake half-saturation constant (non-diatoms)', default=0.33_rk)
+   call self%get_parameter(self%xfln, 'xfln', 'mmol Fe m-3','Fe nutrient uptake half-saturation constant (non-diatoms)', default=0.00033_rk)
    call self%get_parameter(self%xnld, 'xnld', 'mmol N m-3','N nutrient uptake half-saturation constant (non-diatoms)', default=0.75_rk)
    call self%get_parameter(self%xsld, 'xsld', 'mmol Si m-3','Si nutrient uptake half-saturation constant (diatoms)', default=3.0_rk)
-   call self%get_parameter(self%xfld, 'xfld', 'mmol Fe m-3','Fe nutrient uptake half-saturation constant (diatoms)', default=0.67_rk)
+   call self%get_parameter(self%xfld, 'xfld', 'mmol Fe m-3','Fe nutrient uptake half-saturation constant (diatoms)', default=0.00067_rk)
    call self%get_parameter(self%xvpn, 'xvpn', 'd-1','Maximum phytoplankton growth rate (non-diatoms)', default=0.53_rk,scale_factor=d_per_s)
    call self%get_parameter(self%xvpd, 'xvpd', 'd-1','Maximum phytoplankton growth rate (diatoms)', default=0.50_rk,scale_factor=d_per_s)
    call self%get_parameter(self%jphy, 'jphy','-','Temperature regulation (phyto growth): 1-Eppley,2-q10',default=1)
@@ -105,14 +105,14 @@ contains
    call self%get_parameter(self%xmd,'xmd','d-1','detrital N remineralisation rate', default=0.0158_rk,scale_factor=d_per_s)
    call self%get_parameter(self%xmdc,'xmdc','d-1','detrital C remineralisation rate', default=0.0127_rk,scale_factor=d_per_s)
    call self%get_parameter(self%xsdiss,'xsdiss','d-1','diatom frustule dissolution rate', default=0.006_rk,scale_factor=d_per_s)
-   call self%get_parameter(self%xk_FeL,'xk_FeL','-','dissociation constant for (Fe+ligand)',default=100.0_rk)
-   call self%get_parameter(self%xLgT,'xLgT','umol m-3','total ligand concentration',default=1.0_rk)
+   call self%get_parameter(self%xk_FeL,'xk_FeL','-','dissociation constant for (Fe+ligand)',default=0.1_rk)
+   call self%get_parameter(self%xLgT,'xLgT','umol m-3','total ligand concentration',default=0.001_rk)
    call self%get_parameter(self%xk_sc_Fe,'xk_sc_Fe','d-1','scavenging rate of "free" Fe',default=0.001_rk,scale_factor=d_per_s)
    call self%get_parameter(self%jiron,'jiron','-','iron scavenging scheme: 1-Dutkiewicz et al. (2005),2-Moore et al. (2004),3-Moore et al. (2008),4-Galbraith et al. (2010)',default=1)
    call self%get_parameter(self%xfdfrac1,'xfdfrac1','-','fast detritus fraction of diatom losses',default=0.33_rk)
    call self%get_parameter(self%xfdfrac2,'xfdfrac2','-','fast detritus fraction of mesozooplankton losses',default=1._rk)
    call self%get_parameter(self%xfdfrac3,'xfdfrac3','-','fast detritus fraction of mesozooplankton grazing',default=0.8_rk)
-   call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=0.03_rk) !worth to double-check
+   call self%get_parameter(self%xrfn,'xrfn','mmol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=0.03_rk)
    call self%get_parameter(self%xridg_r0,'xridg_r0','-','CaCO3 : POC export rain ratio scalar, Ridgwell et al (2007)',default=0.026_rk)
    call self%get_parameter(self%xthetanit,'xthetanit','mol O_2 mol N-1','O2 consumption by N remineralisation',default=2.0_rk)
    call self%get_parameter(self%xthetarem,'xthetarem','mol O_2 mol C-1','O2 consumption by C remineralisation',default=1.1226_rk)
@@ -134,7 +134,7 @@ contains
    call self%register_state_variable(self%id_ZZME,'ZZME','mmol N/m**3', 'mesozooplankton', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZALK,'ZALK','meq/m**3', 'total alkalinity', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZDIC,'ZDIC','mmol C/m**3', 'dissolved inorganic carbon', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZOXY,'ZOXY','mmol O_2/m**3', 'dissolved oxygen', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZOXY,'ZOXY','mmol O_2/m**3', 'dissolved oxygen')
 
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZPHN)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZPHD)
@@ -152,7 +152,6 @@ contains
 
    call self%add_to_aggregate_variable(standard_variables%total_silicate, self%id_ZPDS)
    call self%add_to_aggregate_variable(standard_variables%total_silicate, self%id_ZSIL)
-
 
    ! Register diagnostic variables
    call self%register_diagnostic_variable(self%id_dPAR,'PAR','W m-2',       'photosynthetically active radiation', output=output_time_step_averaged)
@@ -424,18 +423,18 @@ contains
   fsdiss = self%xsdiss * ZPDS
 
   !IRON CHEMISTRY AND FRACTIONATION
-  xFeT = ZFER * 1.e3_rk !total iron concentration (mmolFe/m3 -> umolFe/m3)
+  xFeT = ZFER !* 1.e3_rk !total iron concentration (mmolFe/m3 -> umolFe/m3)
   xb_coef_tmp = self%xk_FeL * (self%xLgT - xFeT) - 1.0_rk
   xb2M4ac = max(((xb_coef_tmp * xb_coef_tmp) + (4.0_rk * self%xk_FeL * self%xLgT)), 0._rk)
   xLgF = 0.5_rk * (xb_coef_tmp + (xb2M4ac**0.5_rk)) / self%xk_FeL ! "free" ligand concentration
   xFeL = self%xLgT - xLgF ! ligand-bound iron concentration
-  xFeF = (xFeT - xFeL) * 1.e-3_rk! "free" iron concentration (and convert to mmolFe/m3)
+  xFeF = (xFeT - xFeL) !* 1.e-3_rk! "free" iron concentration (and convert to mmolFe/m3)
   xFree = xFeF / (ZFER + tiny(ZFER))
  ! ! Scavenging of iron
   if (self%jiron == 1) then
      ffescav = self%xk_sc_Fe * xFeF
-     xmaxFeF = min((xFeF * 1.e3_rk), 0.3_rk)        ! = umol/m3
-     fdeltaFe = (xFeT - (xFeL + xmaxFeF)) * 1.e-3   ! = mmol/m3
+     xmaxFeF = min((xFeF), 0.3_rk)        ! = umol/m3
+     fdeltaFe = (xFeT - (xFeL + xmaxFeF))   ! = mmol/m3
      ffescav     = ffescav + fdeltaFe * d_per_s        ! = mmol/m3/d !assuming time scale of fdeltaFe of 1 day
 
      if ((depth .gt. 1000._rk) .and. (xFeT .lt. 0.5_rk)) then
