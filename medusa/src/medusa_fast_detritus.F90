@@ -231,6 +231,8 @@ contains
    fq1      = fq0 * exp(-(dz / xfastca))        !! how much CaCO3 leaves this box            (mol)
    freminca = (fq0 - fq1) / dz                  !! Ca remineralisation in this box           (mol)
    endif
+   _SET_DIAGNOSTIC_(self%id_freminca,freminca)
+   if (freminca .ne. 0._rk) print*,freminca
    ffastca = fq1
 
     _GET_(self%id_ftempc,ftempc)
@@ -241,15 +243,14 @@ contains
 
     ffastc  = ffastc + ftempc * dz
     ffastn  = ffastn  + ftempn * dz
-    ffastfe = ffastfe + ftempfe * dz
+   ! ffastfe = ffastfe + ftempfe * dz
     ffastsi = ffastsi + ftempsi * dz
     ffastca = ffastca + ftempca * dz
-
    _VERTICAL_LOOP_END_
 
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastc,ffastc)
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastn,ffastn)
-   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastfe,ffastfe)
+   !_SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastfe,ffastfe)
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastsi,ffastsi)
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastca,ffastca)
    end subroutine do_fast_detritus
@@ -263,14 +264,12 @@ contains
      real(rk) :: freminc,freminn,freminsi,freminfe,freminca
 
     _LOOP_BEGIN_
-
        _GET_(self%id_ZOXY,ZOXY)
        _GET_(self%id_freminc1,freminc)
        _GET_(self%id_freminn1,freminn)
        _GET_(self%id_freminsi1,freminsi)
        _GET_(self%id_freminfe1,freminfe)
        _GET_(self%id_freminca1,freminca)
-
        _SET_ODE_(self%id_ZDIC, + freminc + freminca)
        _SET_ODE_(self%id_ZDIN, + freminn)
        _SET_ODE_(self%id_ZSIL, + freminsi)
@@ -278,7 +277,7 @@ contains
 
        if (ZOXY .ge. self%xo2min) _SET_ODE_(self%id_ZOXY, - self%xthetarem * freminc - self%xthetanit * freminn)
 
-       _SET_ODE_(self%id_ZALK, 2._rk * freminca)
+      _SET_ODE_(self%id_ZALK, 2._rk * freminca)
 
    _LOOP_END_
 
@@ -300,28 +299,28 @@ contains
     _GET_HORIZONTAL_(self%id_ffastsi1,ffastsi)
     _GET_HORIZONTAL_(self%id_ffastca1,ffastca)
 
-   ! _GET_HORIZONTAL_(self%id_ffastfe1,ffastfe)
+ !   _GET_HORIZONTAL_(self%id_ffastfe1,ffastfe)
 
      if (self%seafloor .eq. 1) then
 
-     _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, + ffastc)
-     _SET_BOTTOM_EXCHANGE_(self%id_ZDIN, + ffastn)
-     _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, + ffastsi)
-     _SET_BOTTOM_EXCHANGE_(self%id_ZFER, + ffastn * self%xrfn)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, + ffastc)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDIN, + ffastn)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, + ffastsi)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZFER, + ffastn * self%xrfn)
 
      elseif (self%seafloor .eq. 2) then
 
-     _SET_BOTTOM_EXCHANGE_(self%id_ZDTC, + ffastc)
-     _SET_BOTTOM_EXCHANGE_(self%id_ZDET, + ffastn)
-     _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, + ffastsi)
-     _SET_BOTTOM_EXCHANGE_(self%id_ZFER, + ffastn * self%xrfn)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDTC, + ffastc + ffastca)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDET, + ffastn)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, + ffastsi)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZFER, + ffastn * self%xrfn)
 
      elseif (self%seafloor .eq. 3) then !medusa_benthic is coupled
 
-     _SET_BOTTOM_ODE_(self%id_ZSEDC, + ffastc)
-     _SET_BOTTOM_ODE_(self%id_ZSEDN, + ffastn)
-     _SET_BOTTOM_ODE_(self%id_ZSEDSI, + ffastsi)
-     _SET_BOTTOM_ODE_(self%id_ZSEDCA, + ffastca)
+    _SET_BOTTOM_ODE_(self%id_ZSEDC, + ffastc)
+    _SET_BOTTOM_ODE_(self%id_ZSEDN, + ffastn)
+    _SET_BOTTOM_ODE_(self%id_ZSEDSI, + ffastsi)
+    _SET_BOTTOM_ODE_(self%id_ZSEDCA, + ffastca)
 
      end if
  
