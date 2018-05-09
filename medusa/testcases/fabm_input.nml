@@ -1,5 +1,5 @@
 &observations
    variable='mole_fraction_of_carbon_dioxide_in_air'
-   constant_value=385.
+   constant_value=400.
 /
 
