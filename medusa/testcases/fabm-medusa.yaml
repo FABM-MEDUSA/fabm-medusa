@@ -1,5 +1,14 @@
 check_conservation: true
 instances:
+  light:
+    model: gotm/light
+#  nflux:
+#    model: constant_surface_flux
+#    use: false
+#    parameters:
+#      flux: 1.6e-10
+#    coupling:
+#      target: medusa_pelagic/ZFER
   gas_transfer:
     model: medusa/gas_transfer
     parameters:
@@ -11,18 +20,18 @@ instances:
                                 # 5 Nightingale et al. (2000) [best]
                                 # 6 OCMIP-2                   [sans variability]
                                 # 7 Wanninkhof (2014)         [assumes 6h avg winds]
-  medusa_carbonate:
+  carbonate:
     model: medusa/medusa_carbonate
     coupling:
-      ZDIC: medusa_pelagic/ZDIC
-      ZALK: medusa_pelagic/ZALK
+      ZDIC: pelagic/ZDIC
+      ZALK: pelagic/ZALK
       kw660: gas_transfer/kw660
-  medusa_oxygen:
+  oxygen:
     model: medusa/medusa_oxygen
     coupling:
-      ZOXY: medusa_pelagic/ZOXY
+      ZOXY: pelagic/ZOXY
       kw660: gas_transfer/kw660
-  medusa_pelagic:
+  pelagic:
     model: medusa/medusa_pelagic
     parameters:
       xxi: 0.01257              # C:N conversion factor (mol N g C-1), default=0.01257
@@ -30,10 +39,10 @@ instances:
       xald: 11.25               # chl-specific initial slope of P-I curve (diatoms) (g C(g chl)-1 (W m-2)-1 d-1), default=11.25
       jliebig: false            # Liebig''s minimum law for nutrient limitation, 'jliebig'), default= false
       xnln: 0.5                 # N nutrient uptake half-saturation constant (non-diatoms) (mmol N m-3), default=0.5	
-      xfln: 0.00033 #0.33                # Fe nutrient uptake half-saturation constant (non-diatoms) (umol Fe m-3), default=0.33
+      xfln: 0.00033             # Fe nutrient uptake half-saturation constant (non-diatoms) (mmol Fe m-3), default=0.00033
       xnld: 0.75                # N nutrient uptake half-saturation constant (non-diatoms) (mmol N m-3), default=0.75
       xsld: 3.0                 # Si nutrient uptake half-saturation constant (diatoms) (mmol Si m-3), default=3.0	
-      xfld: 0.00067 #0.67                # Fe nutrient uptake half-saturation constant (diatoms) (umol Fe m-3), default=0.67
+      xfld: 0.00067             # Fe nutrient uptake half-saturation constant (diatoms) (mmol Fe m-3), default=0.00067
       xvpn: 0.53                # Maximum phytoplankton growth rate (non-diatoms) (d-1), default=0.53
       xvpd: 0.50                # Maximum phytoplankton growth rate (diatoms) (d-1), default=0.50
       jphy: 1                   # Temperature regulation (phyto growth), 1-Eppley,2-q10,default=1
@@ -82,14 +91,14 @@ instances:
       xmd: 0.0158               # detrital N remineralisation rate (d-1), default=0.0158
       xmdc: 0.0127              # detrital C remineralisation rate (d-1), default=0.0127
       xsdiss: 0.006             # diatom frustule dissolution rate (d-1), default=0.006
-      xk_FeL: 0.1               # dissociation constant for (Fe+ligand) (mmol m-3)-1, default=100.0
-      xLgT: 0.001               # total ligand concentration (mmol m-3), default=1.0	
+      xk_FeL: 100.               # dissociation constant for (Fe+ligand) (mmol m-3)-1, default=0.1
+      xLgT: 1.                  # total ligand concentration (mmol m-3), default=0.001	
       xk_sc_Fe: 0.001           # scavenging rate of "free" Fe (d-1), default=0.001
       jiron: 5                  # iron scavenging scheme, 1-Dutkiewicz et al. (2005),2-Moore et al. (2004),3-Moore et al. (2008),4-Galbraith et al. (2010)',default=1
       xfdfrac1: 0.33            # fast detritus fraction of diatom losses, default=0.33
       xfdfrac2: 1.              # fast detritus fraction of mesozooplankton losses, default=1.
       xfdfrac3: 0.8             # fast detritus fraction of mesozooplankton grazing, default=0.8
-      xrfn: 0.03 #30.           # phytoplankton Fe:N uptake ratio (mmol Fe mol N-1 m), default=30.
+      xrfn: 30.0e-6                # phytoplankton Fe:N uptake ratio (mmol Fe mol N-1 m), default=0.03
       xridg_r0: 0.026           # CaCO3:POC export rain ratio scalar, Ridgwell et al (2007), default=0.026
       xthetanit: 2.0            # O2 consumption by N remineralisation (mol O_2 mol N-1), default=2.0
       xthetarem: 1.1226         # O2 consumption by C remineralisation (mol O_2 mol C-1), default=1.1226
@@ -102,57 +111,62 @@ instances:
       ZPHD: 0.1
       ZPDS: 0.1
       ZDIN: 4.0
-      ZFER: 0.1
+      ZFER: 0.001
       ZSIL: 4.0
       ZDET: 0.1
       ZDTC: 0.1
       ZZMI: 0.1
       ZZME: 0.1
       ZALK: 2200.
-      ZDIC: 1500.
+      ZDIC: 2000.
       ZOXY: 300.
     coupling:
-      tempn: medusa_fast_detritus/tempn
-      tempc: medusa_fast_detritus/tempc
-      tempsi: medusa_fast_detritus/tempsi
-      tempfe: medusa_fast_detritus/tempfe
-      tempca: medusa_fast_detritus/tempca
-      om_cal: medusa_carbonate/Om_cal
-  medusa_fast_detritus:
+      tempn: fast_detritus/tempn
+      tempc: fast_detritus/tempc
+      tempsi: fast_detritus/tempsi
+      tempfe: fast_detritus/tempfe
+      tempca: fast_detritus/tempca
+      om_cal: carbonate/Om_cal
+  fast_detritus:
     model: medusa/medusa_fast_detritus
     parameters:
       iball: 1                 # ballast model formulation (1- ballast model (Yool et al., 2011), 2- ballast-sans-ballast model), default = 1
       seafloor: 3              # seafloor handling (1-inorganic returns, 2-organic returns, 3-couple benthos (nothing to do in this model), default = 1
-      xrfn: 0.03               # phytoplankton Fe:N uptake ratio (umol Fe mol N-1 m), default=30.
+      xrfn: 30.0e-6               # phytoplankton Fe:N uptake ratio (mmol Fe mol N-1 m), default=0.03
     coupling:
-      ZOXY: medusa_pelagic/ZOXY
-      ZDIN: medusa_pelagic/ZDIN
-      ZSIL: medusa_pelagic/ZSIL
-      ZFER: medusa_pelagic/ZFER
-      ZDIC: medusa_pelagic/ZDIC
-      ZDET: medusa_pelagic/ZDET
-      ZDTC: medusa_pelagic/ZDTC
-      ZALK: medusa_pelagic/ZALK
-      ZSEDSI: medusa_benthic/ZSEDSI
-      ZSEDC: medusa_benthic/ZSEDC
-      ZSEDN: medusa_benthic/ZSEDN
-      ZSEDCA: medusa_benthic/ZSEDCA
-      om_cal: medusa_carbonate/Om_cal
-  medusa_benthic:
+      ZOXY: pelagic/ZOXY
+      ZDIN: pelagic/ZDIN
+      ZSIL: pelagic/ZSIL
+      ZFER: pelagic/ZFER
+      ZDIC: pelagic/ZDIC
+      ZDET: pelagic/ZDET
+      ZDTC: pelagic/ZDTC
+      ZALK: pelagic/ZALK
+      ZSEDSI: benthic/ZSEDSI
+      ZSEDC: benthic/ZSEDC
+      ZSEDN: benthic/ZSEDN
+      ZSEDCA: benthic/ZSEDCA
+      om_cal: carbonate/Om_cal
+  benthic:
     model: medusa/medusa_benthic
     use: true
     initialization:
-      ZSEDC: 50.
-      ZSEDN: 0.5
-      ZSEDFE: 0.5
-      ZSEDSI: 0.5
-      ZSEDCA: 10.
+      ZSEDC: 0.
+      ZSEDN: 0.
+      ZSEDFE: 0.
+      ZSEDSI: 0.
+      ZSEDCA: 0.
     coupling:
-      ZDIN: medusa_pelagic/ZDIN
-      ZSIL: medusa_pelagic/ZSIL
-      ZFER: medusa_pelagic/ZFER
-      ZDIC: medusa_pelagic/ZDIC
-      ZDET: medusa_pelagic/ZDET
-      ZDTC: medusa_pelagic/ZDTC
-      ZOXY: medusa_pelagic/ZOXY
-      ZALK: medusa_pelagic/ZALK
+      ZDIN: pelagic/ZDIN
+      ZSIL: pelagic/ZSIL
+      ZFER: pelagic/ZFER
+      ZDIC: pelagic/ZDIC
+      ZDET: pelagic/ZDET
+      ZDTC: pelagic/ZDTC
+      ZOXY: pelagic/ZOXY
+      ZALK: pelagic/ZALK
+  pco2a:
+    model: horizontal_constant
+    parameters:
+      value: 400.
+      standard_name: mole_fraction_of_carbon_dioxide_in_air
