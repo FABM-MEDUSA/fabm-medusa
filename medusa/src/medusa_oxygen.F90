@@ -19,7 +19,7 @@ module medusa_oxygen
       type (type_state_variable_id)                 :: id_ZOXY
       type (type_horizontal_diagnostic_variable_id) ::  id_fairo2
       type (type_dependency_id)                     :: id_temp,id_salt
-      type (type_horizontal_dependency_id)          :: id_apress,id_kw660
+      type (type_horizontal_dependency_id)          :: id_kw660 !id_apress
 
    contains
 
@@ -39,7 +39,7 @@ contains
    ! Register environmental dependencies
    call self%register_dependency(self%id_temp, standard_variables%temperature)
    call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
-   call self%register_dependency(self%id_apress, standard_variables%surface_air_pressure)
+   ! call self%register_dependency(self%id_apress, standard_variables%surface_air_pressure)
    call self%register_diagnostic_variable(self%id_fairo2,'fairo2','mmol O_2/m^2/d','Air-sea flux of oxygen')
 
    call self%register_horizontal_dependency(self%id_kw660, 'kw660', 'm/s', 'gas transfer velocity')
@@ -79,7 +79,7 @@ contains
    _GET_(self%id_temp,pt)
    _GET_(self%id_salt,ps)
    _GET_(self%id_ZOXY,o2)
-   _GET_HORIZONTAL_(self%id_apress,pp0)
+   !_GET_HORIZONTAL_(self%id_apress,pp0)
    _GET_HORIZONTAL_(self%id_kw660,kw660)
 
       o2 = o2/1000._rk
@@ -105,7 +105,9 @@ contains
 
    o2_schmidt = as0 + pt*(as1 + pt*(as2 + pt*(as3 + pt*as4)))
    kwo2 = kw660 * (660._rk / o2_schmidt)**0.5_rk
-   o2sat = o2_sato * pp0 / 101325._rk
+
+   o2sat = o2_sato * 1._rk !Use this value for now !* pp0 / 101325._rk
+
    o2flux = kwo2 * (o2sat - o2)
    o2flux = o2flux *1000._rk
    
