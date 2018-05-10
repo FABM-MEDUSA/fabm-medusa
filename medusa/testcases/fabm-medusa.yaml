@@ -1,7 +1,10 @@
 check_conservation: true
 instances:
   light:
-    model: gotm/light
+    model: medusa/medusa_light
+    coupling:
+      ZCHN: pelagic/ZCHN
+      ZCHD: pelagic/ZCHD
 #  nflux:
 #    model: constant_surface_flux
 #    use: false
