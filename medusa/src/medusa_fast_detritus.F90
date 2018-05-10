@@ -226,7 +226,7 @@ contains
    fq0      = ffastca                           !! how much CaCO3 enters this box            (mol)
    if (om_cal .ge. 1._rk) then
    fq1      = fq0                               !! above lysocline, no Ca dissolves          (mol)
-   freminca = 0.0                               !! above lysocline, no Ca dissolves          (mol)
+   freminca = 0._rk                               !! above lysocline, no Ca dissolves          (mol)
    elseif (om_cal.lt. 1._rk) then
    fq1      = fq0 * exp(-(dz / xfastca))        !! how much CaCO3 leaves this box            (mol)
    freminca = (fq0 - fq1) / dz                  !! Ca remineralisation in this box           (mol)

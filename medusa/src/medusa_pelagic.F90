@@ -219,7 +219,7 @@ contains
 
    _SET_DIAGNOSTIC_(self%id_par,par)
 
-   rsmall = 0.5 * EPSILON( 1._rk )
+   rsmall = 0.5_rk * EPSILON( 1._rk )
 
    !PHYTOPLANKTON GROWTH
    !Chlorophyll
@@ -227,16 +227,16 @@ contains
     fthetan = max(tiny(ZCHN),(ZCHN * self%xxi) / (ZPHN + tiny(ZPHN)))
     faln = self%xaln * fthetan
    else
-    fthetan = 0.
-    faln    = 0.
+    fthetan = 0._rk
+    faln    = 0._rk
    end if
 
    if (ZPHD .gt. rsmall) then
     fthetad = max(tiny(ZCHD),(ZCHD * self%xxi) / (ZPHD + tiny(ZPHD)))
     fald = self%xald * fthetad
    else
-    fthetad = 0.
-    fald    = 0.
+    fthetad = 0._rk
+    fald    = 0._rk
    end if
 
   !Temperature limitation
@@ -257,7 +257,7 @@ contains
    if (fchn1 .gt. rsmall) then
     fchn = xvpnT / (sqrt(fchn1) + tiny(fchn1))
    else
-    fchn    = 0.
+    fchn = 0._rk
    endif
    fjln = fchn * faln * par !non-diatom J term
 
@@ -265,7 +265,7 @@ contains
    if (fchd1 .gt. rsmall) then
     fchd = xvpdT / (sqrt(fchd1) + tiny(fchd1))
    else
-    fchd = 0.
+    fchd = 0._rk
    end if
    fjld = fchd * fald * par !diatom J term
 
@@ -296,9 +296,9 @@ contains
 
    if ( zphd .gt. rsmall) fsin = ZPDS / ZPHD
    if ( zpds .gt. rsmall) fnsi = ZPHD / ZPDS
-   fsin1 = 3.0_rk * self%xsin0 !! = 0.6
-   fnsi1 = 1.0_rk / fsin1      !! = 1.667
-   fnsi2 = 1.0_rk / self%xsin0 !! = 5.0
+   fsin1 = 3.0_rk * self%xsin0   ! = 0.6
+   fnsi1 = 1.0_rk / fsin1        ! = 1.667
+   fnsi2 = 1.0_rk / self%xsin0   ! = 5.0
    if (fsin .le. self%xsin0) then
       fprd = 0._rk
       fsld2 = 0._rk
@@ -489,7 +489,7 @@ contains
 
   _GET_(self%id_om_cal,om_cal)
   if (om_cal .ge. 1._rk) then !get f3_omcal!
-     fq1 = (om_cal - 1._rk)**0.81
+     fq1 = (om_cal - 1._rk)**0.81_rk
   else
      fq1 = 0.
   endif
