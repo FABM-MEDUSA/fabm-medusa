@@ -2,6 +2,7 @@ module medusa_model_library
 
    use fabm_types, only: type_base_model_factory,type_base_model
 
+   use medusa_light
    use medusa_pelagic
    use medusa_fast_detritus
    use medusa_oxygen
@@ -34,6 +35,7 @@ contains
          case ('medusa_carbonate');                        allocate(type_medusa_carbonate::model)
          case ('medusa_benthic');                          allocate(type_medusa_benthic::model)
          case ('gas_transfer');                            allocate(type_gas_transfer::model)
+         case ('medusa_light');                            allocate(type_medusa_light::model)
         ! Add new models here
       end select
    end subroutine create

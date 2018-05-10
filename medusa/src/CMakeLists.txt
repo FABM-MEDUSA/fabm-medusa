@@ -1,5 +1,6 @@
 add_library(fabm_models_medusa OBJECT
             medusa_model_library.F90
+            medusa_light.F90
             medusa_pelagic.F90
             medusa_fast_detritus.F90
             medusa_oxygen.F90
