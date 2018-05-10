@@ -16,9 +16,9 @@ module medusa_pelagic
   type,extends(type_base_model),public :: type_medusa_pelagic
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
-      type (type_dependency_id)            :: id_temp,id_par,id_depth,id_salt, id_om_cal
-      type (type_diagnostic_variable_id)   :: id_dPAR
+      type (type_dependency_id)            :: id_temp,id_depth,id_salt, id_om_cal, id_xpar
       type (type_state_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
+      type (type_diagnostic_variable_id) :: id_par
       ! Parameters
       logical :: jliebig
       real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xnsi0,xuif,xthetam,xthetamd
@@ -153,9 +153,6 @@ contains
    call self%add_to_aggregate_variable(standard_variables%total_silicate, self%id_ZPDS)
    call self%add_to_aggregate_variable(standard_variables%total_silicate, self%id_ZSIL)
 
-   ! Register diagnostic variables
-   call self%register_diagnostic_variable(self%id_dPAR,'PAR','W m-2',       'photosynthetically active radiation', output=output_time_step_averaged)
-
    call self%register_state_dependency(self%id_tempn,'tempn','mmol N/m**3', 'fast-sinking detritus (N)')
    call self%register_state_dependency(self%id_tempc,'tempc','mmol C/m**3', 'fast-sinking detritus (C)')
    call self%register_state_dependency(self%id_tempsi,'tempsi','mmol Si/m**3', 'fast-sinking detritus (Si)')
@@ -165,12 +162,12 @@ contains
    ! Register environmental dependencies
    call self%register_dependency(self%id_temp, standard_variables%temperature)
    call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
-   call self%register_dependency(self%id_par, standard_variables%downwelling_photosynthetic_radiative_flux)
    call self%register_dependency(self%id_depth, standard_variables%depth)
 
    call self%register_dependency(self%id_om_cal,'om_cal','-','calcite saturation')
+   call self%register_dependency(self%id_xpar,standard_variables%downwelling_photosynthetic_radiative_flux)
 
-
+   call self%register_diagnostic_variable(self%id_par,'PAR','W/m^2','photosynthetically active radiation')
    end subroutine initialize
 
    subroutine do(self,_ARGUMENTS_DO_)
@@ -217,8 +214,10 @@ contains
     _GET_(self%id_ZDIC,ZDIC)
     _GET_(self%id_ZOXY,ZOXY)
     _GET_(self%id_temp,loc_T)
-    _GET_(self%id_par,par) !check PAR // what about self-shading?
+    _GET_(self%id_xpar,par)
     _GET_(self%id_depth,depth)
+
+   _SET_DIAGNOSTIC_(self%id_par,par)
 
    rsmall = 0.5 * EPSILON( 1._rk )
 
@@ -600,8 +599,6 @@ contains
    else                                                ! sufficient O2; production + consumption fluxes
       _SET_ODE_(self%id_ZOXY, fo2_prod + fo2_cons )
    endif
-
-  _SET_DIAGNOSTIC_(self%id_dPAR,par)
 
    _LOOP_END_
 
