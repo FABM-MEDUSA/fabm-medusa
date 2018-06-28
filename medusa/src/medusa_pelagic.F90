@@ -18,7 +18,7 @@ module medusa_pelagic
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
       type (type_dependency_id)            :: id_temp,id_depth,id_salt, id_om_cal, id_xpar
       type (type_state_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
-      type (type_diagnostic_variable_id) :: id_par
+      type (type_diagnostic_variable_id) :: id_par, id_fscal_part
       ! Parameters
       logical :: jliebig
       real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xnsi0,xuif,xthetam,xthetamd
@@ -163,6 +163,8 @@ contains
    call self%register_dependency(self%id_xpar,standard_variables%downwelling_photosynthetic_radiative_flux)
 
    call self%register_diagnostic_variable(self%id_par,'PAR','W/m^2','photosynthetically active radiation')
+   call self%register_diagnostic_variable(self%id_fscal_part,'fscal_part','nmol C cm-2 s-1','carbon in suspended particles')
+
    end subroutine initialize
 
    subroutine do(self,_ARGUMENTS_DO_)
@@ -515,6 +517,8 @@ contains
              + (self%xthetapn * fdpn2)                                                         &  ! resp., remin., losses
              + (self%xthetapd * fdpd2) + (self%xthetazmi * fdzmi2)                             &  ! losses
              + (self%xthetazme * fdzme2)                                                          ! losses
+
+   _SET_DIAGNOSTIC_(self%id_fscal_part, (self%xthetapn * ZPHN + self%xthetapd * ZPHD + self%xthetazmi * ZZMI + self%xthetazme * ZZME + self%xthetad * ZDET) * 0.002_rk)
 
    fc_prod = fc_prod - ftempca         ! CaCO3
 
