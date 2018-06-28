@@ -1,0 +1,98 @@
+#include "fabm_driver.h"
+
+!
+!*********************************************************
+!            FABM-MEDUSA iron scavenging module
+!*********************************************************
+
+module medusa_iron_scav
+
+   use fabm_types
+
+   implicit none
+
+   private
+
+  type,extends(type_base_model),public :: type_medusa_iron_scav
+      ! Variable identifiers
+      type (type_state_variable_id)        :: id_ZFER
+      type (type_dependency_id)            :: id_depth
+      ! Parameters
+
+      real(rk) :: xk_FeL,xLgT,xk_sc_Fe
+      integer :: jiron
+   contains
+
+      procedure :: initialize
+      procedure :: do
+
+  end type type_medusa_iron_scav
+
+contains
+
+   subroutine initialize(self,configunit)
+
+   class(type_medusa_iron_scav),intent(inout),target :: self
+   integer,               intent(in)           :: configunit
+   real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
+
+   call self%get_parameter(self%xk_FeL,'xk_FeL','-','dissociation constant for (Fe+ligand)',default=0.1_rk)
+   call self%get_parameter(self%xLgT,'xLgT','umol m-3','total ligand concentration',default=0.001_rk)
+   call self%get_parameter(self%xk_sc_Fe,'xk_sc_Fe','d-1','scavenging rate of "free" Fe',default=0.001_rk,scale_factor=d_per_s)
+   call self%get_parameter(self%jiron,'jiron','-','iron scavenging scheme: 1-Dutkiewicz et al. (2005),2-Moore et al. (2004),3-Moore et al. (2008),4-Galbraith et al. (2010)',default=1)
+
+   call self%register_state_dependency(self%id_ZFER,'ZFER','mmol Fe/m**3', 'iron nutrient')
+   call self%register_dependency(self%id_depth, standard_variables%depth)
+
+   end subroutine initialize
+
+   subroutine do(self,_ARGUMENTS_DO_)
+
+   class(type_medusa_iron_scav), INTENT(IN) :: self
+  _DECLARE_ARGUMENTS_DO_
+
+   !Local variables
+   real(rk) :: ZFER,depth
+   real(rk) :: xFeT,xb_coef_tmp,xb2M4ac,xLgF,xFel,xFeF,xFree,ffescav,xmaxFeF,fdeltaFe
+   real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
+
+    _LOOP_BEGIN_
+
+  !iron chemistry and fractionation
+
+  _GET_(self%id_ZFER,ZFER)
+  _GET_(self%id_depth,depth)
+
+  xFeT = ZFER !* 1.e3_rk !total iron concentration (mmolFe/m3 -> umolFe/m3)
+  xb_coef_tmp = self%xk_FeL * (self%xLgT - xFeT) - 1.0_rk
+  xb2M4ac = max(((xb_coef_tmp * xb_coef_tmp) + (4.0_rk * self%xk_FeL * self%xLgT)), 0._rk)
+  xLgF = 0.5_rk * (xb_coef_tmp + (xb2M4ac**0.5_rk)) / self%xk_FeL ! "free" ligand concentration
+  xFeL = self%xLgT - xLgF ! ligand-bound iron concentration
+  xFeF = (xFeT - xFeL) !* 1.e-3_rk! "free" iron concentration (and convert to mmolFe/m3)
+  xFree = xFeF / (ZFER + tiny(ZFER))
+
+ ! ! Scavenging of iron
+  if (self%jiron == 1) then
+     ffescav = self%xk_sc_Fe * xFeF
+     xmaxFeF = min((xFeF), 0.3_rk)        ! = umol/m3
+     fdeltaFe = (xFeT - (xFeL + xmaxFeF))   ! = mmol/m3
+     ffescav     = ffescav + fdeltaFe * d_per_s        ! = mmol/m3/d !assuming time scale of fdeltaFe of 1 day
+
+     if ((depth .gt. 1000._rk) .and. (xFeT .lt. 0.5_rk)) then
+        ffescav = 0._rk
+     endif
+
+ ! elseif (self%jiron == 2) then
+ ! elseif (self%jiron == 3) then
+ ! elseif (self%jiron == 4) then
+  else
+    ffescav = 0._rk
+  end if
+
+  _SET_ODE_(self%id_ZFER, - ffescav)
+
+   _LOOP_END_
+
+   end subroutine do
+
+  end module medusa_iron_scav

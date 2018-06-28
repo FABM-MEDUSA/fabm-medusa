@@ -24,10 +24,9 @@ module medusa_pelagic
       real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xnsi0,xuif,xthetam,xthetamd
       real(rk) :: xkmi,xpmipn,xpmid,xkme,xpmed,xpmepn,xpmepd,xpmezmi,zpmed,xgmi,xgme
       real(rk) :: xthetad,xphi,xthetapn,xthetazme,xthetazmi,xthetapd,xbetan,xbetac,xkc,xridg_r0,jq10
-      integer :: jmpn,jmpd,jmzmi,jmzme,jphy,jmd,jiron
+      integer :: jmpn,jmpd,jmzmi,jmzme,jphy,jmd
       real(rk) :: xmetapn,xmetapd,xmetazmi,xmetazme,xmpn,xmpd,xmzmi,xmzme,xkphn,xkphd,xkzmi,xkzme
       real(rk) :: xmd,xmdc,xsdiss
-      real(rk) :: xk_FeL,xLgT,xk_sc_Fe
       real(rk) :: xfdfrac1,xfdfrac2,xfdfrac3,xrfn
       real(rk) :: xthetanit,xthetarem,xo2min
       real(rk) :: wg
@@ -105,10 +104,6 @@ contains
    call self%get_parameter(self%xmd,'xmd','d-1','detrital N remineralisation rate', default=0.0158_rk,scale_factor=d_per_s)
    call self%get_parameter(self%xmdc,'xmdc','d-1','detrital C remineralisation rate', default=0.0127_rk,scale_factor=d_per_s)
    call self%get_parameter(self%xsdiss,'xsdiss','d-1','diatom frustule dissolution rate', default=0.006_rk,scale_factor=d_per_s)
-   call self%get_parameter(self%xk_FeL,'xk_FeL','-','dissociation constant for (Fe+ligand)',default=0.1_rk)
-   call self%get_parameter(self%xLgT,'xLgT','umol m-3','total ligand concentration',default=0.001_rk)
-   call self%get_parameter(self%xk_sc_Fe,'xk_sc_Fe','d-1','scavenging rate of "free" Fe',default=0.001_rk,scale_factor=d_per_s)
-   call self%get_parameter(self%jiron,'jiron','-','iron scavenging scheme: 1-Dutkiewicz et al. (2005),2-Moore et al. (2004),3-Moore et al. (2008),4-Galbraith et al. (2010)',default=1)
    call self%get_parameter(self%xfdfrac1,'xfdfrac1','-','fast detritus fraction of diatom losses',default=0.33_rk)
    call self%get_parameter(self%xfdfrac2,'xfdfrac2','-','fast detritus fraction of mesozooplankton losses',default=1._rk)
    call self%get_parameter(self%xfdfrac3,'xfdfrac3','-','fast detritus fraction of mesozooplankton grazing',default=0.8_rk)
@@ -188,7 +183,6 @@ contains
     real(rk) :: fme1,fme,fgmepn,fgmepd,fgmepds,fgmezmi,fgmed,fgmedc,finme,ficme,fstarme,fmeth,fmegrow,fmeexcr,fmeresp
     real(rk) :: fdpn2,fdpd2,fdpds2,fdzmi2,fdzme2,fdpn,fdpd,fdpds,fdzmi,fdzme
     real(rk) :: fdd,fddc,fsdiss
-    real(rk) :: xFeT,xb_coef_tmp,xb2M4ac,xLgF,xFel,xFeF,xFree,ffescav,xmaxFeF,fdeltaFe
     real(rk) :: fslowc,fslown,fregen,fregensi,fregenc,ftempn,ftempsi,ftempfe,ftempc,fq1,fcaco3,ftempca
     real(rk) :: fn_prod,fn_cons,fs_cons,fs_prod,fc_cons,fc_prod,fa_prod,fa_cons,fo2_ccons,fo2_ncons,fo2_cons,fo2_prod
     real(rk) :: rsmall, om_cal
@@ -421,33 +415,6 @@ contains
   !Diatom frustule dissolution
   fsdiss = self%xsdiss * ZPDS
 
-  !IRON CHEMISTRY AND FRACTIONATION
-  xFeT = ZFER !* 1.e3_rk !total iron concentration (mmolFe/m3 -> umolFe/m3)
-  xb_coef_tmp = self%xk_FeL * (self%xLgT - xFeT) - 1.0_rk
-  xb2M4ac = max(((xb_coef_tmp * xb_coef_tmp) + (4.0_rk * self%xk_FeL * self%xLgT)), 0._rk)
-  xLgF = 0.5_rk * (xb_coef_tmp + (xb2M4ac**0.5_rk)) / self%xk_FeL ! "free" ligand concentration
-  xFeL = self%xLgT - xLgF ! ligand-bound iron concentration
-  xFeF = (xFeT - xFeL) !* 1.e-3_rk! "free" iron concentration (and convert to mmolFe/m3)
-  xFree = xFeF / (ZFER + tiny(ZFER))
- ! ! Scavenging of iron
-  if (self%jiron == 1) then
-     ffescav = self%xk_sc_Fe * xFeF
-     xmaxFeF = min((xFeF), 0.3_rk)        ! = umol/m3
-     fdeltaFe = (xFeT - (xFeL + xmaxFeF))   ! = mmol/m3
-     ffescav     = ffescav + fdeltaFe * d_per_s        ! = mmol/m3/d !assuming time scale of fdeltaFe of 1 day
-
-     if ((depth .gt. 1000._rk) .and. (xFeT .lt. 0.5_rk)) then
-        ffescav = 0._rk
-     endif
-
- ! elseif (self%jiron == 2) then
- ! elseif (self%jiron == 3) then
- ! elseif (self%jiron == 4) then
-  else
-    ffescav = 0._rk
-  end if
-
-
   !!Aeolian iron deposition and seafloor iron addition - should be dealt with through model inputs.
 
   !Slow detritus creation
@@ -533,7 +500,7 @@ contains
 
   ! dissolved iron
 
-   _SET_ODE_(self%id_ZFER, self%xrfn * (fn_prod + fn_cons) - ffescav)
+   _SET_ODE_(self%id_ZFER, self%xrfn * (fn_prod + fn_cons))
 
 
   ! detrital carbon

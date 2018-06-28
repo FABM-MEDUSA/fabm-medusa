@@ -9,6 +9,7 @@ module medusa_model_library
    use medusa_carbonate
    use medusa_benthic
    use gas_transfer
+   use medusa_iron_scav
 
    implicit none
 
@@ -36,6 +37,7 @@ contains
          case ('medusa_benthic');                          allocate(type_medusa_benthic::model)
          case ('gas_transfer');                            allocate(type_gas_transfer::model)
          case ('medusa_light');                            allocate(type_medusa_light::model)
+         case ('medusa_iron_scav');                        allocate(type_medusa_iron_scav::model)
         ! Add new models here
       end select
    end subroutine create
