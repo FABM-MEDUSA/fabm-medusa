@@ -232,7 +232,6 @@ contains
    freminca = (fq0 - fq1) / dz                  !! Ca remineralisation in this box           (mol)
    endif
    _SET_DIAGNOSTIC_(self%id_freminca,freminca)
-   if (freminca .ne. 0._rk) print*,freminca
    ffastca = fq1
 
     _GET_(self%id_ftempc,ftempc)
