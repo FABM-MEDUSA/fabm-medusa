@@ -23,7 +23,7 @@ module medusa_fast_detritus
       type (type_dependency_id)            :: id_freminc1,id_freminn1,id_freminsi1,id_freminfe1,id_freminca1
       type (type_dependency_id)            :: id_om_cal
       type (type_diagnostic_variable_id)   :: id_freminc,id_freminn,id_freminsi,id_freminfe,id_freminca
-      type (type_diagnostic_variable_id)   :: id_ffastc_loc
+      type (type_diagnostic_variable_id)   :: id_ffastc_loc,id_ffastca_loc,id_ffastsi_loc
       type (type_horizontal_diagnostic_variable_id) :: id_ffastc,id_ffastn,id_ffastsi,id_ffastfe,id_ffastca
       type (type_horizontal_dependency_id) :: id_ffastc1,id_ffastn1,id_ffastfe1,id_ffastsi1,id_ffastca1
       type (type_diagnostic_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
@@ -99,6 +99,8 @@ contains
    call self%register_dependency(self%id_freminca1,'freminca','mmol CaCO3 m-3 s-1','remineralisation of calcite (CaCO3)')
 
    call self%register_diagnostic_variable(self%id_ffastc_loc,'ffastc_loc','mmol C m-2 s-1','local remineralisation of detritus (C)',missing_value=0.0_rk,source=source_do_column)
+call self%register_diagnostic_variable(self%id_ffastca_loc,'ffastca_loc','mmol Ca m-2 s-1','local remineralisation of detritus (Ca)',missing_value=0.0_rk,source=source_do_column)
+call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1','local remineralisation of detritus (Si)',missing_value=0.0_rk,source=source_do_column)
 
    call self%register_diagnostic_variable(self%id_ffastc,'ffastc','mmol C m-2 s-1','remineralisation of detritus (C)',missing_value=0.0_rk,source=source_do_column,output=output_none)
    call self%register_diagnostic_variable(self%id_ffastn,'ffastn','mmol N m-2 s-1','remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column,output=output_none)
@@ -223,6 +225,7 @@ contains
    freminsi = (fq0 - fq1) / dz                !! Si remineralisation in this box           (mol)
    _SET_DIAGNOSTIC_(self%id_freminsi,freminsi)
    ffastsi = fq1
+   _SET_DIAGNOSTIC_(self%id_ffastsi_loc,ffastsi)
 
    !biogenic calcium carbonate
   
@@ -237,6 +240,7 @@ contains
    endif
    _SET_DIAGNOSTIC_(self%id_freminca,freminca)
    ffastca = fq1
+   _SET_DIAGNOSTIC_(self%id_ffastca_loc,ffastca)
 
     _GET_(self%id_ftempc,ftempc)
     _GET_(self%id_ftempn,ftempn)

@@ -17,7 +17,7 @@ module medusa_iron_scav
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZFER
       type (type_dependency_id)            :: id_depth
-      type (type_dependency_id)            :: id_ffastc_loc,id_fscal_part
+      type (type_dependency_id)            :: id_ffastc_loc,id_ffastca_loc,id_ffastsi_loc,id_fscal_part
       ! Parameters
 
       real(rk) :: xk_FeL,xLgT,xk_sc_Fe
@@ -45,6 +45,8 @@ contains
    call self%register_state_dependency(self%id_ZFER,'ZFER','mmol Fe/m**3', 'iron nutrient')
    call self%register_dependency(self%id_depth, standard_variables%depth)
    call self%register_dependency(self%id_ffastc_loc,'ffastc_loc','mmol C m-2 s-1','local remineralisation of detritus (C)')
+call self%register_dependency(self%id_ffastca_loc,'ffastca_loc','mmol Ca m-2 s-1','local remineralisation of detritus (Ca)')
+call self%register_dependency(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1','local remineralisation of detritus (Si)')
    call self%register_dependency(self%id_fscal_part,'fscal_part','nmol C cm-2 s-1','carbon in suspended particles')
 
    end subroutine initialize
@@ -55,10 +57,10 @@ contains
   _DECLARE_ARGUMENTS_DO_
 
    !Local variables
-   real(rk) :: ZFER,depth,ffastc
+   real(rk) :: ZFER,depth,ffastc,ffastca,ffastsi
    real(rk) :: xFeT,xb_coef_tmp,xb2M4ac,xLgF,xFel,xFeF,xFree,ffescav,xmaxFeF,fdeltaFe
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
-   real(rk) :: fbase_scav,fscal_sink,fscal_part,fscal_scav
+   real(rk) :: fbase_scav,fscal_sink,fscal_part,fscal_scav,fscal_csink,fscal_sisink,fscal_casink
 
     _LOOP_BEGIN_
 
@@ -97,17 +99,46 @@ contains
      fbase_scav = 0.12_rk / 365.5_rk * d_per_s
      fscal_sink = ffastc * 1.e2_rk
      fscal_scav = fbase_scav * min(((fscal_sink + fscal_part) / 0.0066_rk), 4._rk)
-     if (xFeT.lt.0.4_rk) then
+     if (xFeT .lt. 0.4_rk) then
 
         fscal_scav = fscal_scav * (xFeT / 0.4_rk)
 
      elseif (xFeT .gt. 0.6_rk) then
 
-        fscal_scav = fscal_scav + ((xFet / 0.6_rk) * (6._rk/1.4_rk))
+        fscal_scav = fscal_scav + ((xFeT / 0.6_rk) * (6._rk/1.4_rk))
 
      endif
+
      ffescav = fscal_scav * ZFER
- ! elseif (self%jiron == 3) then
+  elseif (self%jiron == 3) then
+
+     _GET_(self%id_ffastc_loc, ffastc)
+     _GET_(self%id_ffastsi_loc, ffastsi)
+     _GET_(self%id_ffastca_loc, ffastca)
+
+     fbase_scav = 0.00384_rk
+     fscal_csink  = ffastc  * 1.e6_rk * 12.011_rk  * 1.e-4_rk * d_per_s ! Using 12.011 rather than refer to parameter xmassc
+     fscal_sisink = ffastsi * 1.e6_rk * 60.084_rk * 1.e-4_rk * d_per_s !xmasssi = 60.084_rk
+     fscal_casink = ffastca * 1.e6_rk * 100.086_rk * 1.e-4_rk * d_per_s !xmassca = 100.086_rk
+
+     fscal_sink = (fscal_csink * 6._rk + fscal_sisink + fscal_casink) / (100._rk * 1.e3_rk * d_per_s)
+
+     if (xFeT .lt. 0.5_rk) then
+
+        fscal_scav = fscal_scav * xFeT / 0.5
+
+     elseif (xFeT .gt. 0.6) then
+
+        fscal_scav = fscal_scav + (xFeT- 0.6_rk) * 0.00904_rk
+                     
+     else
+    ! Do nothing... what do you mean do nothing??
+
+    endif
+
+    ffescav = fscal_scav * ZFER
+
+
  ! elseif (self%jiron == 4) then
   else
 
