@@ -61,6 +61,7 @@ call self%register_dependency(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1
    real(rk) :: xFeT,xb_coef_tmp,xb2M4ac,xLgF,xFel,xFeF,xFree,ffescav,xmaxFeF,fdeltaFe
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
    real(rk) :: fbase_scav,fscal_sink,fscal_part,fscal_scav,fscal_csink,fscal_sisink,fscal_casink
+   real(rk) :: xCscav1,xCscav2,xk_org,xORGscav,xk_inorg,xINORGscav
 
     _LOOP_BEGIN_
 
@@ -139,7 +140,18 @@ call self%register_dependency(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1
     ffescav = fscal_scav * ZFER
 
 
- ! elseif (self%jiron == 4) then
+  elseif (self%jiron == 4) then
+
+    _GET_(self%id_ffastc_loc, ffastc)
+    xCscav1    = (ffastc * 12.011_rk) / (100._rk * d_per_s)
+    xCscav2    = (xCscav1 * 1.e-3_rk)**0.58_rk
+    xk_org     = 0.5_rk * d_per_s ! ((g C m/3)^-1) / d
+    xORGscav   = xk_org * xCscav2 * xFeF
+    xk_inorg   = 1000._rk * d_per_s ! ((nmol Fe / kg)^1.5)
+    xINORGscav = (xk_inorg * (xFeF * 1026._rk)**1.5_rk) * 1.e-3_rk
+
+    ffescav = xORGscav + xINORGscav
+
   else
 
     ffescav = 0._rk
