@@ -60,7 +60,7 @@ contains
 
     real(rk) :: dz,ZCHN,ZCHD,qsr
     real(rk) :: totchl,zpar0m
-    real(rk) :: zpig,zkr,zkg,zparr,zparg,xpar
+    real(rk) :: zpig,zkr,zkg,zparr,zparg,xpar,zparr1,zparg1
 
     _GET_HORIZONTAL_(self%id_qsr,qsr)
     zpar0m = qsr * 0.43_rk
@@ -78,11 +78,14 @@ contains
     zpig = MAX( TINY(0._rk), totchl/self%rpig) ! total pigment
     zkr  = self%xkr0 + self%xkrp * EXP( self%xlr * LOG( zpig ) ) ! total absorption coefficient in red
     zkg  = self%xkg0 + self%xkgp * EXP( self%xlg * LOG( zpig ) ) ! total absorption coefficient in green
-    zparr = zparr / zkr / dz * ( 1._rk - EXP( -zkr*dz ) )    ! red compound of par
-    zparg    = zparg / zkg / dz * ( 1._rk - EXP( -zkg*dz ) ) ! green compound of par
-    xpar = MAX( zparr + zparg, 1.e-15_rk )
-
+    zparr1 = zparr / zkr / dz * ( 1._rk - EXP( -zkr*dz ) )    ! red compound of par
+    zparg1    = zparg / zkg / dz * ( 1._rk - EXP( -zkg*dz ) ) ! green compound of par
+    xpar = MAX( zparr1 + zparg1, 1.e-15_rk )
     _SET_DIAGNOSTIC_(self%id_xpar,xpar)
+
+    zparr = zparr * EXP( -zkr * dz )
+    zparg = zparg * EXP( -zkg * dz )
+
 
    _VERTICAL_LOOP_END_
 
