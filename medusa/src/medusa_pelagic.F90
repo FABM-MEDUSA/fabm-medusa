@@ -290,7 +290,11 @@ contains
      fpdlim = min(fnld,ffld)
    end if
 
+  if (ZPHD .gt. rsmall .and. ZPDS .gt. rsmall) then
+
+   fsin = 0._rk
    if ( zphd .gt. rsmall) fsin = ZPDS / ZPHD
+   fnsi = 0._rk
    if ( zpds .gt. rsmall) fnsi = ZPHD / ZPDS
    fsin1 = 3.0_rk * self%xsin0   ! = 0.6
    fnsi1 = 1.0_rk / fsin1        ! = 1.667
@@ -314,6 +318,13 @@ contains
    else
      fprds = 0._rk
    end if
+ else
+   fsin = 0._rk
+   fnsi = 0._rk
+   fprd = 0._rk
+   fsld2 = 0._rk
+   fprds = 0._rk
+ end if
 
   !Chlorophyll production
   frn = (self%xthetam * fchn * fnln * ffln) / (fthetan + tiny(fthetan))
@@ -457,6 +468,7 @@ contains
   ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
 
   _GET_(self%id_om_cal,om_cal)
+
   if (om_cal .ge. 1._rk) then !get f3_omcal!
      fq1 = (om_cal - 1._rk)**0.81_rk
   else
