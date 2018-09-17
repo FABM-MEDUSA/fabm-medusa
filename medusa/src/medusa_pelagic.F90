@@ -468,7 +468,7 @@ contains
   ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
 
   _GET_(self%id_om_cal,om_cal)
-
+   om_cal = 4._rk
   if (om_cal .ge. 1._rk) then !get f3_omcal!
      fq1 = (om_cal - 1._rk)**0.81_rk
   else
