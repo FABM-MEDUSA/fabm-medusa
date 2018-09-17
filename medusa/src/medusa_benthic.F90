@@ -46,11 +46,11 @@ contains
    call self%get_parameter(self%xo2min,'xo2min','mmol O_2 m-3','minimum O2 concentration',default=4.0_rk)
    call self%get_parameter(self%xsedc, 'xsedc', 'd-1','benthic C remineralisation rate', default=0.05_rk,scale_factor=d_per_s)
    call self%get_parameter(self%xsedn, 'xsedn', 'd-1','benthic N remineralisation rate', default=0.05_rk,scale_factor=d_per_s)
-   call self%get_parameter(self%xsedfe, 'xsedfe', 'd-1','benthic Fe remineralisation rate', default=0.01_rk,scale_factor=d_per_s) !NB: check default value
+   call self%get_parameter(self%xsedfe, 'xsedfe', 'd-1','benthic Fe remineralisation rate', default=0.05_rk,scale_factor=d_per_s) !NB: check default value
    call self%get_parameter(self%xsedsi, 'xsedsi', 'd-1','benthic Si remineralisation rate', default=0.01_rk,scale_factor=d_per_s)
    call self%get_parameter(self%xsedca, 'xsedca', 'd-1','benthic CaCO3 remineralisation rate', default=0.01_rk,scale_factor=d_per_s)
    call self%get_parameter(self%wdep,'wdep','m d-1','detritus deposition rate', default=2.5_rk, scale_factor=d_per_s)
-   call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=0.03_rk)
+   call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=30.0e-6_rk)
 
    call self%register_state_variable(self%id_ZSEDC,'ZSEDC','mmol C/m**2', 'sediment organic carbon pool', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZSEDN,'ZSEDN','mmol N/m**2', 'sediment organic nitrogen pool', minimum=0.0_rk)
@@ -89,11 +89,11 @@ contains
     _GET_HORIZONTAL_(self%id_ZSEDCA,ZSEDCA)
     _GET_(self%id_ZDET,ZDET)
     _GET_(self%id_ZDTC,ZDTC)
+    _GET_(self%id_ZOXY,ZOXY)
 
      fluxc = self%wdep * ZDTC
      fluxn = self%wdep * ZDET
      fluxfe = self%wdep * ZDET * self%xrfn
-
     _SET_BOTTOM_EXCHANGE_(self%id_ZDET,-fluxn)
     _SET_BOTTOM_EXCHANGE_(self%id_ZDTC,-fluxc)
 
@@ -102,8 +102,8 @@ contains
 
     _SET_BOTTOM_ODE_(self%id_ZSEDN,  -self%xsedn * ZSEDN + fluxn)
     _SET_BOTTOM_EXCHANGE_(self%id_ZDIN, + self%xsedn * ZSEDN)
-
-     if (ZOXY .ge. self%xo2min) _SET_BOTTOM_EXCHANGE_(self%id_ZOXY, - self%xthetanit * fluxn - self%xthetarem * fluxc)
+     
+     if (ZOXY .ge. self%xo2min) _SET_BOTTOM_EXCHANGE_(self%id_ZOXY, - self%xthetanit * self%xsedn * ZSEDN - self%xthetarem * self%xsedc * ZSEDC)
 
     _SET_BOTTOM_ODE_(self%id_ZSEDFE, -self%xsedfe * ZSEDFE + fluxfe)
     _SET_BOTTOM_EXCHANGE_(self%id_ZFER, + self%xsedfe * ZSEDFE)
@@ -112,7 +112,8 @@ contains
     _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, + self%xsedsi * ZSEDSI)
 
     _SET_BOTTOM_ODE_(self%id_ZSEDCA, -self%xsedca * ZSEDCA)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZALK, + self%xsedca * ZSEDCA)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZALK, + 2._rk * self%xsedca * ZSEDCA)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, self%xsedca * ZSEDCA)
 
     _HORIZONTAL_LOOP_END_
 
