@@ -17,7 +17,7 @@ module medusa_fast_detritus
   type,extends(type_base_model),public :: type_medusa_fast_detritus
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZDIC,id_ZDIN,id_ZSIL,id_ZOXY,id_ZFER,id_ZDET,id_ZDTC,id_ZALK
-      type (type_bottom_state_variable_id) :: id_ZSEDSI,id_ZSEDC,id_ZSEDN,id_ZSEDCA
+      type (type_bottom_state_variable_id) :: id_ZSEDSI,id_ZSEDC,id_ZSEDN,id_ZSEDCA,id_ZSEDFE
       type (type_dependency_id)            :: id_dz,id_depth
       type (type_dependency_id)            :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca
       type (type_dependency_id)            :: id_freminc1,id_freminn1,id_freminsi1,id_freminfe1,id_freminca1
@@ -104,17 +104,17 @@ contains
 call self%register_diagnostic_variable(self%id_ffastca_loc,'ffastca_loc','mmol Ca m-2 s-1','local remineralisation of detritus (Ca)',missing_value=0.0_rk,source=source_do_column)
 call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1','local remineralisation of detritus (Si)',missing_value=0.0_rk,source=source_do_column)
 
-   call self%register_diagnostic_variable(self%id_ffastc,'ffastc','mmol C m-2 s-1','remineralisation of detritus (C)',missing_value=0.0_rk,source=source_do_column,output=output_none)
-   call self%register_diagnostic_variable(self%id_ffastn,'ffastn','mmol N m-2 s-1','remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column,output=output_none)
-   call self%register_diagnostic_variable(self%id_ffastfe,'ffastfe','mmol Fe m-2 s-1','remineralisation of detritus (Fe)',missing_value=0.0_rk,source=source_do_column,output=output_none)
-   call self%register_diagnostic_variable(self%id_ffastsi,'ffastsi','mmol Si m-2 s-1','remineralisation of detritus (Si)',missing_value=0.0_rk,source=source_do_column,output=output_none)
+   call self%register_diagnostic_variable(self%id_ffastc,'ffastc','mmol C m-2 s-1','remineralisation of detritus (C)',missing_value=0.0_rk,source=source_do_column)
+   call self%register_diagnostic_variable(self%id_ffastn,'ffastn','mmol N m-2 s-1','remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column)
+   call self%register_diagnostic_variable(self%id_ffastfe,'ffastfe','mmol Fe m-2 s-1','remineralisation of detritus (Fe)',missing_value=0.0_rk,source=source_do_column)
+   call self%register_diagnostic_variable(self%id_ffastsi,'ffastsi','mmol Si m-2 s-1','remineralisation of detritus (Si)',missing_value=0.0_rk,source=source_do_column)
    call self%register_diagnostic_variable(self%id_ffastca,'ffastca','mmol CaCO3 m-2 s-1','remineralisation of calcite (CaCO3)',missing_value=0.0_rk,source=source_do_column,output=output_none)
 
    call self%register_dependency(self%id_om_cal,'om_cal','-','calcite saturation')
 
    call self%register_horizontal_dependency(self%id_ffastc1,'ffastc','mmol C m-2 s-1','remineralisation of detritus (C)')
    call self%register_horizontal_dependency(self%id_ffastn1,'ffastn','mmol N m-2 s-1','remineralisation of detritus (N)')
-   call self%register_horizontal_dependency(self%id_ffastfe1,'ffastfe','mmol Fe m-2 s-1','remineralisation of detritus (Si)')
+   call self%register_horizontal_dependency(self%id_ffastfe1,'ffastfe','mmol Fe m-2 s-1','remineralisation of detritus (Fe)')
    call self%register_horizontal_dependency(self%id_ffastsi1,'ffastsi','mmol Si m-2 s-1','remineralisation of detritus (Si)')
    call self%register_horizontal_dependency(self%id_ffastca1,'ffastca','mmol CaCO3 m-2 s-1','remineralisation of calcite (CaCO3)')
 
@@ -127,6 +127,8 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDC,'ZSEDC','mmol C m-2', 'sediment (C)')
    if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDN,'ZSEDN','mmol N m-2', 'sediment (N)')
    if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDCA,'ZSEDCA','mmol N m-2', 'sediment (CaCO3)')
+   if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDFE,'ZSEDFE','mmol Fe m-2', 'sediment (Fe)')
+
 
    end subroutine initialize
 
@@ -146,14 +148,14 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    real(rk) :: ffastc,ffastn,ffastca,ffastsi,ffastfe
    real(rk) :: ftempc,ftempn,ftempfe,ftempsi,ftempca
    real(rk) :: freminc,freminn,freminfe,freminsi,freminca
-   real(rk) :: om_cal
+   real(rk) :: om_cal,collect
 
    ffastc=0._rk
    ffastn=0._rk
    ffastca=0._rk
    ffastsi=0._rk
    ffastfe=0._rk
-
+   collect=0
    _VERTICAL_LOOP_BEGIN_
 
     _GET_(self%id_dz,dz)
@@ -186,7 +188,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
      ffastc = fq1
    end if
   _SET_DIAGNOSTIC_(self%id_freminc,freminc)
-  _SET_DIAGNOSTIC_(self%id_ffastc_loc,ffastc)
+!  _SET_DIAGNOSTIC_(self%id_ffastc_loc,ffastc)
 
    !Nitrogen
    fq0      = ffastn                            !! how much organic N enters this box        (mol)
@@ -232,14 +234,15 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    !biogenic calcium carbonate
   
    _GET_(self%id_om_cal,om_cal)
+   om_cal = 4._rk
    fq0      = ffastca                           !! how much CaCO3 enters this box            (mol)
-   if (om_cal .ge. 1._rk) then
+  ! if (om_cal .ge. 1._rk) then
    fq1      = fq0                               !! above lysocline, no Ca dissolves          (mol)
-   freminca = 0._rk                               !! above lysocline, no Ca dissolves          (mol)
-   elseif (om_cal.lt. 1._rk) then
+  ! freminca = 0._rk                               !! above lysocline, no Ca dissolves          (mol)
+  ! elseif (om_cal.lt. 1._rk) then
    fq1      = fq0 * exp(-(dz / xfastca))        !! how much CaCO3 leaves this box            (mol)
    freminca = (fq0 - fq1) / dz                  !! Ca remineralisation in this box           (mol)
-   endif
+  ! endif
    _SET_DIAGNOSTIC_(self%id_freminca,freminca)
    ffastca = fq1
    _SET_DIAGNOSTIC_(self%id_ffastca_loc,ffastca)
@@ -249,17 +252,18 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
     _GET_(self%id_ftempfe,ftempfe)
     _GET_(self%id_ftempsi,ftempsi)
     _GET_(self%id_ftempca,ftempca)
-
+     collect = collect + ftempca * dz
     ffastc  = ffastc + ftempc * dz
     ffastn  = ffastn  + ftempn * dz
-   ! ffastfe = ffastfe + ftempfe * dz
+    ffastfe = ffastfe + ftempfe * dz
     ffastsi = ffastsi + ftempsi * dz
     ffastca = ffastca + ftempca * dz
+  _SET_DIAGNOSTIC_(self%id_ffastc_loc,collect*86400.)
    _VERTICAL_LOOP_END_
 
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastc,ffastc)
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastn,ffastn)
-   !_SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastfe,ffastfe)
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastfe,ffastfe)
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastsi,ffastsi)
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastca,ffastca)
    end subroutine do_fast_detritus
@@ -297,7 +301,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
      class(type_medusa_fast_detritus), intent(in) :: self
      _DECLARE_ARGUMENTS_DO_BOTTOM_
      
-     real(rk) :: ffastc,ffastn,ffastsi,ffastca !ffastfe
+     real(rk) :: ffastc,ffastn,ffastsi,ffastca,ffastfe
      real(rk) :: depth
 
      !TO-DO: oxygen consumption
@@ -308,8 +312,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
     _GET_HORIZONTAL_(self%id_ffastn1,ffastn)
     _GET_HORIZONTAL_(self%id_ffastsi1,ffastsi)
     _GET_HORIZONTAL_(self%id_ffastca1,ffastca)
-
- !   _GET_HORIZONTAL_(self%id_ffastfe1,ffastfe)
+    _GET_HORIZONTAL_(self%id_ffastfe1,ffastfe)
 
     _GET_(self%id_depth,depth)
     if (depth .lt. 500._rk) then 
@@ -336,6 +339,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
     _SET_BOTTOM_ODE_(self%id_ZSEDN, + ffastn)
     _SET_BOTTOM_ODE_(self%id_ZSEDSI, + ffastsi)
     _SET_BOTTOM_ODE_(self%id_ZSEDCA, + ffastca)
+    _SET_BOTTOM_ODE_(self%id_ZSEDFE, + ffastfe)
 
      end if
  
