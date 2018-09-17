@@ -825,8 +825,8 @@ contains
     sc    = 2073.1_rk-125.62_rk*temp+3.6276_rk*temp**2._rk-0.0432190_rk*temp**3._rk
     fwind = kw660 * (sc/660._rk)**(-0.5_rk)
     flux = fwind * henry * ( pco2a/1.e6_rk - pco2) * dcf / 1000.
-    _SET_SURFACE_EXCHANGE_(self%id_ZDIC,flux)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fairco2,flux * 86400._rk)
+ !   _SET_SURFACE_EXCHANGE_(self%id_ZDIC,flux)
+ !   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fairco2,flux * 86400._rk)
 
    _HORIZONTAL_LOOP_END_
 
