@@ -132,8 +132,8 @@ instances:
     parameters:
       xk_FeL: 100.              # dissociation constant for (Fe+ligand) (mmol m-3)-1, default=0.1
       xLgT: 1.                  # total ligand concentration (mmol m-3), default=0.001	
-      xk_sc_Fe: 0.001           # scavenging rate of "free" Fe (d-1), default=0.001
-      jiron: 5              # iron scavenging scheme, 1-Dutkiewicz et al. (2005),2-Moore et al. (2004),3-Moore et al. (2008),4-Galbraith et al. (2010)',default=1
+      xk_sc_Fe: 1.e-3           # scavenging rate of "free" Fe (d-1), default=0.001
+      jiron: 1              # iron scavenging scheme, 1-Dutkiewicz et al. (2005),2-Moore et al. (2004),3-Moore et al. (2008),4-Galbraith et al. (2010)',default=1
     coupling:
       ZFER: pelagic/ZFER
       ffastc_loc: fast_detritus/ffastc_loc
