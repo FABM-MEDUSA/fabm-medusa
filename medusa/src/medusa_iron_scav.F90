@@ -18,7 +18,8 @@ module medusa_iron_scav
       type (type_state_variable_id)        :: id_ZFER
       type (type_dependency_id)            :: id_depth
       type (type_dependency_id)            :: id_ffastc_loc,id_ffastca_loc,id_ffastsi_loc,id_fscal_part
-      ! Parameters
+      type (type_diagnostic_variable_id)   :: id_ffescav
+  ! Parameters
 
       real(rk) :: xk_FeL,xLgT,xk_sc_Fe
       integer :: jiron
@@ -48,6 +49,8 @@ contains
 call self%register_dependency(self%id_ffastca_loc,'ffastca_loc','mmol Ca m-2 s-1','local remineralisation of detritus (Ca)')
 call self%register_dependency(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1','local remineralisation of detritus (Si)')
    call self%register_dependency(self%id_fscal_part,'fscal_part','nmol C cm-2 s-1','carbon in suspended particles')
+   call self%register_diagnostic_variable(self%id_ffescav,'scav_flux','mmol Fe/m**3','scavenged iron')
+
 
    end subroutine initialize
 
@@ -70,27 +73,27 @@ call self%register_dependency(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1
   _GET_(self%id_ZFER,ZFER)
   _GET_(self%id_depth,depth)
 
-  xFeT = ZFER !* 1.e3_rk !total iron concentration (mmolFe/m3 -> umolFe/m3)
+  xFeT = ZFER * 1.e3_rk !total iron concentration (mmolFe/m3 -> umolFe/m3)
   xb_coef_tmp = self%xk_FeL * (self%xLgT - xFeT) - 1.0_rk
   xb2M4ac = max(((xb_coef_tmp * xb_coef_tmp) + (4.0_rk * self%xk_FeL * self%xLgT)), 0._rk)
   xLgF = 0.5_rk * (xb_coef_tmp + (xb2M4ac**0.5_rk)) / self%xk_FeL ! "free" ligand concentration
   xFeL = self%xLgT - xLgF ! ligand-bound iron concentration
-  xFeF = (xFeT - xFeL) !* 1.e-3_rk! "free" iron concentration (and convert to mmolFe/m3)
+  xFeF = (xFeT - xFeL) * 1.e-3_rk! "free" iron concentration (and convert to mmolFe/m3)
   xFree = xFeF / (ZFER + tiny(ZFER))
 
  ! ! Scavenging of iron
   if (self%jiron == 1) then
-
      ffescav = self%xk_sc_Fe * xFeF
-     xmaxFeF = min((xFeF), 0.3_rk)        ! = umol/m3
-     fdeltaFe = (xFeT - (xFeL + xmaxFeF))   ! = mmol/m3
-     ffescav     = ffescav + fdeltaFe * d_per_s        ! = mmol/m3/d !assuming time scale of fdeltaFe of 1 day
+     xmaxFeF = min((xFeF * 1.e3), 0.3_rk)        ! = umol/m3
+     fdeltaFe = (xFeT - (xFeL + xmaxFeF)) * 1.e-3   ! = mmol/m3
 
-     if ((depth .gt. 1000._rk) .and. (xFeT .lt. 0.5_rk)) then
+     ffescav     = ffescav + fdeltaFe / d_per_s        ! = mmol/m3/d !assuming time scale of fdeltaFe of 1 day
 
-        ffescav = 0._rk
+   !  if ((depth .gt. 1000._rk) .and. (xFeT .lt. 0.5_rk)) then
 
-     endif
+   !     ffescav = 0._rk
+
+   !  endif
 
   elseif (self%jiron == 2) then
 
@@ -158,8 +161,8 @@ call self%register_dependency(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1
 
   end if
 
+  _SET_DIAGNOSTIC_(self%id_ffescav,ffescav*86400._rk)
   _SET_ODE_(self%id_ZFER, - ffescav)
-
    _LOOP_END_
 
    end subroutine do
