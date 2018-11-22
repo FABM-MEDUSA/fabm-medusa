@@ -8,18 +8,19 @@
 module medusa_pelagic
 
    use fabm_types
+   use fabm_particle
 
    implicit none
 
    private
 
-  type,extends(type_base_model),public :: type_medusa_pelagic
+  type,extends(type_particle_model),public :: type_medusa_pelagic
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
       type (type_dependency_id)            :: id_temp,id_depth,id_salt, id_om_cal, id_xpar
       type (type_state_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
       type (type_diagnostic_variable_id) :: id_par, id_fscal_part
-      type (type_bottom_state_variable_id) :: id_ZSEDC,id_ZSEDN,id_ZSEDFE
+      type (type_bottom_state_variable_id) :: id_ZSEDC,id_ZSEDN,id_ZSEDP,id_ZSEDFE
 
       ! Parameters
       logical :: jliebig
@@ -161,10 +162,15 @@ contains
 
    call self%get_parameter(self%seafloor,'seafloor','-','seafloor handling: 1-inorganic returns, 2-organic returns, 3-coupled benthic model', default = 3)
    call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=0.03_rk) !worth to double-check
-   if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDC,'ZSEDC','mmol C m-2', 'sediment (C)')
-   if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDN,'ZSEDN','mmol N m-2', 'sediment (N)')
-   if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDFE,'ZSEDFE','mmol Fe m-2', 'sediment (Fe)')
-
+   if (self%seafloor .eq. 3) then
+         call self%register_state_dependency(self%id_ZSEDC,'ZSEDC','mmol C m-2', 'sediment (C)')
+         call self%register_state_dependency(self%id_ZSEDN,'ZSEDN','mmol N m-2', 'sediment (N)')
+         call self%register_state_dependency(self%id_ZSEDP,'ZSEDP','mmol P m-2', 'sediment (P)')
+         call self%register_state_dependency(self%id_ZSEDFE,'ZSEDFE','mmol Fe m-2', 'sediment (Fe)')
+         call self%request_coupling_to_model(self%id_ZSEDC, 'ZSED', standard_variables%total_carbon)
+         call self%request_coupling_to_model(self%id_ZSEDN, 'ZSED', standard_variables%total_nitrogen)
+         call self%request_coupling_to_model(self%id_ZSEDP, 'ZSED', standard_variables%total_phosphorus)
+   end if
    ! Register environmental dependencies
    call self%register_dependency(self%id_temp, standard_variables%temperature)
    call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
@@ -612,6 +618,9 @@ contains
 
     _HORIZONTAL_LOOP_BEGIN_
 
+    _GET_(self%id_ZDET,ZDET)
+    _GET_(self%id_ZDTC,ZDTC)
+
      fluxc = self%wdep * ZDTC
      fluxn = self%wdep * ZDET
      fluxfe = self%wdep * ZDET * self%xrfn
@@ -622,6 +631,8 @@ contains
     _SET_BOTTOM_ODE_(self%id_ZSEDC,  + fluxc)
     _SET_BOTTOM_ODE_(self%id_ZSEDN,  + fluxn)
     _SET_BOTTOM_ODE_(self%id_ZSEDFE, + fluxfe)
+
+     _SET_BOTTOM_ODE_(self%id_ZSEDP, + fluxc/106.)
 
     _HORIZONTAL_LOOP_END_
 

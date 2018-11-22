@@ -9,15 +9,16 @@
 module medusa_fast_detritus
 
    use fabm_types
+   use fabm_particle
 
    implicit none
 
    private
 
-  type,extends(type_base_model),public :: type_medusa_fast_detritus
+  type,extends(type_particle_model),public :: type_medusa_fast_detritus
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZDIC,id_ZDIN,id_ZSIL,id_ZOXY,id_ZFER,id_ZDET,id_ZDTC,id_ZALK
-      type (type_bottom_state_variable_id) :: id_ZSEDSI,id_ZSEDC,id_ZSEDN,id_ZSEDCA,id_ZSEDFE
+      type (type_bottom_state_variable_id) :: id_ZSEDSI,id_ZSEDC,id_ZSEDN,id_ZSEDCA,id_ZSEDFE, id_ZSEDP
       type (type_dependency_id)            :: id_dz,id_depth
       type (type_dependency_id)            :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca
       type (type_dependency_id)            :: id_freminc1,id_freminn1,id_freminsi1,id_freminfe1,id_freminca1
@@ -122,13 +123,20 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    call self%register_dependency(self%id_depth, standard_variables%depth)
 
    call self%get_parameter(self%seafloor,'seafloor','-','seafloor handling: 1-inorganic returns, 2-organic returns, 3-coupled benthic model', default = 1)
-   call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=0.03_rk) !worth to double-check
-   if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDSI,'ZSEDSI','mmol Si m-2', 'sediment (Si)')
-   if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDC,'ZSEDC','mmol C m-2', 'sediment (C)')
-   if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDN,'ZSEDN','mmol N m-2', 'sediment (N)')
-   if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDCA,'ZSEDCA','mmol N m-2', 'sediment (CaCO3)')
-   if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDFE,'ZSEDFE','mmol Fe m-2', 'sediment (Fe)')
+   call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=0.03_rk)
 
+   if (self%seafloor .eq. 3) then
+         call self%register_state_dependency(self%id_ZSEDSI,'ZSEDSI','mmol Si m-2', 'sediment (Si)')
+         call self%register_state_dependency(self%id_ZSEDCA,'ZSEDCA','mmol Ca m-2', 'sediment (Ca)')
+         call self%register_state_dependency(self%id_ZSEDC,'ZSEDC','mmol C m-2', 'sediment (C)')
+         call self%register_state_dependency(self%id_ZSEDN,'ZSEDN','mmol N m-2', 'sediment (N)')
+         call self%register_state_dependency(self%id_ZSEDP,'ZSEDP','mmol P m-2', 'sediment (P)')
+         call self%register_state_dependency(self%id_ZSEDFE,'ZSEDFE','mmol Fe m-2', 'sediment (Fe)')
+         call self%request_coupling_to_model(self%id_ZSEDC, 'ZSED', standard_variables%total_carbon)
+         call self%request_coupling_to_model(self%id_ZSEDN, 'ZSED', standard_variables%total_nitrogen)
+         call self%request_coupling_to_model(self%id_ZSEDP, 'ZSED', standard_variables%total_phosphorus)
+         call self%request_coupling_to_model(self%id_ZSEDSI, 'ZSED', standard_variables%total_silicate)
+   end if
 
    end subroutine initialize
 
@@ -155,7 +163,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    ffastca=0._rk
    ffastsi=0._rk
    ffastfe=0._rk
-   collect=0
+  ! collect=0
    _VERTICAL_LOOP_BEGIN_
 
     _GET_(self%id_dz,dz)
@@ -252,13 +260,13 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
     _GET_(self%id_ftempfe,ftempfe)
     _GET_(self%id_ftempsi,ftempsi)
     _GET_(self%id_ftempca,ftempca)
-     collect = collect + ftempca * dz
+ !    collect = collect + ftempca * dz
     ffastc  = ffastc + ftempc * dz
     ffastn  = ffastn  + ftempn * dz
     ffastfe = ffastfe + ftempfe * dz
     ffastsi = ffastsi + ftempsi * dz
     ffastca = ffastca + ftempca * dz
-  _SET_DIAGNOSTIC_(self%id_ffastc_loc,collect*86400.)
+ ! _SET_DIAGNOSTIC_(self%id_ffastc_loc,collect*86400.)
    _VERTICAL_LOOP_END_
 
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastc,ffastc)
