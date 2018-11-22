@@ -19,6 +19,8 @@ module medusa_pelagic
       type (type_dependency_id)            :: id_temp,id_depth,id_salt, id_om_cal, id_xpar
       type (type_state_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
       type (type_diagnostic_variable_id) :: id_par, id_fscal_part
+      type (type_bottom_state_variable_id) :: id_ZSEDC,id_ZSEDN,id_ZSEDFE
+
       ! Parameters
       logical :: jliebig
       real(rk) :: xxi,xaln,xald,xnln,xfln,xnld,xsld,xfld,xvpn,xvpd,xsin0,xnsi0,xuif,xthetam,xthetamd
@@ -29,12 +31,14 @@ module medusa_pelagic
       real(rk) :: xmd,xmdc,xsdiss
       real(rk) :: xfdfrac1,xfdfrac2,xfdfrac3,xrfn
       real(rk) :: xthetanit,xthetarem,xo2min
-      real(rk) :: wg
+      real(rk) :: wg,wdep
+      integer  :: seafloor
 
    contains
 
       procedure :: initialize
       procedure :: do
+      procedure :: do_bottom
 
   end type type_medusa_pelagic
 
@@ -113,6 +117,7 @@ contains
    call self%get_parameter(self%xthetarem,'xthetarem','mol O_2 mol C-1','O2 consumption by C remineralisation',default=1.1226_rk)
    call self%get_parameter(self%xo2min,'xo2min','mmol O_2 m-3','minimum O2 concentration',default=4.0_rk)
    call self%get_parameter(self%wg,'wg','m d-1','detritus sinking rate (<0 for sinking)', default=-2.5_rk, scale_factor=d_per_s)
+   call self%get_parameter(self%wdep,'wdep','m d-1','detritus deposition rate', default=2.5_rk, scale_factor=d_per_s)
 
    ! Register state variables
    call self%register_state_variable(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
@@ -153,6 +158,12 @@ contains
    call self%register_state_dependency(self%id_tempsi,'tempsi','mmol Si/m**3', 'fast-sinking detritus (Si)')
    call self%register_state_dependency(self%id_tempfe,'tempfe','mmol Fe/m**3', 'fast-sinking detritus (Fe)')
    call self%register_state_dependency(self%id_tempca,'tempca','mmol CaCO3/m**3', 'fast-sinking detritus (CaCO3)')
+
+   call self%get_parameter(self%seafloor,'seafloor','-','seafloor handling: 1-inorganic returns, 2-organic returns, 3-coupled benthic model', default = 3)
+   call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=0.03_rk) !worth to double-check
+   if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDC,'ZSEDC','mmol C m-2', 'sediment (C)')
+   if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDN,'ZSEDN','mmol N m-2', 'sediment (N)')
+   if (self%seafloor .eq. 3)  call self%register_state_dependency(self%id_ZSEDFE,'ZSEDFE','mmol Fe m-2', 'sediment (Fe)')
 
    ! Register environmental dependencies
    call self%register_dependency(self%id_temp, standard_variables%temperature)
@@ -588,5 +599,32 @@ contains
    _LOOP_END_
 
    end subroutine do
+
+   subroutine do_bottom(self,_ARGUMENTS_DO_)
+
+   class(type_medusa_pelagic), INTENT(IN) :: self
+  _DECLARE_ARGUMENTS_DO_BOTTOM_
+
+! !LOCAL VARIABLES
+
+    real(rk) :: ZSEDC,ZSEDN,ZSEDFE,ZDET,ZDTC
+    real(rk) :: fluxc,fluxn,fluxfe
+
+    _HORIZONTAL_LOOP_BEGIN_
+
+     fluxc = self%wdep * ZDTC
+     fluxn = self%wdep * ZDET
+     fluxfe = self%wdep * ZDET * self%xrfn
+
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDET,-fluxn)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDTC,-fluxc)
+
+    _SET_BOTTOM_ODE_(self%id_ZSEDC,  + fluxc)
+    _SET_BOTTOM_ODE_(self%id_ZSEDN,  + fluxn)
+    _SET_BOTTOM_ODE_(self%id_ZSEDFE, + fluxfe)
+
+    _HORIZONTAL_LOOP_END_
+
+   end subroutine do_bottom
 
   end module medusa_pelagic

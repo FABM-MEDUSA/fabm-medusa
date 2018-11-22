@@ -22,7 +22,7 @@ module medusa_benthic
 
       ! Parameters
       real(rk) :: xsedn,xsedc,xsedfe,xsedsi,xsedca
-      real(rk) :: wdep,xrfn
+      real(rk) :: xrfn
       real(rk) :: xthetanit,xthetarem,xo2min
 
    contains
@@ -49,7 +49,6 @@ contains
    call self%get_parameter(self%xsedfe, 'xsedfe', 'd-1','benthic Fe remineralisation rate', default=0.05_rk,scale_factor=d_per_s) !NB: check default value
    call self%get_parameter(self%xsedsi, 'xsedsi', 'd-1','benthic Si remineralisation rate', default=0.01_rk,scale_factor=d_per_s)
    call self%get_parameter(self%xsedca, 'xsedca', 'd-1','benthic CaCO3 remineralisation rate', default=0.01_rk,scale_factor=d_per_s)
-   call self%get_parameter(self%wdep,'wdep','m d-1','detritus deposition rate', default=2.5_rk, scale_factor=d_per_s)
    call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=30.0e-6_rk)
 
    call self%register_state_variable(self%id_ZSEDC,'ZSEDC','mmol C/m**2', 'sediment organic carbon pool', minimum=0.0_rk)
@@ -77,7 +76,6 @@ contains
 ! !LOCAL VARIABLES:
 
     real(rk) :: ZSEDC,ZSEDN,ZSEDFE,ZSEDSI,ZSEDCA,ZDET,ZDTC,ZSIL,ZALK,ZOXY
-    real(rk) :: fluxc,fluxn,fluxfe
     real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
     _HORIZONTAL_LOOP_BEGIN_
@@ -91,21 +89,15 @@ contains
     _GET_(self%id_ZDTC,ZDTC)
     _GET_(self%id_ZOXY,ZOXY)
 
-     fluxc = self%wdep * ZDTC
-     fluxn = self%wdep * ZDET
-     fluxfe = self%wdep * ZDET * self%xrfn
-    _SET_BOTTOM_EXCHANGE_(self%id_ZDET,-fluxn)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZDTC,-fluxc)
-
-    _SET_BOTTOM_ODE_(self%id_ZSEDC,  -self%xsedc * ZSEDC + fluxc)
+    _SET_BOTTOM_ODE_(self%id_ZSEDC,  -self%xsedc * ZSEDC)
     _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, + self%xsedc * ZSEDC)
 
-    _SET_BOTTOM_ODE_(self%id_ZSEDN,  -self%xsedn * ZSEDN + fluxn)
+    _SET_BOTTOM_ODE_(self%id_ZSEDN,  -self%xsedn * ZSEDN)
     _SET_BOTTOM_EXCHANGE_(self%id_ZDIN, + self%xsedn * ZSEDN)
      
      if (ZOXY .ge. self%xo2min) _SET_BOTTOM_EXCHANGE_(self%id_ZOXY, - self%xthetanit * self%xsedn * ZSEDN - self%xthetarem * self%xsedc * ZSEDC)
 
-    _SET_BOTTOM_ODE_(self%id_ZSEDFE, -self%xsedfe * ZSEDFE + fluxfe)
+    _SET_BOTTOM_ODE_(self%id_ZSEDFE, -self%xsedfe * ZSEDFE)
     _SET_BOTTOM_EXCHANGE_(self%id_ZFER, + self%xsedfe * ZSEDFE)
 
     _SET_BOTTOM_ODE_(self%id_ZSEDSI, -self%xsedsi * ZSEDSI)
