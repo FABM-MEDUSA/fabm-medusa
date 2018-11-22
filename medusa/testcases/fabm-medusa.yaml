@@ -103,7 +103,8 @@ instances:
       xthetanit: 2.0            # O2 consumption by N remineralisation (mol O_2 mol N-1), default=2.0
       xthetarem: 1.1226         # O2 consumption by C remineralisation (mol O_2 mol C-1), default=1.1226
       xo2min: 4.0               # minimum O2 concentration (mmol O_2 m-3), default=4.0
-      wg: 0. #-2.999808 #-2.5                  # detritus sinking rate (m d-1), default = -2.5
+      wg: -2.999808 #-2.5                  # detritus sinking rate (m d-1), default = -2.5
+      wdep: 2.999808 # -wg
     initialization:
       ZCHN: 0.01
       ZCHD: 0.01
@@ -127,6 +128,9 @@ instances:
       tempfe: fast_detritus/tempfe
       tempca: fast_detritus/tempca
       om_cal: zero #carbonate/Om_cal
+      ZSEDC: benthic/ZSEDC
+      ZSEDN: benthic/ZSEDN
+      ZSEDFE: benthic/ZSEDFE
   iron_scavenging:
     model: medusa/medusa_iron_scav
     parameters:
@@ -172,7 +176,6 @@ instances:
       xsedsi: 0.01
       xsedca: 0.01
       xrfn: 30.0e-6
-      wdep: 0. #2.999808 # -wg
     initialization:
       ZSEDC: 0.
       ZSEDN: 0.
