@@ -57,6 +57,10 @@ contains
    call self%register_state_variable(self%id_ZSEDSI,'ZSEDSI','mmol Si/m**2', 'sediment organic silica pool', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZSEDCA,'ZSEDCA','mmol C/m**2', 'sediment organic calcite pool', minimum=0.0_rk)
 
+   call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZSEDC)
+   call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZSEDN)
+   call self%add_to_aggregate_variable(standard_variables%total_silicate, self%id_ZSEDSI)
+
    call self%register_state_dependency(self%id_ZOXY,'ZOXY','mmol O_2 m-3', 'dissolved oxygen')
    call self%register_state_dependency(self%id_ZDIN,'ZDIN','mmol N m-3', 'nitrogen nutrient')
    call self%register_state_dependency(self%id_ZSIL,'ZSIL','mmol Si m-3', 'silicic acid')
