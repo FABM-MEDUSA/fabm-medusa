@@ -349,6 +349,8 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
     _SET_BOTTOM_ODE_(self%id_ZSEDCA, + ffastca)
     _SET_BOTTOM_ODE_(self%id_ZSEDFE, + ffastfe)
 
+     _SET_BOTTOM_ODE_(self%id_ZSEDP, + ffastc/106.)
+
      end if
  
     _HORIZONTAL_LOOP_END_
