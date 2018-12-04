@@ -63,8 +63,8 @@ contains
     real(rk) :: zpig,zkr,zkg,zparr,zparg,xpar,zparr1,zparg1
 
     _GET_HORIZONTAL_(self%id_qsr,qsr)
-    zpar0m = qsr * 0.43_rk
-    xpar = zpar0m
+
+    zpar0m = max(0.001_rk, qsr * 0.43_rk)
     zparr = 0.5_rk * zpar0m
     zparg = 0.5_rk * zpar0m
 
