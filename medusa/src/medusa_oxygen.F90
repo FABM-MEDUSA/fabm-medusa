@@ -17,9 +17,9 @@ module medusa_oxygen
 
       ! Variable identifiers
       type (type_state_variable_id)                 :: id_ZOXY
-      type (type_horizontal_diagnostic_variable_id) ::  id_fairo2
+      type (type_horizontal_diagnostic_variable_id) :: id_fairo2
       type (type_dependency_id)                     :: id_temp,id_salt
-      type (type_horizontal_dependency_id)          :: id_kw660 !id_apress
+      type (type_horizontal_dependency_id)          :: id_kw660,id_fr_i !id_apress
 
    contains
 
@@ -39,6 +39,7 @@ contains
    ! Register environmental dependencies
    call self%register_dependency(self%id_temp, standard_variables%temperature)
    call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
+   call self%register_dependency(self%id_fr_i, standard_variables%ice_fraction)
    ! call self%register_dependency(self%id_apress, standard_variables%surface_air_pressure)
    call self%register_diagnostic_variable(self%id_fairo2,'fairo2','mmol O_2/m^2/d','Air-sea flux of oxygen')
 
@@ -52,7 +53,7 @@ contains
 
    _DECLARE_ARGUMENTS_DO_SURFACE_
 
-   real(rk) :: pt,ps,o2,o2_sato,o2_schmidt,kwo2,o2_sat,pp0,kw660,o2flux,o2sat
+   real(rk) :: pt,ps,o2,o2_sato,o2_schmidt,kwo2,o2_sat,pp0,kw660,o2flux,o2sat,fr_i
    real(rk) :: a0 = 2.00907_rk
    real(rk) :: a1 = 3.22014_rk
    real(rk) :: a2 = 4.05010_rk
@@ -81,7 +82,7 @@ contains
    _GET_(self%id_ZOXY,o2)
    !_GET_HORIZONTAL_(self%id_apress,pp0)
    _GET_HORIZONTAL_(self%id_kw660,kw660)
-
+   _GET_HORIZONTAL_(self%id_fr_i,fr_i)
       o2 = o2/1000._rk
 
  !note: air-sea fluxes must be corrected for sea ice
@@ -108,7 +109,7 @@ contains
 
    o2sat = o2_sato * 1._rk !Use this value for now !* pp0 / 101325._rk
 
-   o2flux = kwo2 * (o2sat - o2)
+   o2flux = (1._rk - fr_i) * kwo2 * (o2sat - o2)
    o2flux = o2flux *1000._rk
    
    _SET_SURFACE_EXCHANGE_(self%id_ZOXY, o2flux)
