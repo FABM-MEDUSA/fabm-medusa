@@ -401,34 +401,53 @@ contains
 
   !Plankton mortality losses
   ! non-diatom phytoplankton
-  if (self%jmpn == 1) fdpn = self%xmpn * ZPHN                                     !! linear
-  if (self%jmpn == 2) fdpn = self%xmpn * ZPHN * ZPHN                              !! quadratic
-  if (self%jmpn == 3) fdpn = self%xmpn * ZPHN * (ZPHN / (self%xkphn + ZPHN))      !! hyperbolic
-  if (self%jmpn == 4) fdpn = self%xmpn * ZPHN * &                                 !! sigmoid
+  if (self%jmpn == 1) then
+      fdpn = self%xmpn * ZPHN                                     !! linear
+  elseif (self%jmpn == 2) then
+      fdpn = self%xmpn * ZPHN * ZPHN                              !! quadratic
+  elseif (self%jmpn == 3) then
+      fdpn = self%xmpn * ZPHN * (ZPHN / (self%xkphn + ZPHN))      !! hyperbolic
+  elseif (self%jmpn == 4) then
+      fdpn = self%xmpn * ZPHN * &                                 !! sigmoid
                  ((ZPHN * ZPHN) / (self%xkphn + (ZPHN * ZPHN)))
+  end if
   ! diatom phytoplankton
-  if (self%jmpd == 1) fdpd = self%xmpd * ZPHD               !! linear
-  if (self%jmpd == 2) fdpd = self%xmpd * ZPHD * ZPHD        !! quadratic
-  if (self%jmpd == 3) fdpd = self%xmpd * ZPHD * &           !! hyperbolic
+  if (self%jmpd == 1) then
+      fdpd = self%xmpd * ZPHD               !! linear
+  elseif (self%jmpd == 2) then
+      fdpd = self%xmpd * ZPHD * ZPHD        !! quadratic
+  elseif (self%jmpd == 3) then
+      fdpd = self%xmpd * ZPHD * &           !! hyperbolic
                   (ZPHD / (self%xkphd + ZPHD))
-  if (self%jmpd == 4) fdpd = self%xmpd * ZPHD * &           !! sigmoid
+  elseif (self%jmpd == 4) then
+      fdpd = self%xmpd * ZPHD * &           !! sigmoid
                   ((ZPHD * ZPHD) / (self%xkphd + (ZPHD * ZPHD)))
-          fdpds = fdpd * fsin
+  end if
+  fdpds = fdpd * fsin
   ! microzooplankton
-  if (self%jmzmi == 1) fdzmi = self%xmzmi * ZZMI            !! linear
-  if (self%jmzmi == 2) fdzmi = self%xmzmi * ZZMI * ZZMI     !! quadratic
-  if (self%jmzmi == 3) fdzmi = self%xmzmi * ZZMI * &        !! hyperbolic
+  if (self%jmzmi == 1) then
+     fdzmi = self%xmzmi * ZZMI            !! linear
+  elseif (self%jmzmi == 2) then
+     fdzmi = self%xmzmi * ZZMI * ZZMI     !! quadratic
+  elseif (self%jmzmi == 3) then
+     fdzmi = self%xmzmi * ZZMI * &        !! hyperbolic
                   (ZZMI / (self%xkzmi + ZZMI))
-  if (self%jmzmi == 4) fdzmi = self%xmzmi * ZZMI * &        !! sigmoid
+  elseif (self%jmzmi == 4) then
+     fdzmi = self%xmzmi * ZZMI * &        !! sigmoid
                   ((ZZMI * ZZMI) / (self%xkzmi + (ZZMI * ZZMI)))
+  end if
   ! mesozooplankton
-  if (self%jmzme == 1) fdzme = self%xmzme * ZZME            !! linear
-  if (self%jmzme == 2) fdzme = self%xmzme * ZZME * ZZME     !! quadratic
-  if (self%jmzme == 3) fdzme = self%xmzme * ZZME * &        !! hyperbolic
+  if (self%jmzme == 1) then
+     fdzme = self%xmzme * ZZME            !! linear
+  elseif (self%jmzme == 2) then
+     fdzme = self%xmzme * ZZME * ZZME     !! quadratic
+  elseif (self%jmzme == 3) then
+     fdzme = self%xmzme * ZZME * &        !! hyperbolic
                   (ZZME / (self%xkzme + ZZME))
-  if (self%jmzme == 4) fdzme = self%xmzme * ZZME * &        !! sigmoid
+  elseif (self%jmzme == 4) then
+     fdzme = self%xmzme * ZZME * &        !! sigmoid
                   ((ZZME * ZZME) / (self%xkzme + (ZZME * ZZME)))
-
+  end if
   !Detritus remineralisation (temperature-dependent)
 
   if (self%jmd == 1) then
@@ -632,7 +651,7 @@ contains
     _SET_BOTTOM_ODE_(self%id_ZSEDN,  + fluxn)
     _SET_BOTTOM_ODE_(self%id_ZSEDFE, + fluxfe)
 
-     _SET_BOTTOM_ODE_(self%id_ZSEDP, + fluxc/106.)
+     _SET_BOTTOM_ODE_(self%id_ZSEDP, + fluxc/106._rk)
 
     _HORIZONTAL_LOOP_END_
 
