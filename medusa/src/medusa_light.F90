@@ -64,7 +64,9 @@ contains
 
     _GET_HORIZONTAL_(self%id_qsr,qsr)
 
-    zpar0m = max(0.001_rk, qsr * 0.43_rk)
+    zpar0m = qsr * 0.43_rk
+    if (zpar0m .le. 0.0_rk) zpar0m = 0.001_rk
+    xpar = zpar0m
     zparr = 0.5_rk * zpar0m
     zparg = 0.5_rk * zpar0m
 
