@@ -61,7 +61,7 @@ contains
            _GET_HORIZONTAL_(self%id_wnd,wnd)
 
 ! Calculate gas transfer velocity (cm/h)
-           tmp_k = (a(self%eqn) * wnd**2) + (b(self%eqn) * wnd)
+           tmp_k = (a(self%eqn) * wnd**2._rk) + (b(self%eqn) * wnd)
 
 ! Convert tmp_k from cm/h to m/s
            kw660 = tmp_k / (3600._rk * 100._rk)
