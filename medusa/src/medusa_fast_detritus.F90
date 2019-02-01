@@ -196,7 +196,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
      ffastc = fq1
    end if
   _SET_DIAGNOSTIC_(self%id_freminc,freminc)
-!  _SET_DIAGNOSTIC_(self%id_ffastc_loc,ffastc)
+  _SET_DIAGNOSTIC_(self%id_ffastc_loc,ffastc)
 
    !Nitrogen
    fq0      = ffastn                            !! how much organic N enters this box        (mol)
@@ -244,13 +244,13 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    _GET_(self%id_om_cal,om_cal)
    om_cal = 4._rk
    fq0      = ffastca                           !! how much CaCO3 enters this box            (mol)
-  ! if (om_cal .ge. 1._rk) then
+ !  if (om_cal .ge. 1._rk) then
    fq1      = fq0                               !! above lysocline, no Ca dissolves          (mol)
-  ! freminca = 0._rk                               !! above lysocline, no Ca dissolves          (mol)
-  ! elseif (om_cal.lt. 1._rk) then
-   fq1      = fq0 * exp(-(dz / xfastca))        !! how much CaCO3 leaves this box            (mol)
-   freminca = (fq0 - fq1) / dz                  !! Ca remineralisation in this box           (mol)
-  ! endif
+   freminca = 0._rk                               !! above lysocline, no Ca dissolves          (mol)
+ !  elseif (om_cal.lt. 1._rk) then
+ !  fq1      = fq0 * exp(-(dz / xfastca))        !! how much CaCO3 leaves this box            (mol)
+ !  freminca = (fq0 - fq1) / dz                  !! Ca remineralisation in this box           (mol)
+ !  endif
    _SET_DIAGNOSTIC_(self%id_freminca,freminca)
    ffastca = fq1
    _SET_DIAGNOSTIC_(self%id_ffastca_loc,ffastca)
@@ -266,7 +266,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
     ffastfe = ffastfe + ftempfe * dz
     ffastsi = ffastsi + ftempsi * dz
     ffastca = ffastca + ftempca * dz
- ! _SET_DIAGNOSTIC_(self%id_ffastc_loc,collect*86400.)
+ !   _SET_DIAGNOSTIC_(self%id_freminc,ftempc)
    _VERTICAL_LOOP_END_
 
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastc,ffastc)
@@ -349,7 +349,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
     _SET_BOTTOM_ODE_(self%id_ZSEDCA, + ffastca)
     _SET_BOTTOM_ODE_(self%id_ZSEDFE, + ffastfe)
 
-     _SET_BOTTOM_ODE_(self%id_ZSEDP, + ffastc/106.)
+     _SET_BOTTOM_ODE_(self%id_ZSEDP, + ffastc/106._rk)
 
      end if
  
