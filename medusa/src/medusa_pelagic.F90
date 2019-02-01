@@ -510,7 +510,7 @@ contains
   if (om_cal .ge. 1._rk) then !get f3_omcal!
      fq1 = (om_cal - 1._rk)**0.81_rk
   else
-     fq1 = 0.
+     fq1 = 0._rk
   endif
   fcaco3 = self%xridg_r0 * fq1
   ftempca = ftempc * fcaco3
