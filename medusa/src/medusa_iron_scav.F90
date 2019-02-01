@@ -38,9 +38,9 @@ contains
    integer,               intent(in)           :: configunit
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
-   call self%get_parameter(self%xk_FeL,'xk_FeL','-','dissociation constant for (Fe+ligand)',default=0.1_rk)
-   call self%get_parameter(self%xLgT,'xLgT','umol m-3','total ligand concentration',default=0.001_rk)
-   call self%get_parameter(self%xk_sc_Fe,'xk_sc_Fe','d-1','scavenging rate of "free" Fe',default=0.001_rk,scale_factor=d_per_s)
+   call self%get_parameter(self%xk_FeL,'xk_FeL','-','dissociation constant for (Fe+ligand)',default=100._rk)
+   call self%get_parameter(self%xLgT,'xLgT','umol m-3','total ligand concentration',default=1._rk)
+   call self%get_parameter(self%xk_sc_Fe,'xk_sc_Fe','d-1','scavenging rate of "free" Fe',default=1.E-3_rk,scale_factor=d_per_s)
    call self%get_parameter(self%jiron,'jiron','-','iron scavenging scheme: 1-Dutkiewicz et al. (2005),2-Moore et al. (2004),3-Moore et al. (2008),4-Galbraith et al. (2010)',default=1)
 
    call self%register_state_dependency(self%id_ZFER,'ZFER','mmol Fe/m**3', 'iron nutrient')
@@ -84,8 +84,8 @@ call self%register_dependency(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1
  ! ! Scavenging of iron
   if (self%jiron == 1) then
      ffescav = self%xk_sc_Fe * xFeF
-     xmaxFeF = min((xFeF * 1.e3), 0.3_rk)        ! = umol/m3
-     fdeltaFe = (xFeT - (xFeL + xmaxFeF)) * 1.e-3   ! = mmol/m3
+     xmaxFeF = min((xFeF * 1.e3_rk), 0.3_rk)        ! = umol/m3
+     fdeltaFe = (xFeT - (xFeL + xmaxFeF)) * 1.e-3_rk   ! = mmol/m3
 
      ffescav     = ffescav + fdeltaFe / d_per_s        ! = mmol/m3/d !assuming time scale of fdeltaFe of 1 day
 
@@ -129,9 +129,9 @@ call self%register_dependency(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1
 
      if (xFeT .lt. 0.5_rk) then
 
-        fscal_scav = fscal_scav * xFeT / 0.5
+        fscal_scav = fscal_scav * xFeT / 0.5_rk
 
-     elseif (xFeT .gt. 0.6) then
+     elseif (xFeT .gt. 0.6_rk) then
 
         fscal_scav = fscal_scav + (xFeT- 0.6_rk) * 0.00904_rk
                      
