@@ -311,11 +311,12 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
      
      real(rk) :: ffastc,ffastn,ffastsi,ffastca,ffastfe
      real(rk) :: depth
+     real(rk) :: ZOXY
 
      !TO-DO: oxygen consumption
 
     _HORIZONTAL_LOOP_BEGIN_
-
+    _GET_(self%id_ZOXY,ZOXY)
     _GET_HORIZONTAL_(self%id_ffastc1,ffastc)
     _GET_HORIZONTAL_(self%id_ffastn1,ffastn)
     _GET_HORIZONTAL_(self%id_ffastsi1,ffastsi)
@@ -330,12 +331,17 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
      if (self%seafloor .eq. 1) then
 
     _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, + ffastc)
+     if (ZOXY .ge. self%xo2min) _SET_BOTTOM_EXCHANGE_(self%id_ZOXY, - self%xthetarem * ffastc - self%xthetanit * ffastn)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, + ffastca)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZALK, 2._rk * ffastca)
     _SET_BOTTOM_EXCHANGE_(self%id_ZDIN, + ffastn)
     _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, + ffastsi)
     _SET_BOTTOM_EXCHANGE_(self%id_ZFER, + ffastn * self%xrfn)
 
      elseif (self%seafloor .eq. 2) then
-
+     ! Seafloor 2 not tested yet...
+     if (ZOXY .ge. self%xo2min) _SET_BOTTOM_EXCHANGE_(self%id_ZOXY, - self%xthetarem * ffastc - self%xthetanit * ffastn)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZALK, 2._rk * ffastca)
     _SET_BOTTOM_EXCHANGE_(self%id_ZDTC, + ffastc + ffastca)
     _SET_BOTTOM_EXCHANGE_(self%id_ZDET, + ffastn)
     _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, + ffastsi)
