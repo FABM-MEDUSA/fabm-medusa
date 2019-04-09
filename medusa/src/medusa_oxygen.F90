@@ -8,6 +8,7 @@
 module medusa_oxygen
 
    use fabm_types
+   use fabm_standard_variables
 
    implicit none
 
@@ -19,8 +20,8 @@ module medusa_oxygen
       type (type_state_variable_id)                 :: id_ZOXY
       type (type_horizontal_diagnostic_variable_id) :: id_fairo2
       type (type_dependency_id)                     :: id_temp,id_salt
-      type (type_horizontal_dependency_id)          :: id_kw660,id_fr_i !id_apress
-
+      type (type_horizontal_dependency_id)          :: id_kw660, id_fr_i !id_apress
+          
    contains
 
       procedure :: initialize
@@ -39,7 +40,7 @@ contains
    ! Register environmental dependencies
    call self%register_dependency(self%id_temp, standard_variables%temperature)
    call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
-   call self%register_dependency(self%id_fr_i, standard_variables%ice_fraction)
+   call self%register_dependency(self%id_fr_i, type_horizontal_standard_variable(name='ice_fraction'))
    ! call self%register_dependency(self%id_apress, standard_variables%surface_air_pressure)
    call self%register_diagnostic_variable(self%id_fairo2,'fairo2','mmol O_2/m^2/d','Air-sea flux of oxygen')
 
