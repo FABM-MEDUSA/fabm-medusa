@@ -1,4 +1,4 @@
-check_conservation: true
+check_conservation: false
 instances:
   light:
     model: medusa/medusa_light
@@ -103,8 +103,8 @@ instances:
       xthetanit: 2.0            # O2 consumption by N remineralisation (mol O_2 mol N-1), default=2.0
       xthetarem: 1.1226         # O2 consumption by C remineralisation (mol O_2 mol C-1), default=1.1226
       xo2min: 4.0               # minimum O2 concentration (mmol O_2 m-3), default=4.0
-      wg: -2.999808 #-2.5                  # detritus sinking rate (m d-1), default = -2.5
-      wdep: 2.999808 # -wg
+      wg: 0. #-2.999808 #-2.5                  # detritus sinking rate (m d-1), default = -2.5
+      wdep: 0. #2.999808 # -wg
     initialization:
       ZCHN: 0.01
       ZCHD: 0.01
@@ -128,16 +128,18 @@ instances:
       tempfe: fast_detritus/tempfe
       tempca: fast_detritus/tempca
       om_cal: zero #carbonate/Om_cal
-      ZSEDC: benthic/ZSEDC
-      ZSEDN: benthic/ZSEDN
+      #ZSEDC: benthic/ZSEDC
+      #ZSEDN: benthic/ZSEDN
+      ZSED: benthic
       ZSEDFE: benthic/ZSEDFE
+      #ZSEDP: zero_hz
   iron_scavenging:
     model: medusa/medusa_iron_scav
     parameters:
       xk_FeL: 100.              # dissociation constant for (Fe+ligand) (mmol m-3)-1, default=0.1
       xLgT: 1.                  # total ligand concentration (mmol m-3), default=0.001	
       xk_sc_Fe: 1.e-3           # scavenging rate of "free" Fe (d-1), default=0.001
-      jiron: 1              # iron scavenging scheme, 1-Dutkiewicz et al. (2005),2-Moore et al. (2004),3-Moore et al. (2008),4-Galbraith et al. (2010)',default=1
+      jiron: 5 #1          # iron scavenging scheme, 1-Dutkiewicz et al. (2005),2-Moore et al. (2004),3-Moore et al. (2008),4-Galbraith et al. (2010)',default=1
     coupling:
       ZFER: pelagic/ZFER
       ffastc_loc: fast_detritus/ffastc_loc
@@ -149,7 +151,7 @@ instances:
     parameters:
       xfe_sed: 0. #0.000228
       iball: 1                 # ballast model formulation (1- ballast model (Yool et al., 2011), 2- ballast-sans-ballast model), default = 1
-      seafloor: 3 #1              # seafloor handling (1-inorganic returns, 2-organic returns, 3-couple benthos (nothing to do in this model), default = 1
+      seafloor: 3              # seafloor handling (1-inorganic returns, 2-organic returns, 3-couple benthos (nothing to do in this model), default = 1
       xrfn: 30.0e-6               # phytoplankton Fe:N uptake ratio (mmol Fe mol N-1 m), default=0.03
     coupling:
       ZOXY: pelagic/ZOXY
@@ -160,11 +162,12 @@ instances:
       ZDET: pelagic/ZDET
       ZDTC: pelagic/ZDTC
       ZALK: pelagic/ZALK
-      ZSEDSI: benthic/ZSEDSI
-      ZSEDC: benthic/ZSEDC
-      ZSEDN: benthic/ZSEDN
+      #ZSEDSI: benthic/ZSEDSI
+      ZSED: benthic
+      #ZSEDN: benthic/ZSEDN
       ZSEDCA: benthic/ZSEDCA
       ZSEDFE: benthic/ZSEDFE
+      #ZSEDP: zero_hz
       om_cal: zero #carbonate/Om_cal
   benthic:
     model: medusa/medusa_benthic
