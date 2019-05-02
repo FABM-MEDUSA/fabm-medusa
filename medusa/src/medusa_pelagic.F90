@@ -117,8 +117,8 @@ contains
    call self%get_parameter(self%xthetanit,'xthetanit','mol O_2 mol N-1','O2 consumption by N remineralisation',default=2.0_rk)
    call self%get_parameter(self%xthetarem,'xthetarem','mol O_2 mol C-1','O2 consumption by C remineralisation',default=1.1226_rk)
    call self%get_parameter(self%xo2min,'xo2min','mmol O_2 m-3','minimum O2 concentration',default=4.0_rk)
-   call self%get_parameter(self%wg,'wg','m d-1','detritus sinking rate (<0 for sinking)', default=-2.5_rk, scale_factor=d_per_s)
-   call self%get_parameter(self%wdep,'wdep','m d-1','detritus deposition rate', default=2.5_rk, scale_factor=d_per_s)
+   call self%get_parameter(self%wg,'wg','m d-1','detritus sinking rate (<0 for sinking)', default=-2.5_rk)
+   call self%get_parameter(self%wdep,'wdep','m d-1','detritus deposition rate', default=2.5_rk,scale_factor=d_per_s)
 
    ! Register state variables
    call self%register_state_variable(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
@@ -129,8 +129,8 @@ contains
    call self%register_state_variable(self%id_ZDIN,'ZDIN','mmol N/m**3', 'nitrogen nutrient', minimum=0.0_rk) !no river dilution?
    call self%register_state_variable(self%id_ZFER,'ZFER','mmol Fe/m**3', 'iron nutrient', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZSIL,'ZSIL','mmol Si/m**3', 'silicic acid', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZDET,'ZDET','mmol N/m**3', 'slow-sinking detritus (N)', minimum=0.0_rk,vertical_movement=self%wg)
-   call self%register_state_variable(self%id_ZDTC,'ZDTC','mmol C/m**3', 'slow-sinking detritus (C)', minimum=0.0_rk,vertical_movement=self%wg)
+   call self%register_state_variable(self%id_ZDET,'ZDET','mmol N/m**3', 'slow-sinking detritus (N)',minimum=0.0_rk,vertical_movement=self%wg*d_per_s)
+   call self%register_state_variable(self%id_ZDTC,'ZDTC','mmol C/m**3', 'slow-sinking detritus (C)',minimum=0.0_rk,vertical_movement=self%wg*d_per_s)
    call self%register_state_variable(self%id_ZZMI,'ZZMI','mmol N/m**3', 'microzooplankton', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZZME,'ZZME','mmol N/m**3', 'mesozooplankton', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZALK,'ZALK','meq/m**3', 'total alkalinity', minimum=0.0_rk)
