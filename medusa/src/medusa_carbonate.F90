@@ -36,13 +36,20 @@ contains
      call self%register_dependency(self%id_ZALK,'ZALK','meq/m**3','total alkalinity')
 
      call self%register_diagnostic_variable(self%id_ph,    'pH',    '-',      'pH',standard_variable=standard_variables%ph_reported_on_total_scale)
-
      call self%register_diagnostic_variable(self%id_pco2,  'pCO2',  '1e-6',    'partial pressure of CO2')
      call self%register_diagnostic_variable(self%id_CarbA, 'CarbA', 'mmol/m^3','carbonic acid concentration')
      call self%register_diagnostic_variable(self%id_BiCarb,'BiCarb','mmol/m^3','bicarbonate concentration')
      call self%register_diagnostic_variable(self%id_Carb,  'Carb',  'mmol/m^3','carbonate concentration')
      call self%register_diagnostic_variable(self%id_Om_cal,'Om_cal','-','calcite saturation')
      call self%register_diagnostic_variable(self%id_Om_arg,'Om_arg','-','aragonite saturation')
+
+     self%id_ph%link%target%prefill = prefill_previous_value
+     self%id_pco2%link%target%prefill = prefill_previous_value
+     self%id_CarbA%link%target%prefill = prefill_previous_value
+     self%id_BiCarb%link%target%prefill = prefill_previous_value
+     self%id_Carb%link%target%prefill = prefill_previous_value
+     self%id_Om_cal%link%target%prefill = prefill_previous_value
+     self%id_Om_arg%link%target%prefill = prefill_previous_value
 
      call self%register_dependency(self%id_temp, standard_variables%temperature)
      call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
@@ -824,9 +831,10 @@ contains
 
     sc    = 2073.1_rk-125.62_rk*temp+3.6276_rk*temp**2._rk-0.0432190_rk*temp**3._rk
     fwind = kw660 * (sc/660._rk)**(-0.5_rk)
-    flux = fwind * henry * ( pco2a/1.e6_rk - pco2) * dcf / 1000.
- !   _SET_SURFACE_EXCHANGE_(self%id_ZDIC,flux)
- !   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fairco2,flux * 86400._rk)
+    fwind = fwind * 24._rk/100._rk
+    flux = fwind * henry * ( pco2a - pco2 * 1.0e6_rk) * dcf / 1000._rk
+    _SET_SURFACE_EXCHANGE_(self%id_ZDIC,flux /86400._rk)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fairco2,flux)
 
    _HORIZONTAL_LOOP_END_
 
