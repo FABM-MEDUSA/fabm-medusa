@@ -25,7 +25,10 @@ instances:
                                 # 7 Wanninkhof (2014)         [assumes 6h avg winds]
   carbonate:
     model: medusa/medusa_carbonate
-    use: false
+    use: true
+    schedule:
+      interior:
+        pattern: monthly
     coupling:
       ZDIC: pelagic/ZDIC
       ZALK: pelagic/ZALK
@@ -103,8 +106,8 @@ instances:
       xthetanit: 2.0            # O2 consumption by N remineralisation (mol O_2 mol N-1), default=2.0
       xthetarem: 1.1226         # O2 consumption by C remineralisation (mol O_2 mol C-1), default=1.1226
       xo2min: 4.0               # minimum O2 concentration (mmol O_2 m-3), default=4.0
-      wg: 0. #-2.999808 #-2.5                  # detritus sinking rate (m d-1), default = -2.5
-      wdep: 0. #2.999808 # -wg
+      wg: -2.999808 #-2.5                  # detritus sinking rate (m d-1), default = -2.5
+      wdep: 2.999808 # -wg
     initialization:
       ZCHN: 0.01
       ZCHD: 0.01
