@@ -10,7 +10,7 @@ module medusa_carbonate
    type,extends(type_base_model),public :: type_medusa_carbonate
       type (type_dependency_id)            :: id_ZALK
       type (type_state_variable_id)        :: id_ZDIC
-      type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres
+      type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres,id_depth
       type (type_horizontal_dependency_id) :: id_wnd,id_PCO2A,id_kw660
       type (type_diagnostic_variable_id)   :: id_ph,id_pco2,id_CarbA,id_BiCarb,id_Carb,id_TA_diag
       type (type_diagnostic_variable_id)   :: id_Om_cal,id_Om_arg
@@ -54,6 +54,7 @@ contains
      call self%register_dependency(self%id_temp, standard_variables%temperature)
      call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
      call self%register_dependency(self%id_PCO2A,standard_variables%mole_fraction_of_carbon_dioxide_in_air)
+     call self%register_dependency(self%id_depth, standard_variables%depth)
 
      call self%register_dependency(self%id_dens,standard_variables%density)
      call self%register_dependency(self%id_pres,standard_variables%pressure)
@@ -66,7 +67,7 @@ contains
     class (type_medusa_carbonate), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_
 
-      real(rk) :: ZDIC,ZALK,temp,salt,density,pres
+      real(rk) :: ZDIC,ZALK,temp,salt,density,pres,depth
       real(rk) :: Om_cal,Om_arg,dcf,henry,TDIC,TALK
       real(rk) :: ph,pco2a,pco2w,h2co3,hco3,co3,k0co2
       integer :: iters
@@ -81,8 +82,9 @@ contains
          _GET_(self%id_dens,density)
 
          _GET_(self%id_pres,pres)
+         _GET_(self%id_depth,depth)
 
-   call CO2_dynamics(temp,salt,pres,ZDIC,ZALK,pCO2a,pco2w,ph,h2co3,hco3,co3,henry,om_cal,om_arg,TDIC,TALK,dcf,iters)
+    call CO2_dynamics(temp,salt,depth,ZDIC,ZALK,pCO2a,pco2w,ph,h2co3,hco3,co3,henry,om_cal,om_arg,TDIC,TALK,dcf,iters)
 
     _SET_DIAGNOSTIC_(self%id_ph,pH)
     _SET_DIAGNOSTIC_(self%id_pco2,pco2w)
@@ -161,19 +163,19 @@ contains
       REAL(rk), DIMENSION(MKVAL) :: AKVAL 
       REAL(rk), DIMENSION(MCONC) :: CONCS 
       ICONST = 6 
-      PRSS = 1.0D0 
+      PRSS = 1._rk
       CONCS(1) = TCO2 
       CONCS(2) = TA 
       ICALC = 1 
       CALL POLYCO(PRSS,T,S,CONCS,MCONC,AKVAL,MKVAL,ICALC,ICONST,iters) 
-      if(iters.eq.25) then 
-         CONCS(3) = PCO2A * 1E-06 ! atmospheric value 
-         CONCS(4) = 8.1           ! global average pH 
-         CONCS(5) = TCO2 * 0.005  ! some "standard" values plucked 
-         CONCS(6) = TCO2 * 0.865  ! from pages 5-6 of Zeebe & Wolf- 
-         CONCS(7) = TCO2 * 0.130  ! Gladow (2001) 
-         AKVAL(1) = 0.5E-01       ! trial-and-error value 
-      endif 
+      if(iters.eq.25) then
+         CONCS(3) = PCO2A * 1E-06_rk ! atmospheric value
+         CONCS(4) = 8.1_rk         ! global average pH
+         CONCS(5) = TCO2 * 0.005_rk  ! some "standard" values plucked
+         CONCS(6) = TCO2 * 0.865_rk  ! from pages 5-6 of Zeebe & Wolf-
+         CONCS(7) = TCO2 * 0.130_rk  ! Gladow (2001)
+         AKVAL(1) = 0.5E-01_rk       ! trial-and-error value
+      endif
 
       PCO2  = CONCS(3) 
       PH    = CONCS(4) 
@@ -334,34 +336,34 @@ contains
         sqrtS = sqrt(S)
         S15 = S**1.5_rk
 
-        k1=10.**(-1.*(3670.7/TK - 62.008 + 9.7944*dlogTK - &
-     &          0.0118 * S + 0.000116*S2))
+        k1=10**(-1*(3670.7_rk/TK - 62.008_rk + 9.7944_rk*dlogTK - &
+     &          0.0118_rk * S + 0.000116_rk*S2))
 
-        k2=10.**(-1.*(1394.7/TK + 4.777 - &
-     &          0.0184*S + 0.000118*S2))
+        k2=10**(-1*(1394.7_rk/TK + 4.777_rk - &
+     &          0.0184_rk*S + 0.000118_rk*S2))
 
-        delta=-25.5+0.1271*T
-        kappa=(-3.08+0.0877*T)/1000.0
-        k1=k1*exp((-delta+0.5*kappa*P)*P/(Rgas*TK))
+        delta=-25.5_rk+0.1271_rk*T
+        kappa=(-3.08_rk+0.0877_rk*T)/1000._rk
+        k1=k1*exp((-delta+0.5_rk*kappa*P)*P/(Rgas*TK))
 
-        delta=-15.82-0.0219*T
-        kappa=(1.13-0.1475*T)/1000.0
-        k2=k2*exp((-delta+0.5*kappa*P)*P/(Rgas*TK))
+        delta=-15.82_rk-0.0219_rk*T
+        kappa=(1.13_rk-0.1475_rk*T)/1000._rk
+        k2=k2*exp((-delta+0.5_rk*kappa*P)*P/(Rgas*TK))
 
-        kb=exp((-8966.90 - 2890.53*sqrtS - 77.942*S + &
-     &          1.728*S15 - 0.0996*S2)/TK + &
-     &          (148.0248 + 137.1942*sqrtS + 1.62142*S) + &
-     &          (-24.4344 - 25.085*sqrtS - 0.2474*S) * &
-     &          dlogTK + 0.053105*sqrtS*TK)
+        kb=exp((-8966.90_rk - 2890.53_rk*sqrtS - 77.942_rk*S + &
+     &          1.728_rk*S15 - 0.0996_rk*S2)/TK + &
+     &          (148.0248_rk + 137.1942_rk*sqrtS + 1.62142_rk*S) + &
+     &          (-24.4344_rk - 25.085_rk*sqrtS - 0.2474_rk*S) * &
+     &          dlogTK + 0.053105_rk*sqrtS*TK)
 
-        delta=-29.48+0.1622*T-0.002608*T**2.0 
-        kappa=-2.84/1000.0 
-        kb=kb*exp((-delta+0.5*kappa*P)*P/(Rgas*TK)) 
+        delta=-29.48_rk+0.1622_rk*T-0.002608_rk*T**2.0_rk
+        kappa=-2.84_rk/1000._rk
+        kb=kb*exp((-delta+0.5_rk*kappa*P)*P/(Rgas*TK))
 
-        delta=-25.60+0.2324*T-0.0036246*T**2 
-        kappa=(-5.13+0.0794*T)/1000.0 
+        delta=-25.60_rk+0.2324_rk*T-0.0036246_rk*T**2
+        kappa=(-5.13_rk+0.0794_rk*T)/1000._rk
 
-      AKVAL(1)=AKVAL(1)*exp((-delta+0.5*kappa*P)*P/(Rgas*TK))
+      AKVAL(1)=AKVAL(1)*exp((-delta+0.5_rk*kappa*P)*P/(Rgas*TK))
       AKVAL(2) = k1
       AKVAL(3) = k2
       AKVAL(4) = kb 
@@ -774,11 +776,13 @@ contains
         Kspc = 10._rk**logKspc
 
 ! correction for pressure for calcite
+      if (D .GT. 0._rk) then
         dV = -48.76_rk + 0.5304_rk*Tc
         dK = -11.76_rk/1.e3_rk + (0.3692_rk/1.e3_rk) * Tc
         tmp1 = -(dV/(R*Tk))*P + (0.5_rk*dK/(R*Tk))*P*P
         Kspc = Kspc*exp(tmp1)
         logKspc = log10(Kspc)
+      end if
 
         tmp1 = -171.945_rk - 0.077993_rk*Tk + 2903.293_rk / Tk + 71.595_rk* log10(Tk)
         tmp2 = + (-0.068393_rk + 0.0017276_rk*Tk + 88.135_rk/Tk)*SQRT(S)
@@ -787,11 +791,13 @@ contains
         Kspa = 10._rk**logKspa
 
 ! correction for pressure for aragonite
-        dV = -46._rk + 0.530_rk*Tc
+      if (D .GT. 0._rk) then
+        dV = -46._rk + 0.5304_rk*Tc
         dK = -11.76_rk/1.e3_rk + (0.3692_rk/1.e3_rk) * Tc
         tmp1 = -(dV/(R*Tk))*P + (0.5_rk*dK/(R*Tk))*P*P
         Kspa = Kspa*exp(tmp1)
         logKspa = log10(Kspa)
+      end if
 
 ! calculate saturation states
         Om_cal = (CO3 * Ca) / Kspc
