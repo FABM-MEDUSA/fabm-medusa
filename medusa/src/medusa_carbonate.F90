@@ -11,7 +11,7 @@ module medusa_carbonate
       type (type_dependency_id)            :: id_ZALK
       type (type_state_variable_id)        :: id_ZDIC
       type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres,id_depth
-      type (type_horizontal_dependency_id) :: id_wnd,id_PCO2A,id_kw660
+      type (type_horizontal_dependency_id) :: id_wnd,id_PCO2A,id_kw660,id_fr_i
       type (type_diagnostic_variable_id)   :: id_ph,id_pco2,id_CarbA,id_BiCarb,id_Carb,id_TA_diag
       type (type_diagnostic_variable_id)   :: id_Om_cal,id_Om_arg
       type (type_horizontal_diagnostic_variable_id) ::  id_fairco2
@@ -60,6 +60,7 @@ contains
      call self%register_dependency(self%id_pres,standard_variables%pressure)
      call self%register_dependency(self%id_wnd,  standard_variables%wind_speed)
      call self%register_horizontal_dependency(self%id_kw660, 'kw660', 'm/s', 'gas transfer velocity')
+     call self%register_dependency(self%id_fr_i, type_horizontal_standard_variable(name='ice_fraction'))
      call self%register_diagnostic_variable(self%id_fairco2,'fairco2','mmol C/m^2/d','Air-sea flux of CO2')
     end subroutine
 
@@ -67,7 +68,7 @@ contains
     class (type_medusa_carbonate), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_
 
-      real(rk) :: ZDIC,ZALK,temp,salt,density,pres,depth
+      real(rk) :: ZDIC,ZALK,temp,salt,density,pres,depth,fr_i
       real(rk) :: Om_cal,Om_arg,dcf,henry,TDIC,TALK
       real(rk) :: ph,pco2a,pco2w,h2co3,hco3,co3,k0co2
       integer :: iters
@@ -83,6 +84,7 @@ contains
 
          _GET_(self%id_pres,pres)
          _GET_(self%id_depth,depth)
+         _GET_HORIZONTAL_(self%id_fr_i,fr_i)
 
     call CO2_dynamics(temp,salt,depth,ZDIC,ZALK,pCO2a,pco2w,ph,h2co3,hco3,co3,henry,om_cal,om_arg,TDIC,TALK,dcf,iters)
 
@@ -838,7 +840,7 @@ contains
     sc    = 2073.1_rk-125.62_rk*temp+3.6276_rk*temp**2._rk-0.0432190_rk*temp**3._rk
     fwind = kw660 * (sc/660._rk)**(-0.5_rk)
     fwind = fwind * 24._rk/100._rk
-    flux = fwind * henry * ( pco2a - pco2 * 1.0e6_rk) * dcf / 1000._rk
+    flux = (1._rk - fr_i) * fwind * henry * ( pco2a - pco2 * 1.0e6_rk) * dcf / 1000._rk
     _SET_SURFACE_EXCHANGE_(self%id_ZDIC,flux /86400._rk)
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fairco2,flux)
 
