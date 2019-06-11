@@ -69,7 +69,7 @@ contains
     class (type_medusa_carbonate), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_
 
-      real(rk) :: ZDIC,ZALK,temp,salt,density,pres,depth,fr_i
+      real(rk) :: ZDIC,ZALK,temp,salt,density,pres,depth
       real(rk) :: Om_cal,Om_arg,dcf,henry,TDIC,TALK
       real(rk) :: ph,pco2a,pco2w,h2co3,hco3,co3,k0co2
       integer :: iters
@@ -85,7 +85,6 @@ contains
 
          _GET_(self%id_pres,pres)
          _GET_(self%id_depth,depth)
-         _GET_HORIZONTAL_(self%id_fr_i,fr_i)
 
     call CO2_dynamics(temp,salt,depth,ZDIC,ZALK,pCO2a,pco2w,ph,h2co3,hco3,co3,henry,om_cal,om_arg,TDIC,TALK,dcf,iters)
 
@@ -814,7 +813,7 @@ contains
 
    _DECLARE_ARGUMENTS_DO_SURFACE_
 
-    real(rk) :: ZALK,ZDIC,temp,salt,sc,fwind,flux,kw660
+    real(rk) :: ZALK,ZDIC,temp,salt,sc,fwind,flux,kw660,fr_i
     real(rk) :: henry, pco2a, pco2, dcf, a, b, c, ca, bc, cb, ph, TA, TCO2
     integer :: iters
 
@@ -823,6 +822,7 @@ contains
    _GET_(self%id_temp,temp)
    _GET_(self%id_salt,salt)
    _GET_HORIZONTAL_(self%id_kw660,kw660)
+   _GET_HORIZONTAL_(self%id_kw660,fr_i)
    _GET_(self%id_ZALK,ZALK)
    _GET_(self%id_ZDIC,ZDIC)
    _GET_HORIZONTAL_(self%id_pco2a,pco2a)
