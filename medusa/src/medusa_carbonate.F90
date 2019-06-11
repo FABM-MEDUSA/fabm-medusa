@@ -2,6 +2,7 @@
 module medusa_carbonate
 
    use fabm_types
+   use fabm_standard_variables
 
    implicit none
 
