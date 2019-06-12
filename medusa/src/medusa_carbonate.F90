@@ -822,7 +822,7 @@ contains
    _GET_(self%id_temp,temp)
    _GET_(self%id_salt,salt)
    _GET_HORIZONTAL_(self%id_kw660,kw660)
-   _GET_HORIZONTAL_(self%id_kw660,fr_i)
+   _GET_HORIZONTAL_(self%id_fr_i,fr_i)
    _GET_(self%id_ZALK,ZALK)
    _GET_(self%id_ZDIC,ZDIC)
    _GET_HORIZONTAL_(self%id_pco2a,pco2a)
