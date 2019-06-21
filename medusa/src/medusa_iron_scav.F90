@@ -74,11 +74,12 @@ call self%register_dependency(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1
   _GET_(self%id_depth,depth)
 
   xFeT = ZFER * 1.e3_rk !total iron concentration (mmolFe/m3 -> umolFe/m3)
+
   xb_coef_tmp = self%xk_FeL * (self%xLgT - xFeT) - 1.0_rk
   xb2M4ac = max(((xb_coef_tmp * xb_coef_tmp) + (4.0_rk * self%xk_FeL * self%xLgT)), 0._rk)
   xLgF = 0.5_rk * (xb_coef_tmp + (xb2M4ac**0.5_rk)) / self%xk_FeL ! "free" ligand concentration
   xFeL = self%xLgT - xLgF ! ligand-bound iron concentration
-  xFeF = (xFeT - xFeL) * 1.e-3_rk! "free" iron concentration (and convert to mmolFe/m3)
+  xFeF = (xFeT - xFeL) * 1.e-3_rk ! "free" iron concentration (and convert to mmolFe/m3)
   xFree = xFeF / (ZFER + tiny(ZFER))
 
  ! ! Scavenging of iron
@@ -87,7 +88,7 @@ call self%register_dependency(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1
      xmaxFeF = min((xFeF * 1.e3_rk), 0.3_rk)        ! = umol/m3
      fdeltaFe = (xFeT - (xFeL + xmaxFeF)) * 1.e-3_rk   ! = mmol/m3
 
-     ffescav     = ffescav + fdeltaFe / d_per_s        ! = mmol/m3/d !assuming time scale of fdeltaFe of 1 day
+     ffescav     = ffescav + fdeltaFe * d_per_s        ! = mmol/m3/d !assuming time scale of fdeltaFe of 1 day
 
    !  if ((depth .gt. 1000._rk) .and. (xFeT .lt. 0.5_rk)) then
 
@@ -161,7 +162,7 @@ call self%register_dependency(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1
 
   end if
 
-  _SET_DIAGNOSTIC_(self%id_ffescav,ffescav*86400._rk)
+  _SET_DIAGNOSTIC_(self%id_ffescav,ffescav * 86400._rk)
   _SET_ODE_(self%id_ZFER, - ffescav)
    _LOOP_END_
 
