@@ -65,7 +65,7 @@ contains
    call self%register_state_dependency(self%id_ZDIN,'DIN','mmol N m-3', 'nitrogen nutrient')
    call self%register_state_dependency(self%id_ZSIL,'SIL','mmol Si m-3', 'silicic acid')
    call self%register_state_dependency(self%id_ZFER,'FER','mmol Fe m-3', 'iron nutrient')
-   call self%register_state_dependency(self%id_ZDIC,'DIC','mmol C m-3', 'dissolved inorganic carbon')
+   call self%register_state_dependency(self%id_ZDIC,'DiC','mmol C m-3', 'dissolved inorganic carbon')
    call self%register_state_dependency(self%id_ZDET,'DET','mmol N m-3', 'detritus nitrogen')
    call self%register_state_dependency(self%id_ZDTC,'DTC','mmol C m-3', 'detritus carbon')
    call self%register_state_dependency(self%id_ZALK,'ALK','meq m-3', 'total alkalinity')

@@ -29,14 +29,14 @@ instances:
       interior:
         pattern: monthly
     coupling:
-      DIC: pelagic/DIC
+      DiC: pelagic/DiC
       ALK: pelagic/ALK
-      kw660: gas_transfer/kw660
+      KW660: gas_transfer/KW660
   oxygen:
     model: medusa/medusa_oxygen
     coupling:
       OXY: pelagic/OXY
-      kw660: gas_transfer/kw660
+      KW660: gas_transfer/KW660
   pelagic:
     model: medusa/medusa_pelagic
     parameters:
@@ -121,7 +121,7 @@ instances:
       ZMI: 0.01
       ZME: 0.01
       ALK: 2450.
-      DIC: 2330.
+      DiC: 2330.
       OXY: 175.
     coupling:
       tempn: fast_detritus/tempn
@@ -160,7 +160,7 @@ instances:
       DIN: pelagic/DIN
       SIL: pelagic/SIL
       FER: pelagic/FER
-      DIC: pelagic/DIC
+      DiC: pelagic/DiC
       DET: pelagic/DET
       DTC: pelagic/DTC
       ALK: pelagic/ALK
@@ -192,7 +192,7 @@ instances:
       DIN: pelagic/DIN
       SIL: pelagic/SIL
       FER: pelagic/FER
-      DIC: pelagic/DIC
+      DiC: pelagic/DiC
       DET: pelagic/DET
       DTC: pelagic/DTC
       OXY: pelagic/OXY

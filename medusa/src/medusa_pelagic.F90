@@ -134,7 +134,7 @@ contains
    call self%register_state_variable(self%id_ZZMI,'ZMI','mmol N/m**3', 'microzooplankton', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZZME,'ZME','mmol N/m**3', 'mesozooplankton', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZALK,'ALK','meq/m**3', 'total alkalinity', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZDIC,'DIC','mmol C/m**3', 'dissolved inorganic carbon', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZDIC,'DiC','mmol C/m**3', 'dissolved inorganic carbon', minimum=0.0_rk)
    call self%register_state_variable(self%id_ZOXY,'OXY','mmol O_2/m**3', 'dissolved oxygen')
 
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZPHN)
