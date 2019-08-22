@@ -51,24 +51,24 @@ contains
    call self%get_parameter(self%xsedca, 'xsedca', 'd-1','benthic CaCO3 remineralisation rate', default=0.01_rk,scale_factor=d_per_s)
    call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=30.0e-6_rk)
 
-   call self%register_state_variable(self%id_ZSEDC,'ZSEDC','mmol C/m**2', 'sediment organic carbon pool', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZSEDN,'ZSEDN','mmol N/m**2', 'sediment organic nitrogen pool', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZSEDFE,'ZSEDFE','mmol Fe/m**2', 'sediment organic iron pool', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZSEDSI,'ZSEDSI','mmol Si/m**2', 'sediment organic silica pool', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZSEDCA,'ZSEDCA','mmol C/m**2', 'sediment organic calcite pool', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZSEDC,'SEDC','mmol C/m**2', 'sediment organic carbon pool', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZSEDN,'SEDN','mmol N/m**2', 'sediment organic nitrogen pool', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZSEDFE,'SEDFE','mmol Fe/m**2', 'sediment organic iron pool', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZSEDSI,'SEDSI','mmol Si/m**2', 'sediment organic silica pool', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZSEDCA,'SEDCA','mmol C/m**2', 'sediment organic calcite pool', minimum=0.0_rk)
 
    call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZSEDC)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZSEDN)
    call self%add_to_aggregate_variable(standard_variables%total_silicate, self%id_ZSEDSI)
 
-   call self%register_state_dependency(self%id_ZOXY,'ZOXY','mmol O_2 m-3', 'dissolved oxygen')
-   call self%register_state_dependency(self%id_ZDIN,'ZDIN','mmol N m-3', 'nitrogen nutrient')
-   call self%register_state_dependency(self%id_ZSIL,'ZSIL','mmol Si m-3', 'silicic acid')
-   call self%register_state_dependency(self%id_ZFER,'ZFER','mmol Fe m-3', 'iron nutrient')
-   call self%register_state_dependency(self%id_ZDIC,'ZDIC','mmol C m-3', 'dissolved inorganic carbon')
-   call self%register_state_dependency(self%id_ZDET,'ZDET','mmol N m-3', 'detritus nitrogen')
-   call self%register_state_dependency(self%id_ZDTC,'ZDTC','mmol C m-3', 'detritus carbon')
-   call self%register_state_dependency(self%id_ZALK,'ZALK','meq m-3', 'total alkalinity')
+   call self%register_state_dependency(self%id_ZOXY,'OXY','mmol O_2 m-3', 'dissolved oxygen')
+   call self%register_state_dependency(self%id_ZDIN,'DIN','mmol N m-3', 'nitrogen nutrient')
+   call self%register_state_dependency(self%id_ZSIL,'SIL','mmol Si m-3', 'silicic acid')
+   call self%register_state_dependency(self%id_ZFER,'FER','mmol Fe m-3', 'iron nutrient')
+   call self%register_state_dependency(self%id_ZDIC,'DIC','mmol C m-3', 'dissolved inorganic carbon')
+   call self%register_state_dependency(self%id_ZDET,'DET','mmol N m-3', 'detritus nitrogen')
+   call self%register_state_dependency(self%id_ZDTC,'DTC','mmol C m-3', 'detritus carbon')
+   call self%register_state_dependency(self%id_ZALK,'ALK','meq m-3', 'total alkalinity')
 
    end subroutine initialize
 

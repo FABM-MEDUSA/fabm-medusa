@@ -43,7 +43,7 @@ contains
    call self%get_parameter(self%xk_sc_Fe,'xk_sc_Fe','d-1','scavenging rate of "free" Fe',default=1.E-3_rk,scale_factor=d_per_s)
    call self%get_parameter(self%jiron,'jiron','-','iron scavenging scheme: 1-Dutkiewicz et al. (2005),2-Moore et al. (2004),3-Moore et al. (2008),4-Galbraith et al. (2010)',default=1)
 
-   call self%register_state_dependency(self%id_ZFER,'ZFER','mmol Fe/m**3', 'iron nutrient')
+   call self%register_state_dependency(self%id_ZFER,'FER','mmol Fe/m**3', 'iron nutrient')
    call self%register_dependency(self%id_depth, standard_variables%depth)
    call self%register_dependency(self%id_ffastc_loc,'ffastc_loc','mmol C m-2 s-1','local remineralisation of detritus (C)')
 call self%register_dependency(self%id_ffastca_loc,'ffastca_loc','mmol Ca m-2 s-1','local remineralisation of detritus (Ca)')

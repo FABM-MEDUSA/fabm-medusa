@@ -42,8 +42,8 @@ contains
    call self%get_parameter(self%xlr,'xlr','-','red chl exposant',default=0.674_rk)
    call self%get_parameter(self%rpig,'rpig','-','chla / (chla+phea) ratio',default=0.7_rk)
 
-   call self%register_state_dependency(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms')
-   call self%register_state_dependency(self%id_ZCHD,'ZCHD','mg chl/m**3', 'chlorophyll in diatoms')
+   call self%register_state_dependency(self%id_ZCHN,'CHN','mg chl/m**3', 'chlorophyll in non-diatoms')
+   call self%register_state_dependency(self%id_ZCHD,'CHD','mg chl/m**3', 'chlorophyll in diatoms')
 
    call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
    call self%register_dependency(self%id_qsr, standard_variables%surface_downwelling_shortwave_flux)

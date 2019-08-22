@@ -33,8 +33,8 @@ contains
       class (type_medusa_carbonate), intent(inout), target :: self
       integer,                      intent(in)            :: configunit
 
-     call self%register_state_dependency(self%id_ZDIC,'ZDIC','mmol C/m^3','dissolved inorganic carbon')
-     call self%register_dependency(self%id_ZALK,'ZALK','meq/m**3','total alkalinity')
+     call self%register_state_dependency(self%id_ZDIC,'DIC','mmol C/m^3','dissolved inorganic carbon')
+     call self%register_dependency(self%id_ZALK,'ALK','meq/m**3','total alkalinity')
 
      call self%register_diagnostic_variable(self%id_ph,    'pH',    '-',      'pH',standard_variable=standard_variables%ph_reported_on_total_scale)
      call self%register_diagnostic_variable(self%id_pco2,  'pCO2',  '1e-6',    'partial pressure of CO2')

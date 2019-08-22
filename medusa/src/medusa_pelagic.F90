@@ -17,7 +17,7 @@ module medusa_pelagic
   type,extends(type_particle_model),public :: type_medusa_pelagic
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
-      type (type_dependency_id)            :: id_temp,id_depth,id_salt, id_om_cal, id_xpar
+      type (type_dependency_id)            :: id_temp,id_salt, id_om_cal, id_xpar
       type (type_state_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
       type (type_diagnostic_variable_id) :: id_par, id_fscal_part
       type (type_bottom_state_variable_id) :: id_ZSEDC,id_ZSEDN,id_ZSEDP,id_ZSEDFE
@@ -121,21 +121,21 @@ contains
    call self%get_parameter(self%wdep,'wdep','m d-1','detritus deposition rate', default=2.5_rk,scale_factor=d_per_s)
 
    ! Register state variables
-   call self%register_state_variable(self%id_ZCHN,'ZCHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZCHD,'ZCHD','mg chl/m**3', 'chlorophyll in diatoms', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZPHN,'ZPHN','mmol N/m**3', 'non-diatom phytoplankton', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZPHD,'ZPHD','mmol N/m**3', 'diatom phytoplankton', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZPDS,'ZPDS','mmol Si/m**3', 'diatom phytoplankton (silicon)', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZDIN,'ZDIN','mmol N/m**3', 'nitrogen nutrient', minimum=0.0_rk) !no river dilution?
-   call self%register_state_variable(self%id_ZFER,'ZFER','mmol Fe/m**3', 'iron nutrient', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZSIL,'ZSIL','mmol Si/m**3', 'silicic acid', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZDET,'ZDET','mmol N/m**3', 'slow-sinking detritus (N)',minimum=0.0_rk,vertical_movement=self%wg*d_per_s)
-   call self%register_state_variable(self%id_ZDTC,'ZDTC','mmol C/m**3', 'slow-sinking detritus (C)',minimum=0.0_rk,vertical_movement=self%wg*d_per_s)
-   call self%register_state_variable(self%id_ZZMI,'ZZMI','mmol N/m**3', 'microzooplankton', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZZME,'ZZME','mmol N/m**3', 'mesozooplankton', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZALK,'ZALK','meq/m**3', 'total alkalinity', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZDIC,'ZDIC','mmol C/m**3', 'dissolved inorganic carbon', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZOXY,'ZOXY','mmol O_2/m**3', 'dissolved oxygen')
+   call self%register_state_variable(self%id_ZCHN,'CHN','mg chl/m**3', 'chlorophyll in non-diatoms', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZCHD,'CHD','mg chl/m**3', 'chlorophyll in diatoms', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZPHN,'PHN','mmol N/m**3', 'non-diatom phytoplankton', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZPHD,'PHD','mmol N/m**3', 'diatom phytoplankton', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZPDS,'PDS','mmol Si/m**3', 'diatom phytoplankton (silicon)', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZDIN,'DIN','mmol N/m**3', 'nitrogen nutrient', minimum=0.0_rk) !no river dilution?
+   call self%register_state_variable(self%id_ZFER,'FER','mmol Fe/m**3', 'iron nutrient', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZSIL,'SIL','mmol Si/m**3', 'silicic acid', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZDET,'DET','mmol N/m**3', 'slow-sinking detritus (N)',minimum=0.0_rk,vertical_movement=self%wg*d_per_s)
+   call self%register_state_variable(self%id_ZDTC,'DTC','mmol C/m**3', 'slow-sinking detritus (C)',minimum=0.0_rk,vertical_movement=self%wg*d_per_s)
+   call self%register_state_variable(self%id_ZZMI,'ZMI','mmol N/m**3', 'microzooplankton', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZZME,'ZME','mmol N/m**3', 'mesozooplankton', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZALK,'ALK','meq/m**3', 'total alkalinity', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZDIC,'DIC','mmol C/m**3', 'dissolved inorganic carbon', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZOXY,'OXY','mmol O_2/m**3', 'dissolved oxygen')
 
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZPHN)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZPHD)
@@ -161,20 +161,18 @@ contains
    call self%register_state_dependency(self%id_tempca,'tempca','mmol CaCO3/m**3', 'fast-sinking detritus (CaCO3)')
 
    call self%get_parameter(self%seafloor,'seafloor','-','seafloor handling: 1-inorganic returns, 2-organic returns, 3-coupled benthic model', default = 3)
-   call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=0.03_rk) !worth to double-check
    if (self%seafloor .eq. 3) then
-         call self%register_state_dependency(self%id_ZSEDC,'ZSEDC','mmol C m-2', 'sediment (C)')
-         call self%register_state_dependency(self%id_ZSEDN,'ZSEDN','mmol N m-2', 'sediment (N)')
-         call self%register_state_dependency(self%id_ZSEDP,'ZSEDP','mmol P m-2', 'sediment (P)')
-         call self%register_state_dependency(self%id_ZSEDFE,'ZSEDFE','mmol Fe m-2', 'sediment (Fe)')
-         call self%request_coupling_to_model(self%id_ZSEDC, 'ZSED', standard_variables%total_carbon)
-         call self%request_coupling_to_model(self%id_ZSEDN, 'ZSED', standard_variables%total_nitrogen)
-         call self%request_coupling_to_model(self%id_ZSEDP, 'ZSED', standard_variables%total_phosphorus)
+         call self%register_state_dependency(self%id_ZSEDC,'SEDC','mmol C m-2', 'sediment (C)')
+         call self%register_state_dependency(self%id_ZSEDN,'SEDN','mmol N m-2', 'sediment (N)')
+         call self%register_state_dependency(self%id_ZSEDP,'SEDP','mmol P m-2', 'sediment (P)')
+         call self%register_state_dependency(self%id_ZSEDFE,'SEDFE','mmol Fe m-2', 'sediment (Fe)')
+         call self%request_coupling_to_model(self%id_ZSEDC, 'SED', standard_variables%total_carbon)
+         call self%request_coupling_to_model(self%id_ZSEDN, 'SED', standard_variables%total_nitrogen)
+         call self%request_coupling_to_model(self%id_ZSEDP, 'SED', standard_variables%total_phosphorus)
    end if
    ! Register environmental dependencies
    call self%register_dependency(self%id_temp, standard_variables%temperature)
    call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
-   call self%register_dependency(self%id_depth, standard_variables%depth)
 
    call self%register_dependency(self%id_om_cal,'om_cal','-','calcite saturation')
    call self%register_dependency(self%id_xpar,standard_variables%downwelling_photosynthetic_radiative_flux)
@@ -191,7 +189,7 @@ contains
 
 ! !LOCAL VARIABLES:
 
-    real(rk) :: ZCHN,ZCHD,ZPHN,ZPHD,ZPDS,ZDIN,ZFER,ZSIL,ZDET,ZDTC,ZZMI,ZZME,ZALK,ZDIC,ZOXY,loc_T,par,depth
+    real(rk) :: ZCHN,ZCHD,ZPHN,ZPHD,ZPDS,ZDIN,ZFER,ZSIL,ZDET,ZDTC,ZZMI,ZZME,ZALK,ZDIC,ZOXY,loc_T,par
     real(rk) :: fthetan,fthetad,faln,fald !scaled chl/biomass ratio
     real(rk) :: fnln,ffln ! non-diatom Qn/Qf terms
     real(rk) :: fnld,fsld,ffld ! diatom Qn/Qs/Qf terms
@@ -228,7 +226,6 @@ contains
     _GET_(self%id_ZOXY,ZOXY)
     _GET_(self%id_temp,loc_T)
     _GET_(self%id_xpar,par)
-    _GET_(self%id_depth,depth)
 
    _SET_DIAGNOSTIC_(self%id_par,par)
 
@@ -506,11 +503,10 @@ contains
   ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
 
   _GET_(self%id_om_cal,om_cal)
-   om_cal = 4._rk
   if (om_cal .ge. 1._rk) then !get f3_omcal!
      fq1 = (om_cal - 1._rk)**0.81_rk
   else
-     fq1 = 0._rk
+    fq1 = 0._rk
   endif
   fcaco3 = self%xridg_r0 * fq1
   ftempca = ftempc * fcaco3
