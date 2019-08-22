@@ -44,7 +44,7 @@ contains
    ! call self%register_dependency(self%id_apress, standard_variables%surface_air_pressure)
    call self%register_diagnostic_variable(self%id_fairo2,'O2FLUX','mmol O_2/m^2/d','Air-sea flux of oxygen')
 
-   call self%register_horizontal_dependency(self%id_kw660, 'kw660', 'm/s', 'gas transfer velocity')
+   call self%register_horizontal_dependency(self%id_kw660, 'KW660', 'm/s', 'gas transfer velocity')
 
    end subroutine initialize
 
