@@ -42,7 +42,7 @@ contains
    call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
    call self%register_dependency(self%id_fr_i, type_horizontal_standard_variable(name='ice_fraction'))
    ! call self%register_dependency(self%id_apress, standard_variables%surface_air_pressure)
-   call self%register_diagnostic_variable(self%id_fairo2,'fairo2','mmol O_2/m^2/d','Air-sea flux of oxygen')
+   call self%register_diagnostic_variable(self%id_fairo2,'O2FLUX','mmol O_2/m^2/d','Air-sea flux of oxygen')
 
    call self%register_horizontal_dependency(self%id_kw660, 'kw660', 'm/s', 'gas transfer velocity')
 

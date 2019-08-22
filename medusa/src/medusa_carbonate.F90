@@ -62,7 +62,7 @@ contains
      call self%register_dependency(self%id_wnd,  standard_variables%wind_speed)
      call self%register_horizontal_dependency(self%id_kw660, 'kw660', 'm/s', 'gas transfer velocity')
      call self%register_dependency(self%id_fr_i, type_horizontal_standard_variable(name='ice_fraction'))
-     call self%register_diagnostic_variable(self%id_fairco2,'fairco2','mmol C/m^2/d','Air-sea flux of CO2')
+     call self%register_diagnostic_variable(self%id_fairco2,'CO2FLUX','mmol C/m^2/d','Air-sea flux of CO2')
     end subroutine
 
     subroutine do(self,_ARGUMENTS_DO_)
