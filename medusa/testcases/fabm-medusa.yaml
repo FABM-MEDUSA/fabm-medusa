@@ -129,7 +129,7 @@ instances:
       tempsi: fast_detritus/tempsi
       tempfe: fast_detritus/tempfe
       tempca: fast_detritus/tempca
-      om_cal: carbonate/Om_cal
+      OM_CAL3: carbonate/OM_CAL3
       #SEDC: benthic/SEDC
       #SEDN: benthic/SEDN
       SED: benthic
@@ -170,7 +170,7 @@ instances:
       SEDCA: benthic/SEDCA
       SEDFE: benthic/SEDFE
       #SEDP: zero_hz
-      om_cal: zero #carbonate/Om_cal
+      OM_CAL3: zero #carbonate/OM_CAL3
   benthic:
     model: medusa/medusa_benthic
     use: true

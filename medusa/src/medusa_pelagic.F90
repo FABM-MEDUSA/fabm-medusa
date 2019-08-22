@@ -174,7 +174,7 @@ contains
    call self%register_dependency(self%id_temp, standard_variables%temperature)
    call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
 
-   call self%register_dependency(self%id_om_cal,'om_cal','-','calcite saturation')
+   call self%register_dependency(self%id_om_cal,'OM_CAL3','-','calcite saturation')
    call self%register_dependency(self%id_xpar,standard_variables%downwelling_photosynthetic_radiative_flux)
 
    call self%register_diagnostic_variable(self%id_par,'PAR','W/m^2','photosynthetically active radiation')

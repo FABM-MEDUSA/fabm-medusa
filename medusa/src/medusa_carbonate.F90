@@ -36,12 +36,12 @@ contains
      call self%register_state_dependency(self%id_ZDIC,'DIC','mmol C/m^3','dissolved inorganic carbon')
      call self%register_dependency(self%id_ZALK,'ALK','meq/m**3','total alkalinity')
 
-     call self%register_diagnostic_variable(self%id_ph,    'pH',    '-',      'pH',standard_variable=standard_variables%ph_reported_on_total_scale)
+     call self%register_diagnostic_variable(self%id_ph,    'PH3',    '-',      'pH',standard_variable=standard_variables%ph_reported_on_total_scale)
      call self%register_diagnostic_variable(self%id_pco2,  'pCO2',  '1e-6',    'partial pressure of CO2')
      call self%register_diagnostic_variable(self%id_CarbA, 'CarbA', 'mmol/m^3','carbonic acid concentration')
      call self%register_diagnostic_variable(self%id_BiCarb,'BiCarb','mmol/m^3','bicarbonate concentration')
      call self%register_diagnostic_variable(self%id_Carb,  'Carb',  'mmol/m^3','carbonate concentration')
-     call self%register_diagnostic_variable(self%id_Om_cal,'Om_cal','-','calcite saturation')
+     call self%register_diagnostic_variable(self%id_Om_cal,'OM_CAL3','-','calcite saturation')
      call self%register_diagnostic_variable(self%id_Om_arg,'Om_arg','-','aragonite saturation')
 
      self%id_ph%link%target%prefill = prefill_previous_value
