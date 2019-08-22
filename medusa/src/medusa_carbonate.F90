@@ -36,12 +36,12 @@ contains
      call self%register_state_dependency(self%id_ZDIC,'DiC','mmol C/m^3','dissolved inorganic carbon')
      call self%register_dependency(self%id_ZALK,'ALK','meq/m**3','total alkalinity')
 
-     call self%register_diagnostic_variable(self%id_ph,    'PH3',    '-',      'pH',standard_variable=standard_variables%ph_reported_on_total_scale)
+     call self%register_diagnostic_variable(self%id_ph,    'PH3',    '-',      'Ocean pH 3D',standard_variable=standard_variables%ph_reported_on_total_scale)
      call self%register_diagnostic_variable(self%id_pco2,  'pCO2',  '1e-6',    'partial pressure of CO2')
      call self%register_diagnostic_variable(self%id_CarbA, 'CarbA', 'mmol/m^3','carbonic acid concentration')
      call self%register_diagnostic_variable(self%id_BiCarb,'BiCarb','mmol/m^3','bicarbonate concentration')
      call self%register_diagnostic_variable(self%id_Carb,  'Carb',  'mmol/m^3','carbonate concentration')
-     call self%register_diagnostic_variable(self%id_Om_cal,'OM_CAL3','-','calcite saturation')
+     call self%register_diagnostic_variable(self%id_Om_cal,'OM_CAL3','-','Omega calcite 3D')
      call self%register_diagnostic_variable(self%id_Om_arg,'Om_arg','-','aragonite saturation')
 
      self%id_ph%link%target%prefill = prefill_previous_value
@@ -62,7 +62,7 @@ contains
      call self%register_dependency(self%id_wnd,  standard_variables%wind_speed)
      call self%register_horizontal_dependency(self%id_kw660, 'KW660', 'm/s', 'gas transfer velocity')
      call self%register_dependency(self%id_fr_i, type_horizontal_standard_variable(name='ice_fraction'))
-     call self%register_diagnostic_variable(self%id_fairco2,'CO2FLUX','mmol C/m^2/d','Air-sea flux of CO2')
+     call self%register_diagnostic_variable(self%id_fairco2,'CO2FLUX','mmol C/m^2/d','Air-sea CO2 flux')
     end subroutine
 
     subroutine do(self,_ARGUMENTS_DO_)

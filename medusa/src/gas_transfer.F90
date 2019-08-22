@@ -29,7 +29,7 @@ contains
      call self%get_parameter(self%eqn,'eqn','-','choice of gas transfer coefficients', default = 7)
      call self%register_dependency(self%id_wnd,  standard_variables%wind_speed)
 
-     call self%register_diagnostic_variable(self%id_kw660,'KW660','m/s','gas transfer velocity', output=output_time_step_averaged)
+     call self%register_diagnostic_variable(self%id_kw660,'KW660','m/s','Piston velocity', output=output_time_step_averaged)
 
     end subroutine
 
