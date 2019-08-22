@@ -51,11 +51,11 @@ contains
    call self%get_parameter(self%xsedca, 'xsedca', 'd-1','benthic CaCO3 remineralisation rate', default=0.01_rk,scale_factor=d_per_s)
    call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=30.0e-6_rk)
 
-   call self%register_state_variable(self%id_ZSEDC,'SEDC','mmol C/m**2', 'sediment organic carbon pool', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZSEDN,'SEDN','mmol N/m**2', 'sediment organic nitrogen pool', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZSEDFE,'SEDFE','mmol Fe/m**2', 'sediment organic iron pool', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZSEDSI,'SEDSI','mmol Si/m**2', 'sediment organic silica pool', minimum=0.0_rk)
-   call self%register_state_variable(self%id_ZSEDCA,'SEDCA','mmol C/m**2', 'sediment organic calcite pool', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZSEDC,'BEN_C','mmol C/m**2', 'sediment organic carbon pool', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZSEDN,'BEN_N','mmol N/m**2', 'sediment organic nitrogen pool', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZSEDFE,'BEN_FE','mmol Fe/m**2', 'sediment organic iron pool', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZSEDSI,'BEN_SI','mmol Si/m**2', 'sediment organic silica pool', minimum=0.0_rk)
+   call self%register_state_variable(self%id_ZSEDCA,'BEN_CA','mmol C/m**2', 'sediment organic calcite pool', minimum=0.0_rk)
 
    call self%add_to_aggregate_variable(standard_variables%total_carbon, self%id_ZSEDC)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen, self%id_ZSEDN)

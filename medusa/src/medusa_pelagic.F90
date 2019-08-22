@@ -162,13 +162,13 @@ contains
 
    call self%get_parameter(self%seafloor,'seafloor','-','seafloor handling: 1-inorganic returns, 2-organic returns, 3-coupled benthic model', default = 3)
    if (self%seafloor .eq. 3) then
-         call self%register_state_dependency(self%id_ZSEDC,'SEDC','mmol C m-2', 'sediment (C)')
-         call self%register_state_dependency(self%id_ZSEDN,'SEDN','mmol N m-2', 'sediment (N)')
-         call self%register_state_dependency(self%id_ZSEDP,'SEDP','mmol P m-2', 'sediment (P)')
-         call self%register_state_dependency(self%id_ZSEDFE,'SEDFE','mmol Fe m-2', 'sediment (Fe)')
-         call self%request_coupling_to_model(self%id_ZSEDC, 'SED', standard_variables%total_carbon)
-         call self%request_coupling_to_model(self%id_ZSEDN, 'SED', standard_variables%total_nitrogen)
-         call self%request_coupling_to_model(self%id_ZSEDP, 'SED', standard_variables%total_phosphorus)
+         call self%register_state_dependency(self%id_ZSEDC,'BEN_C','mmol C m-2', 'sediment (C)')
+         call self%register_state_dependency(self%id_ZSEDN,'BEN_N','mmol N m-2', 'sediment (N)')
+         call self%register_state_dependency(self%id_ZSEDP,'BEN_P','mmol P m-2', 'sediment (P)')
+         call self%register_state_dependency(self%id_ZSEDFE,'BEN_FE','mmol Fe m-2', 'sediment (Fe)')
+         call self%request_coupling_to_model(self%id_ZSEDC, 'BEN', standard_variables%total_carbon)
+         call self%request_coupling_to_model(self%id_ZSEDN, 'BEN', standard_variables%total_nitrogen)
+         call self%request_coupling_to_model(self%id_ZSEDP, 'BEN', standard_variables%total_phosphorus)
    end if
    ! Register environmental dependencies
    call self%register_dependency(self%id_temp, standard_variables%temperature)

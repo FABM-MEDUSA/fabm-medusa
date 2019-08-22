@@ -126,16 +126,16 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=0.03_rk)
 
    if (self%seafloor .eq. 3) then
-         call self%register_state_dependency(self%id_ZSEDSI,'SEDSI','mmol Si m-2', 'sediment (Si)')
-         call self%register_state_dependency(self%id_ZSEDCA,'SEDCA','mmol Ca m-2', 'sediment (Ca)')
-         call self%register_state_dependency(self%id_ZSEDC,'SEDC','mmol C m-2', 'sediment (C)')
-         call self%register_state_dependency(self%id_ZSEDN,'SEDN','mmol N m-2', 'sediment (N)')
-         call self%register_state_dependency(self%id_ZSEDP,'SEDP','mmol P m-2', 'sediment (P)')
-         call self%register_state_dependency(self%id_ZSEDFE,'SEDFE','mmol Fe m-2', 'sediment (Fe)')
-         call self%request_coupling_to_model(self%id_ZSEDC, 'SED', standard_variables%total_carbon)
-         call self%request_coupling_to_model(self%id_ZSEDN, 'SED', standard_variables%total_nitrogen)
-         call self%request_coupling_to_model(self%id_ZSEDP, 'SED', standard_variables%total_phosphorus)
-         call self%request_coupling_to_model(self%id_ZSEDSI, 'SED', standard_variables%total_silicate)
+         call self%register_state_dependency(self%id_ZSEDSI,'BEN_SI','mmol Si m-2', 'sediment (Si)')
+         call self%register_state_dependency(self%id_ZSEDCA,'BEN_CA','mmol Ca m-2', 'sediment (Ca)')
+         call self%register_state_dependency(self%id_ZSEDC,'BEN_C','mmol C m-2', 'sediment (C)')
+         call self%register_state_dependency(self%id_ZSEDN,'BEN_N','mmol N m-2', 'sediment (N)')
+         call self%register_state_dependency(self%id_ZSEDP,'BEN_P','mmol P m-2', 'sediment (P)')
+         call self%register_state_dependency(self%id_ZSEDFE,'BEN_FE','mmol Fe m-2', 'sediment (Fe)')
+         call self%request_coupling_to_model(self%id_ZSEDC, 'BEN', standard_variables%total_carbon)
+         call self%request_coupling_to_model(self%id_ZSEDN, 'BEN', standard_variables%total_nitrogen)
+         call self%request_coupling_to_model(self%id_ZSEDP, 'BEN', standard_variables%total_phosphorus)
+         call self%request_coupling_to_model(self%id_ZSEDSI, 'BEN', standard_variables%total_silicate)
    end if
 
    end subroutine initialize
