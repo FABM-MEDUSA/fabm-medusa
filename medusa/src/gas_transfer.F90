@@ -9,7 +9,7 @@ module gas_transfer
 
    type,extends(type_base_model),public :: type_gas_transfer
         type (type_horizontal_dependency_id) :: id_wnd
-        type (type_horizontal_diagnostic_variable_id)   :: id_kw660
+        type (type_horizontal_diagnostic_variable_id)   :: id_kw660,id_wnd_diag
         integer :: eqn
 
    contains
@@ -30,7 +30,7 @@ contains
      call self%register_dependency(self%id_wnd,  standard_variables%wind_speed)
 
      call self%register_diagnostic_variable(self%id_kw660,'KW660','m/s','Piston velocity', output=output_time_step_averaged)
-
+     call self%register_diagnostic_variable(self%id_wnd_diag,'WIND','m/s','Surface scalar wind')
     end subroutine
 
     subroutine do_surface(self,_ARGUMENTS_DO_)
@@ -59,6 +59,7 @@ contains
    _HORIZONTAL_LOOP_BEGIN_
 
            _GET_HORIZONTAL_(self%id_wnd,wnd)
+           _SET_HORIZONTAL_DIAGNOSTIC_(self%id_wnd_diag,wnd)
 
 ! Calculate gas transfer velocity (cm/h)
            tmp_k = (a(self%eqn) * wnd**2._rk) + (b(self%eqn) * wnd)
