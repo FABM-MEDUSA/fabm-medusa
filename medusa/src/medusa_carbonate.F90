@@ -12,7 +12,7 @@ module medusa_carbonate
       type (type_dependency_id)            :: id_ZALK
       type (type_state_variable_id)        :: id_ZDIC
       type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres,id_depth
-      type (type_horizontal_dependency_id) :: id_wnd,id_PCO2A,id_kw660,id_fr_i
+      type (type_horizontal_dependency_id) :: id_PCO2A,id_kw660,id_fr_i
       type (type_diagnostic_variable_id)   :: id_ph,id_pco2,id_CarbA,id_BiCarb,id_Carb,id_TA_diag
       type (type_diagnostic_variable_id)   :: id_Om_cal,id_Om_arg
       type (type_horizontal_diagnostic_variable_id) ::  id_fairco2
@@ -59,7 +59,6 @@ contains
 
      call self%register_dependency(self%id_dens,standard_variables%density)
      call self%register_dependency(self%id_pres,standard_variables%pressure)
-     call self%register_dependency(self%id_wnd,  standard_variables%wind_speed)
      call self%register_horizontal_dependency(self%id_kw660, 'KW660', 'm/s', 'gas transfer velocity')
      call self%register_dependency(self%id_fr_i, type_horizontal_standard_variable(name='ice_fraction'))
      call self%register_diagnostic_variable(self%id_fairco2,'CO2FLUX','mmol C/m^2/d','Air-sea CO2 flux')
