@@ -181,6 +181,12 @@
           <field field_ref="pelagic_ZE_MES_D" name='ZE_MES_D' operation="average" />
           <field field_ref="pelagic_ZE_MES_C" name='ZE_MES_C' operation="average" />
           <field field_ref="pelagic_ZE_MESDC" name='ZE_MESDC' operation="average" />
+          <field field_ref="pelagic_ZI_EXCR" name='ZI_EXCR' operation="average" />
+          <field field_ref="pelagic_ZI_RESP" name='ZI_RESP' operation="average" />
+          <field field_ref="pelagic_ZI_GROW" name='ZI_GROW' operation="average" />
+          <field field_ref="pelagic_ZE_EXCR" name='ZE_EXCR' operation="average" />
+          <field field_ref="pelagic_ZE_RESP" name='ZE_RESP' operation="average" />
+          <field field_ref="pelagic_ZE_GROW" name='ZE_GROW' operation="average" />
      </file> 
 
         <file id="file60" name_suffix="_grid_T" description="tracer variables"  sync_freq="1d">

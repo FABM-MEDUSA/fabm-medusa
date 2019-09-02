@@ -25,6 +25,7 @@ module medusa_pelagic
       type (type_diagnostic_variable_id) :: id_pd_jlim,id_pd_nlim,id_pd_felim,id_pd_silim,id_pd_silim2,id_pn_jlim,id_pn_nlim,id_pn_felim
       type (type_diagnostic_variable_id) :: id_fregen,id_slowdetflux,id_fscal_part
       type (type_diagnostic_variable_id) :: id_ZI_MES_N,id_ZI_MES_D,id_ZI_MES_C,id_ZI_MESDC,id_ZE_MES_N,id_ZE_MES_D,id_ZE_MES_C,id_ZE_MESDC
+      type (type_diagnostic_variable_id) :: id_ZI_EXCR,id_ZI_RESP,id_ZI_GROW,id_ZE_EXCR,id_ZE_RESP,id_ZE_GROW
       type (type_horizontal_diagnostic_variable_id) :: id_f_sbenin_c,id_f_sbenin_n,id_f_sbenin_fe
       type (type_bottom_state_variable_id) :: id_ZSEDC,id_ZSEDN,id_ZSEDP,id_ZSEDFE
 
@@ -226,6 +227,12 @@ contains
    call self%register_diagnostic_variable(self%id_ZE_MES_D,'ZE_MES_D','mmolN/m3/d','Mesozoo messy feeding loss to D')
    call self%register_diagnostic_variable(self%id_ZE_MES_C,'ZE_MES_C','mmolC/m3/d','Mesozoo messy feeding loss to C')
    call self%register_diagnostic_variable(self%id_ZE_MESDC,'ZE_MESDC','mmolC/m3/d','Mesozoo messy feeding loss to Dc')
+   call self%register_diagnostic_variable(self%id_ZI_EXCR,'ZI_EXCR','mmolN/m3/d','Microzoo excretion')
+   call self%register_diagnostic_variable(self%id_ZI_RESP,'ZI_RESP','mmolN/m3/d','Microzoo respiration')
+   call self%register_diagnostic_variable(self%id_ZI_GROW,'ZI_GROW','mmolN/m3/d','Microzoo growth')
+   call self%register_diagnostic_variable(self%id_ZE_EXCR,'ZE_EXCR','mmolN/m3/d','Mesozoo excretion')
+   call self%register_diagnostic_variable(self%id_ZE_RESP,'ZE_RESP','mmolN/m3/d','Mesozoo respiration')
+   call self%register_diagnostic_variable(self%id_ZE_GROW,'ZE_GROW','mmolN/m3/d','Mesozoo growth')
    call self%register_diagnostic_variable(self%id_f_sbenin_c,'sbenin_c','mmolC/m2/d','Benthic input slow carbon',source=source_do_bottom)
    call self%register_diagnostic_variable(self%id_f_sbenin_n,'sbenin_n','mmolN/m2/d','Benthic input slow nitrogen',source=source_do_bottom)
    call self%register_diagnostic_variable(self%id_f_sbenin_fe,'sbenin_fe','mmolFe/m2/d','Benthic input slow iron',source=source_do_bottom)
@@ -451,16 +458,6 @@ contains
   _SET_DIAGNOSTIC_(self%id_GMEZMI,fgmezmi / d_per_s)
   _SET_DIAGNOSTIC_(self%id_GMED,fgmed / d_per_s)
   _SET_DIAGNOSTIC_(self%id_GMEDC,fgmedc / d_per_s)
-  
-  _SET_DIAGNOSTIC_(self%id_ZI_MES_N, self%xphi * (fgmipn + fgmid) / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZI_MES_D, (1._rk - self%xbetan) * finmi / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZI_MES_C, self%xphi * ((self%xthetapn * fgmipn) + fgmidc) / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZI_MESDC, (1._rk - self%xbetac) * ficmi / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZE_MES_N, self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed) / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZE_MES_D, (1._rk - self%xbetan) * finme / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZE_MES_C, self%xphi * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + 
-                                      fgmedc) / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZE_MESDC, (1._rk - self%xbetac) * ficme / d_per_s)
 
   finme = (1.0_rk - self%xphi) * (fgmepn + fgmepd + fgmezmi + fgmed)
   ficme = (1.0_rk - self%xphi) * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc) 
@@ -474,6 +471,23 @@ contains
      fmeexcr = ficme * ((self%xbetan / (fmeth + tiny(fmeth))) - ((self%xbetac * self%xkc) / self%xthetazme))
   end if
   fmeresp = (self%xbetac * ficme) - (self%xthetazme * fmegrow)
+
+  _SET_DIAGNOSTIC_(self%id_ZI_MES_N, self%xphi * (fgmipn + fgmid) / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZI_MES_D, (1._rk - self%xbetan) * finmi / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZI_MES_C, self%xphi * ((self%xthetapn * fgmipn) + fgmidc) / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZI_MESDC, (1._rk - self%xbetac) * ficmi / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZE_MES_N, self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed) / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZE_MES_D, (1._rk - self%xbetan) * finme / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZE_MES_C, self%xphi * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + 
+                                      fgmedc) / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZE_MESDC, (1._rk - self%xbetac) * ficme / d_per_s)
+
+  _SET_DIAGNOSTIC_(self%id_ZI_EXCR, fmiexcr / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZI_RESP, fmiresp / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZI_GROW, fmigrow / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZE_EXCR, fmeexcr / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZE_RESP, fmeresp / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZE_GROW, fmegrow / d_per_s)
 
   !Plankton metabolic losses
   !Linear loss processes assumed to be metabolic in origin
