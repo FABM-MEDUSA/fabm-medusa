@@ -24,7 +24,7 @@ module medusa_fast_detritus
       type (type_dependency_id)            :: id_freminc1,id_freminn1,id_freminsi1,id_freminfe1,id_freminca1
       type (type_dependency_id)            :: id_om_cal
       type (type_diagnostic_variable_id)   :: id_freminc,id_freminn,id_freminsi,id_freminfe,id_freminca
-      type (type_diagnostic_variable_id)   :: id_ffastc_loc,id_ffastca_loc,id_ffastsi_loc
+      type (type_diagnostic_variable_id)   :: id_ffastc_loc,id_ffastn_loc,id_ffastca_loc,id_ffastsi_loc
       type (type_horizontal_diagnostic_variable_id) :: id_ffastc,id_ffastn,id_ffastsi,id_ffastfe,id_ffastca
       type (type_horizontal_dependency_id) :: id_ffastc1,id_ffastn1,id_ffastfe1,id_ffastsi1,id_ffastca1
       type (type_diagnostic_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
@@ -90,7 +90,7 @@ contains
    call self%register_state_dependency(self%id_ZALK,'ALK','meq/m**3', 'total alkalinity')
 
    call self%register_diagnostic_variable(self%id_freminc,'freminc','mmol C m-3 s-1','remineralisation of detritus (C)',missing_value=0.0_rk,source=source_do_column,output=output_none)
-   call self%register_diagnostic_variable(self%id_freminn,'freminn','mmol N m-3 s-1','remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column,output=output_none)
+   call self%register_diagnostic_variable(self%id_freminn,'freminn','mmol N m-3 s-1','remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column)
    call self%register_diagnostic_variable(self%id_freminsi,'freminsi','mmol Si m-3 s-1','remineralisation of detritus (Si)',missing_value=0.0_rk,source=source_do_column,output=output_none)
    call self%register_diagnostic_variable(self%id_freminfe,'freminfe','mmol Fe m-3 s-1','remineralisation of detritus (Fe)',missing_value=0.0_rk,source=source_do_column,output=output_none)
    call self%register_diagnostic_variable(self%id_freminca,'freminca','mmol CaCO3 m-3 s-1','remineralisation of calcite (CaCO3)',missing_value=0.0_rk,source=source_do_column,output=output_none)
@@ -102,6 +102,7 @@ contains
    call self%register_dependency(self%id_freminca1,'freminca','mmol CaCO3 m-3 s-1','remineralisation of calcite (CaCO3)')
 
    call self%register_diagnostic_variable(self%id_ffastc_loc,'ffastc_loc','mmol C m-2 s-1','local remineralisation of detritus (C)',missing_value=0.0_rk,source=source_do_column)
+   call self%register_diagnostic_variable(self%id_ffastn_loc,'ffastn_loc','mmol C m-2 s-1','local remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column)
 call self%register_diagnostic_variable(self%id_ffastca_loc,'ffastca_loc','mmol Ca m-2 s-1','local remineralisation of detritus (Ca)',missing_value=0.0_rk,source=source_do_column)
 call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1','local remineralisation of detritus (Si)',missing_value=0.0_rk,source=source_do_column)
 
@@ -196,7 +197,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
      ffastc = fq1
    end if
   _SET_DIAGNOSTIC_(self%id_freminc,freminc)
-  _SET_DIAGNOSTIC_(self%id_ffastc_loc,ffastc)
+  !_SET_DIAGNOSTIC_(self%id_ffastc_loc,ffastc)
 
    !Nitrogen
    fq0      = ffastn                            !! how much organic N enters this box        (mol)
@@ -213,7 +214,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
      ffastn = fq1
    end if
    _SET_DIAGNOSTIC_(self%id_freminn,freminn)
-
+  _SET_DIAGNOSTIC_(self%id_ffastn_loc,ffastn)
 
    !Iron
    fq0      = ffastfe                           !! how much organic Fe enters this box       (mol)
