@@ -169,6 +169,18 @@
           <field field_ref="pelagic_PN_JLIM" name='PN_JLIM' operation="average" />
           <field field_ref="pelagic_PN_NLIM" name='PN_NLIM' operation="average" />
           <field field_ref="pelagic_PN_FELIM" name='PN_FELIM' operation="average" />
+          <field field_ref="pelagic_PN_LLOSS"  name='PN_LLOSS' operation="average" />
+          <field field_ref="pelagic_PD_LLOSS" name='PD_LLOSS' operation="average" />
+          <field field_ref="pelagic_ZI_LLOSS" name='ZI_LLOSS' operation="average" />
+          <field field_ref="pelagic_ZE_LLOSS" name='ZE_LLOSS' operation="average" />
+          <field field_ref="pelagic_ZI_MES_N" name='ZI_MES_N' operation="average" />
+          <field field_ref="pelagic_ZI_MES_D" name='ZI_MES_D' operation="average" />
+          <field field_ref="pelagic_ZI_MES_C" name='ZI_MES_C' operation="average" />
+          <field field_ref="pelagic_ZI_MESDC" name='ZI_MESDC' operation="average" />
+          <field field_ref="pelagic_ZE_MES_N" name='ZE_MES_N' operation="average" />
+          <field field_ref="pelagic_ZE_MES_D" name='ZE_MES_D' operation="average" />
+          <field field_ref="pelagic_ZE_MES_C" name='ZE_MES_C' operation="average" />
+          <field field_ref="pelagic_ZE_MESDC" name='ZE_MESDC' operation="average" />
      </file> 
 
         <file id="file60" name_suffix="_grid_T" description="tracer variables"  sync_freq="1d">

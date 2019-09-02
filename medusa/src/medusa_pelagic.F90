@@ -21,9 +21,10 @@ module medusa_pelagic
       type (type_state_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
       type (type_diagnostic_variable_id) :: id_prn,id_prd,id_mpn,id_mpd,id_OPAL,id_OPALDISS,id_detn,id_detc,id_MDET,id_MDETC
       type (type_diagnostic_variable_id) :: id_GMIPn,id_GMID,id_MZMI,id_MZME,id_GMEPN,id_GMEPD,id_GMEZMI,id_GMED
-      type (type_diagnostic_variable_id) :: id_GMIDC,id_GMEDC
+      type (type_diagnostic_variable_id) :: id_GMIDC,id_GMEDC,id_PN_LLOSS,id_PD_LLOSS,id_ZI_LLOSS,id_ZE_LLOSS
       type (type_diagnostic_variable_id) :: id_pd_jlim,id_pd_nlim,id_pd_felim,id_pd_silim,id_pd_silim2,id_pn_jlim,id_pn_nlim,id_pn_felim
       type (type_diagnostic_variable_id) :: id_fregen,id_slowdetflux,id_fscal_part
+      type (type_diagnostic_variable_id) :: id_ZI_MES_N,id_ZI_MES_D,id_ZI_MES_C,id_ZI_MESDC,id_ZE_MES_N,id_ZE_MES_D,id_ZE_MES_C,id_ZE_MESDC
       type (type_horizontal_diagnostic_variable_id) :: id_f_sbenin_c,id_f_sbenin_n,id_f_sbenin_fe
       type (type_bottom_state_variable_id) :: id_ZSEDC,id_ZSEDN,id_ZSEDP,id_ZSEDFE
 
@@ -213,6 +214,18 @@ contains
    call self%register_diagnostic_variable(self%id_pn_jlim,'PN_JLIM','-','Non-diatom light limitation')
    call self%register_diagnostic_variable(self%id_pn_nlim,'PN_NLIM','-','Non-diatom N limitation')
    call self%register_diagnostic_variable(self%id_pn_felim,'PN_FELIM','-','Non-diatom Fe limitation')
+   call self%register_diagnostic_variable(self%id_PN_LLOSS,'PN_LLOSS','mmolN/m3/d','Non-diatom linear losses')
+   call self%register_diagnostic_variable(self%id_PD_LLOSS,'PD_LLOSS','mmolN/m3/d','Diatom linear losses')
+   call self%register_diagnostic_variable(self%id_ZI_LLOSS,'ZI_LLOSS','mmolN/m3/d','Microzooplankton linear losses')
+   call self%register_diagnostic_variable(self%id_ZE_LLOSS,'ZE_LLOSS','mmolN/m3/d','Mesozooplankton linear losses')
+   call self%register_diagnostic_variable(self%id_ZI_MES_N,'ZI_MES_N','mmolN/m3/d','Microzoo messy feeding loss to N')
+   call self%register_diagnostic_variable(self%id_ZI_MES_D,'ZI_MES_D','mmolN/m3/d','Microzoo messy feeding loss to D')
+   call self%register_diagnostic_variable(self%id_ZI_MES_C,'ZI_MES_C','mmolC/m3/d','Microzoo messy feeding loss to C')
+   call self%register_diagnostic_variable(self%id_ZI_MESDC,'ZI_MESDC','mmolC/m3/d','Microzoo messy feeding loss to Dc')
+   call self%register_diagnostic_variable(self%id_ZE_MES_N,'ZE_MES_N','mmolN/m3/d','Mesozoo messy feeding loss to N')
+   call self%register_diagnostic_variable(self%id_ZE_MES_D,'ZE_MES_D','mmolN/m3/d','Mesozoo messy feeding loss to D')
+   call self%register_diagnostic_variable(self%id_ZE_MES_C,'ZE_MES_C','mmolC/m3/d','Mesozoo messy feeding loss to C')
+   call self%register_diagnostic_variable(self%id_ZE_MESDC,'ZE_MESDC','mmolC/m3/d','Mesozoo messy feeding loss to Dc')
    call self%register_diagnostic_variable(self%id_f_sbenin_c,'sbenin_c','mmolC/m2/d','Benthic input slow carbon',source=source_do_bottom)
    call self%register_diagnostic_variable(self%id_f_sbenin_n,'sbenin_n','mmolN/m2/d','Benthic input slow nitrogen',source=source_do_bottom)
    call self%register_diagnostic_variable(self%id_f_sbenin_fe,'sbenin_fe','mmolFe/m2/d','Benthic input slow iron',source=source_do_bottom)
@@ -438,6 +451,16 @@ contains
   _SET_DIAGNOSTIC_(self%id_GMEZMI,fgmezmi / d_per_s)
   _SET_DIAGNOSTIC_(self%id_GMED,fgmed / d_per_s)
   _SET_DIAGNOSTIC_(self%id_GMEDC,fgmedc / d_per_s)
+  
+  _SET_DIAGNOSTIC_(self%id_ZI_MES_N, self%xphi * (fgmipn + fgmid) / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZI_MES_D, (1._rk - self%xbetan) * finmi / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZI_MES_C, self%xphi * ((self%xthetapn * fgmipn) + fgmidc) / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZI_MESDC, (1._rk - self%xbetac) * ficmi / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZE_MES_N, self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed) / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZE_MES_D, (1._rk - self%xbetan) * finme / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZE_MES_C, self%xphi * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + 
+                                      fgmedc) / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZE_MESDC, (1._rk - self%xbetac) * ficme / d_per_s)
 
   finme = (1.0_rk - self%xphi) * (fgmepn + fgmepd + fgmezmi + fgmed)
   ficme = (1.0_rk - self%xphi) * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc) 
@@ -459,6 +482,11 @@ contains
   fdpds2 = self%xmetapd * ZPDS
   fdzmi2 = self%xmetazmi * ZZMI
   fdzme2 = self%xmetazme * ZZME
+
+  _SET_DIAGNOSTIC_(self%id_PN_LLOSS, fdpn2  / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_PD_LLOSS, fdpd2 / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZI_LLOSS, fdzmi2 / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZE_LLOSS, fdzme2 / d_per_s)
 
   !Plankton mortality losses
   ! non-diatom phytoplankton
