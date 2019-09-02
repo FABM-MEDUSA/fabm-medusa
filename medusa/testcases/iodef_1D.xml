@@ -187,6 +187,11 @@
           <field field_ref="pelagic_ZE_EXCR" name='ZE_EXCR' operation="average" />
           <field field_ref="pelagic_ZE_RESP" name='ZE_RESP' operation="average" />
           <field field_ref="pelagic_ZE_GROW" name='ZE_GROW' operation="average" />
+          <field field_ref="fast_detritus_SEAFLRC" name='SEAFLRC' operation="average" />
+          <field field_ref="fast_detritus_SEAFLRN" name='SEAFLRN' operation="average" />
+          <field field_ref="fast_detritus_SEAFLRSI" name='SEAFLRSI' operation="average" />
+          <field field_ref="fast_detritus_SEAFLRFE" name='SEAFLRFE' operation="average" />
+          <field field_ref="fast_detritus_SEAFLRCA" name='SEAFLRCA' operation="average" />
      </file> 
 
         <file id="file60" name_suffix="_grid_T" description="tracer variables"  sync_freq="1d">

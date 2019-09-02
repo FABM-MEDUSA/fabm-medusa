@@ -26,6 +26,7 @@ module medusa_fast_detritus
       type (type_diagnostic_variable_id)   :: id_freminc,id_freminn,id_freminsi,id_freminfe,id_freminca
       type (type_diagnostic_variable_id)   :: id_ffastc_loc,id_ffastn_loc,id_ffastca_loc,id_ffastsi_loc
       type (type_horizontal_diagnostic_variable_id) :: id_ffastc,id_ffastn,id_ffastsi,id_ffastfe,id_ffastca
+      type (type_horizontal_diagnostic_variable_id) :: id_SEAFLRN,id_SEAFLRSI,id_SEAFLRFE,id_SEAFLRC,id_SEAFLRCA
       type (type_horizontal_dependency_id) :: id_ffastc1,id_ffastn1,id_ffastfe1,id_ffastsi1,id_ffastca1
       type (type_diagnostic_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
       ! Parameters
@@ -112,6 +113,12 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    call self%register_diagnostic_variable(self%id_ffastsi,'ffastsi','mmol Si m-2 s-1','remineralisation of detritus (Si)',missing_value=0.0_rk,source=source_do_column)
    call self%register_diagnostic_variable(self%id_ffastca,'ffastca','mmol CaCO3 m-2 s-1','remineralisation of calcite (CaCO3)',missing_value=0.0_rk,source=source_do_column,output=output_none)
 
+   call self%register_diagnostic_variable(self%id_SEAFLRN,'SEAFLRN','mmolN/m2/s','Seafloor flux of N',source=source_do_column)
+   call self%register_diagnostic_variable(self%id_SEAFLRSI,'SEAFLRSI','mmolSi/m2/s','Seafloor flux of Si',source=source_do_column)
+   call self%register_diagnostic_variable(self%id_SEAFLRFE,'SEAFLRFE','mmolFe/m2/s','Seafloor flux of Fe',source=source_do_column)
+   call self%register_diagnostic_variable(self%id_SEAFLRC,'SEAFLRC','mmolC/m2/s','Seafloor flux of C',source=source_do_column)
+   call self%register_diagnostic_variable(self%id_SEAFLRCA,'SEAFLRCA','mmolCaCO3/m2/s','Seafloor flux of CaCO3',source=source_do_column)
+
    call self%register_dependency(self%id_om_cal,'OM_CAL3','-','calcite saturation')
 
    call self%register_horizontal_dependency(self%id_ffastc1,'ffastc','mmol C m-2 s-1','remineralisation of detritus (C)')
@@ -158,6 +165,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    real(rk) :: ftempc,ftempn,ftempfe,ftempsi,ftempca
    real(rk) :: freminc,freminn,freminfe,freminsi,freminca
    real(rk) :: om_cal,collect
+   real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
    ffastc=0._rk
    ffastn=0._rk
@@ -275,6 +283,13 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastfe,ffastfe)
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastsi,ffastsi)
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastca,ffastca)
+
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRN,ffastn / d_per_s)
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRSI,ffastsi / d_per_s)
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRFE,ffastfe / d_per_s)
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRC,ffastc / d_per_s)
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRCA,ffastca / d_per_s)
+
    end subroutine do_fast_detritus
 
    subroutine do(self,_ARGUMENTS_DO_)
