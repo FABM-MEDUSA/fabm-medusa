@@ -17,8 +17,7 @@ module medusa_benthic
       ! Variable identifiers
       type (type_bottom_state_variable_id)        :: id_ZSEDC,id_ZSEDN,id_ZSEDFE,id_ZSEDSI,id_ZSEDCA
       type (type_state_variable_id)               :: id_ZDIN,id_ZSIL,id_ZFER,id_ZDIC,id_ZDET,id_ZDTC,id_ZOXY,id_ZALK
-     ! type (type_dependency_id)            ::
-     ! type (type_diagnostic_variable_id)   ::
+      type (type_horizontal_diagnostic_variable_id) :: id_f_benout_c,id_f_benout_n,id_f_benout_fe,id_f_benout_ca,id_f_benout_si
 
       ! Parameters
       real(rk) :: xsedn,xsedc,xsedfe,xsedsi,xsedca
@@ -70,6 +69,12 @@ contains
    call self%register_state_dependency(self%id_ZDTC,'DTC','mmol C m-3', 'detritus carbon')
    call self%register_state_dependency(self%id_ZALK,'ALK','meq m-3', 'total alkalinity')
 
+   call self%register_diagnostic_variable(self%id_f_benout_c,'OBEN_C','mmolC/m2/d','Benthic output carbon',source=source_do_bottom)
+   call self%register_diagnostic_variable(self%id_f_benout_n,'OBEN_N','mmolN/m2/d','Benthic output nitrogen',source=source_do_bottom)
+   call self%register_diagnostic_variable(self%id_f_benout_fe,'OBEN_FE','mmolFe/m2/d','Benthic output iron',source=source_do_bottom)
+   call self%register_diagnostic_variable(self%id_f_benout_si,'OBEN_SI','mmolSi/m2/d','Benthic output silicate',source=source_do_bottom)
+   call self%register_diagnostic_variable(self%id_f_benout_ca,'OBEN_CA','mmolCa/m2/d','Benthic output CaCO3',source=source_do_bottom)
+
    end subroutine initialize
 
    subroutine do_bottom(self,_ARGUMENTS_DO_)
@@ -110,6 +115,12 @@ contains
     _SET_BOTTOM_ODE_(self%id_ZSEDCA, -self%xsedca * ZSEDCA)
     _SET_BOTTOM_EXCHANGE_(self%id_ZALK, + 2._rk * self%xsedca * ZSEDCA)
     _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, self%xsedca * ZSEDCA)
+
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_c,self%xsedc * ZSEDC / d_per_s)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_n,self%xsedn * ZSEDN / d_per_s)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_fe,self%xsedfe * ZSEDFE / d_per_s)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_si,self%xsedsi * ZSEDSI / d_per_s)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_ca,self%xsedca * ZSEDCA / d_per_s)
 
     _HORIZONTAL_LOOP_END_
 
