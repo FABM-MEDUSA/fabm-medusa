@@ -129,7 +129,7 @@ instances:
       tempsi: fast_detritus/tempsi
       tempfe: fast_detritus/tempfe
       tempca: fast_detritus/tempca
-      OM_CAL3: carbonate/OM_CAL3
+      OM_CAL3: zero #carbonate/OM_CAL3
       #BEN_C: benthic/BEN_C
       #BEN_N: benthic/BEN_N
       BEN: benthic
@@ -202,3 +202,72 @@ instances:
     parameters:
       value: 400.
       standard_name: mole_fraction_of_carbon_dioxide_in_air
+  TPP3:
+    model: weighted_sum
+    long_name: Total primary production 3D
+    parameters:
+      n: 2
+    coupling:
+      term1: pelagic/PRN
+      term2: pelagic/PRD
+  REMIN3N:
+    model: weighted_sum
+    long_name: Total remin flux N 3D
+    parameters:
+      n: 2
+      weight2: 86400.
+    coupling:
+      term1: pelagic/regen_slow
+      term2: fast_detritus/freminn
+  DETFLUX3:
+    model: weighted_sum
+    long_name: Total detrital flux 3D
+    parameters:
+      n: 2
+      weight2: 86400.
+    coupling:
+      term1: pelagic/flux_slow
+      term2: fast_detritus/ffastn_loc
+  IBEN_C:
+    model: horizontal_weighted_sum
+    long_name: Benthic input carbon
+    parameters:
+      n: 2
+      weight2: 86400.
+    coupling:
+      term1: pelagic/sbenin_c
+      term2: fast_detritus/ffastc
+  IBEN_N:
+    model: horizontal_weighted_sum
+    long_name: Benthic input nitrogen
+    parameters:
+      n: 2
+      weight2: 86400.
+    coupling:
+      term1: pelagic/sbenin_n
+      term2: fast_detritus/ffastn
+  IBEN_FE:
+    model: horizontal_weighted_sum
+    long_name: Benthic input iron
+    parameters:
+      n: 2
+      weight2: 86400.
+    coupling:
+      term1: pelagic/sbenin_fe
+      term2: fast_detritus/ffastfe
+  IBEN_SI:
+    model: horizontal_weighted_sum
+    long_name: Benthic input silicon
+    parameters:
+      n: 1
+      weight1: 86400.
+    coupling:
+      term1: fast_detritus/ffastsi
+  IBEN_CA:
+    model: horizontal_weighted_sum
+    long_name: Benthic input CaCO3
+    parameters:
+      n: 1
+      weight1: 86400.
+    coupling:
+      term1: fast_detritus/ffastca
