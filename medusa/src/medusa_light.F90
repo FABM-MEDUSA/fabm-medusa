@@ -18,6 +18,7 @@ module medusa_light
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD
       type (type_dependency_id)            :: id_dz
       type (type_diagnostic_variable_id)   :: id_xpar
+      type (type_horizontal_diagnostic_variable_id) :: id_qsr_diag
       type (type_horizontal_dependency_id) :: id_qsr
       ! Parameters
 
@@ -47,10 +48,9 @@ contains
 
    call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
    call self%register_dependency(self%id_qsr, standard_variables%surface_downwelling_shortwave_flux)
-
-   call self%register_diagnostic_variable(self%id_xpar,'xpar','W/m^2','photosynthetically active radiation', &
+   call self%register_diagnostic_variable(self%id_qsr_diag,'MED_QSR','W/m^2','Sea surface radiation',source=source_do_column)
+   call self%register_diagnostic_variable(self%id_xpar,'MED_XPAR','W/m^2','photosynthetically active radiation', &
         standard_variable=standard_variables%downwelling_photosynthetic_radiative_flux,source=source_do_column)
-
    end subroutine initialize
 
    subroutine get_light(self,_ARGUMENTS_VERTICAL_)
@@ -63,8 +63,10 @@ contains
     real(rk) :: zpig,zkr,zkg,zparr,zparg,xpar,zparr1,zparg1
 
     _GET_HORIZONTAL_(self%id_qsr,qsr)
-
-    zpar0m = qsr * 0.43_rk
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_qsr_diag,qsr)
+  
+     zpar0m = qsr * 0.43_rk
+    
     if (zpar0m .le. 0.0_rk) zpar0m = 0.001_rk
     xpar = zpar0m
     zparr = 0.5_rk * zpar0m
@@ -91,6 +93,7 @@ contains
 
    _VERTICAL_LOOP_END_
 
+  
    end subroutine get_light
 
 end module medusa_light
