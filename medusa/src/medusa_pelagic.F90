@@ -19,7 +19,12 @@ module medusa_pelagic
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
       type (type_dependency_id)            :: id_temp,id_salt, id_om_cal, id_xpar
       type (type_state_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
-      type (type_diagnostic_variable_id) :: id_par, id_fscal_part
+      type (type_diagnostic_variable_id) :: id_prn,id_prd,id_mpn,id_mpd,id_OPAL,id_OPALDISS,id_detn,id_detc,id_MDET,id_MDETC
+      type (type_diagnostic_variable_id) :: id_GMIPn,id_GMID,id_MZMI,id_MZME,id_GMEPN,id_GMEPD,id_GMEZMI,id_GMED
+      type (type_diagnostic_variable_id) :: id_GMIDC,id_GMEDC
+      type (type_diagnostic_variable_id) :: id_pd_jlim,id_pd_nlim,id_pd_felim,id_pd_silim,id_pd_silim2,id_pn_jlim,id_pn_nlim,id_pn_felim
+      type (type_diagnostic_variable_id) :: id_fregen,id_slowdetflux,id_fscal_part
+      type (type_horizontal_diagnostic_variable_id) :: id_f_sbenin_c,id_f_sbenin_n,id_f_sbenin_fe
       type (type_bottom_state_variable_id) :: id_ZSEDC,id_ZSEDN,id_ZSEDP,id_ZSEDFE
 
       ! Parameters
@@ -177,8 +182,40 @@ contains
    call self%register_dependency(self%id_om_cal,'OM_CAL3','-','calcite saturation')
    call self%register_dependency(self%id_xpar,standard_variables%downwelling_photosynthetic_radiative_flux)
 
-   call self%register_diagnostic_variable(self%id_par,'PAR','W/m^2','photosynthetically active radiation')
    call self%register_diagnostic_variable(self%id_fscal_part,'fscal_part','nmol C cm-2 s-1','carbon in suspended particles')
+   call self%register_diagnostic_variable(self%id_prn,'PRN','mmolN/m3/d','Non-diatom primary production')
+   call self%register_diagnostic_variable(self%id_prd,'PRD','mmolN/m3/d','Diatom primary production')
+   call self%register_diagnostic_variable(self%id_mpn,'MPN','mmolN/m3/d','Non-diatom non-grazing losses')
+   call self%register_diagnostic_variable(self%id_mpd,'MPD','mmolN/m3/d','Diatom non-grazing losses')
+   call self%register_diagnostic_variable(self%id_OPAL,'OPAL','mmolSi/m3/d','Diatom biogenic opal production')
+   call self%register_diagnostic_variable(self%id_OPALDISS,'OPALDISS','mmolSi/m3/d','Diatom biogenic opal dissolution')
+   call self%register_diagnostic_variable(self%id_GMIPn,'GMIPn','mmolN/m3/d','Microzoo grazing on non-diatoms')
+   call self%register_diagnostic_variable(self%id_GMID,'GMID','mmolN/m3/d','Microzoo grazing on detritus')
+   call self%register_diagnostic_variable(self%id_GMEPN,'GMEPN','mmolN/m3/d','Mesozoo grazing on non-diatoms')
+   call self%register_diagnostic_variable(self%id_GMEPD,'GMEPD','mmolN/m3/d','Mesozoo grazing on diatoms')
+   call self%register_diagnostic_variable(self%id_GMEZMI,'GMEZMI','mmolN/m3/d','Mesozoo grazing on microzoo')
+   call self%register_diagnostic_variable(self%id_GMED,'GMED','mmolN/m3/d','Mesozoo grazing on detritus')
+   call self%register_diagnostic_variable(self%id_MZMI,'MZMI','mmolN/m3/d','Microzoo non-grazing losses')
+   call self%register_diagnostic_variable(self%id_MZME,'MZME','mmolN/m3/d','Mesozoo non-grazing losses')
+   call self%register_diagnostic_variable(self%id_detn,'DETN','mmolN/m3/d','Slow detritus creation')
+   call self%register_diagnostic_variable(self%id_detc,'DETC','mmolC/m3/d','Slow detritus C creation')
+   call self%register_diagnostic_variable(self%id_MDET,'MDET','mmolN/m3/d','Detritus non-grazing losses')
+   call self%register_diagnostic_variable(self%id_MDETC,'MDETC','mmolC/m3/d','Detritus non-grazing losses, carbon')
+   call self%register_diagnostic_variable(self%id_GMIDC,'GMIDC','mmolC/m3/d','Microzoo grazing on detritus, carbon')
+   call self%register_diagnostic_variable(self%id_GMEDC,'GMEDC','mmolC/m3/d','Mesozoo  grazing on detritus, carbon')
+   call self%register_diagnostic_variable(self%id_fregen,'regen_slow','mmolN/m3/d','Total slow remin flux N 3D')
+   call self%register_diagnostic_variable(self%id_slowdetflux,'flux_slow','mmolN/m3/d','Total slow detrital flux 3D')
+   call self%register_diagnostic_variable(self%id_pd_jlim,'PD_JLIM','-','Diatom light limitation')
+   call self%register_diagnostic_variable(self%id_pd_nlim,'PD_NLIM','-','Diatom N limitation')
+   call self%register_diagnostic_variable(self%id_pd_felim,'PD_FELIM','-','Diatom Fe limitation')
+   call self%register_diagnostic_variable(self%id_pd_silim,'PD_SILIM','-','Diatom Si limitation')
+   call self%register_diagnostic_variable(self%id_pd_silim2,'PD_SILIM2','-','Diatom Si uptake limitation')
+   call self%register_diagnostic_variable(self%id_pn_jlim,'PN_JLIM','-','Non-diatom light limitation')
+   call self%register_diagnostic_variable(self%id_pn_nlim,'PN_NLIM','-','Non-diatom N limitation')
+   call self%register_diagnostic_variable(self%id_pn_felim,'PN_FELIM','-','Non-diatom Fe limitation')
+   call self%register_diagnostic_variable(self%id_f_sbenin_c,'sbenin_c','mmolC/m2/d','Benthic input slow carbon',source=source_do_bottom)
+   call self%register_diagnostic_variable(self%id_f_sbenin_n,'sbenin_n','mmolN/m2/d','Benthic input slow nitrogen',source=source_do_bottom)
+   call self%register_diagnostic_variable(self%id_f_sbenin_fe,'sbenin_fe','mmolFe/m2/d','Benthic input slow iron',source=source_do_bottom)
 
    end subroutine initialize
 
@@ -199,7 +236,7 @@ contains
     real(rk) :: fmi1,fmi,fgmipn,fgmid,fgmidc,finmi,ficmi,fstarmi,fmith,fmigrow,fmiexcr,fmiresp
     real(rk) :: fme1,fme,fgmepn,fgmepd,fgmepds,fgmezmi,fgmed,fgmedc,finme,ficme,fstarme,fmeth,fmegrow,fmeexcr,fmeresp
     real(rk) :: fdpn2,fdpd2,fdpds2,fdzmi2,fdzme2,fdpn,fdpd,fdpds,fdzmi,fdzme
-    real(rk) :: fdd,fddc,fsdiss
+    real(rk) :: fdd,fddc,fsdiss,fjlim_pn,fjlim_pd
     real(rk) :: fslowc,fslown,fregen,fregensi,fregenc,ftempn,ftempsi,ftempfe,ftempc,fq1,fcaco3,ftempca
     real(rk) :: fn_prod,fn_cons,fs_cons,fs_prod,fc_cons,fc_prod,fa_prod,fa_cons,fo2_ccons,fo2_ncons,fo2_cons,fo2_prod
     real(rk) :: rsmall, om_cal
@@ -227,7 +264,7 @@ contains
     _GET_(self%id_temp,loc_T)
     _GET_(self%id_xpar,par)
 
-   _SET_DIAGNOSTIC_(self%id_par,par)
+   _SET_DIAGNOSTIC_(self%id_slowdetflux,-self%wg * ZDET)
 
    rsmall = 0.5_rk * EPSILON( 1._rk )
 
@@ -270,6 +307,7 @@ contains
     fchn = 0._rk
    endif
    fjln = fchn * faln * par !non-diatom J term
+   fjlim_pn = fjln / xvpnT
 
    fchd1 = (xvpdT * xvpdT) + (fald * fald * par * par)
    if (fchd1 .gt. rsmall) then
@@ -278,6 +316,7 @@ contains
     fchd = 0._rk
    end if
    fjld = fchd * fald * par !diatom J term
+   fjlim_pd = fjld / xvpdT
 
    ! Phytoplankton nutrient limitation
    !! Non-diatoms (N, Fe)
@@ -340,6 +379,19 @@ contains
    fprds = 0._rk
  end if
 
+   _SET_DIAGNOSTIC_(self%id_pd_jlim, fjlim_pd * ZPHD)
+   _SET_DIAGNOSTIC_(self%id_pd_nlim, fnld * ZPHD)
+   _SET_DIAGNOSTIC_(self%id_pd_felim, ffld * ZPHD)
+   _SET_DIAGNOSTIC_(self%id_pd_silim, fsld2 * ZPHD)
+   _SET_DIAGNOSTIC_(self%id_pd_silim2, fsld * ZPHD)
+
+   _SET_DIAGNOSTIC_(self%id_pn_jlim, fjlim_pn * ZPHN)
+   _SET_DIAGNOSTIC_(self%id_pn_nlim, fnln * ZPHN)
+   _SET_DIAGNOSTIC_(self%id_pn_felim, ffln * ZPHN)
+
+   _SET_DIAGNOSTIC_(self%id_prn, (fprn * ZPHN) / d_per_s)
+   _SET_DIAGNOSTIC_(self%id_prd, (fprd * ZPHD) / d_per_s)
+
   !Chlorophyll production
   frn = (self%xthetam * fchn * fnln * ffln) / (fthetan + tiny(fthetan))
   frd = (self%xthetamd * fchd * fnld * ffld * fsld2) / (fthetad + tiny(fthetad))  
@@ -352,6 +404,11 @@ contains
   fgmid = fmi * self%xpmid * ZDET * ZDET   !grazing on detrital nitrogen
   fgmidc = rsmall
   if (ZDET .gt. rsmall) fgmidc = (ZDTC / (ZDET + tiny(ZDET))) * fgmid !ROAM formulation
+
+  _SET_DIAGNOSTIC_(self%id_GMIPn,fgmipn / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_GMID,fgmid / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_GMIDC,fgmidc / d_per_s)
+
   finmi = (1.0_rk - self%xphi) * (fgmipn + fgmid)
   ficmi = (1.0_rk - self%xphi) * ((self%xthetapn * fgmipn) + fgmidc)
   fstarmi = (self%xbetan * self%xthetazmi) / (self%xbetac * self%xkc) !the ideal food C : N ratio for microzooplankton
@@ -375,6 +432,13 @@ contains
   fgmed = fme * self%xpmed * ZDET * ZDET
   fgmedc = rsmall
   if (ZDET .gt. rsmall) fgmedc = (ZDTC / (ZDET + tiny(ZDET))) * fgmed !ROAM formulation
+
+  _SET_DIAGNOSTIC_(self%id_GMEPN,fgmepn / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_GMEPD,fgmepd / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_GMEZMI,fgmezmi / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_GMED,fgmed / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_GMEDC,fgmedc / d_per_s)
+
   finme = (1.0_rk - self%xphi) * (fgmepn + fgmepd + fgmezmi + fgmed)
   ficme = (1.0_rk - self%xphi) * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc) 
   fstarme = (self%xbetan * self%xthetazme) / (self%xbetac * self%xkc)
@@ -421,6 +485,10 @@ contains
                   ((ZPHD * ZPHD) / (self%xkphd + (ZPHD * ZPHD)))
   end if
   fdpds = fdpd * fsin
+
+  _SET_DIAGNOSTIC_(self%id_mpn, fdpn / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_mpd, fdpd / d_per_s)
+
   ! microzooplankton
   if (self%jmzmi == 1) then
      fdzmi = self%xmzmi * ZZMI            !! linear
@@ -445,6 +513,10 @@ contains
      fdzme = self%xmzme * ZZME * &        !! sigmoid
                   ((ZZME * ZZME) / (self%xkzme + (ZZME * ZZME)))
   end if
+
+  _SET_DIAGNOSTIC_(self%id_MZMI, fdpn / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_MZME, fdpd / d_per_s)
+
   !Detritus remineralisation (temperature-dependent)
 
   if (self%jmd == 1) then
@@ -458,10 +530,14 @@ contains
     fddc = self%xmdc * ZDTC
   end if
 
+  _SET_DIAGNOSTIC_(self%id_MDET, fdd / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_MDETC, fddc / d_per_s)
+
   !Original contains accelerated detrital remineralisation in the bottom box
 
   !Diatom frustule dissolution
   fsdiss = self%xsdiss * ZPDS
+  _SET_DIAGNOSTIC_(self%id_OPALDISS, fsdiss / d_per_s)
 
   !!Aeolian iron deposition and seafloor iron addition - should be dealt with through model inputs.
 
@@ -469,11 +545,17 @@ contains
   fslown  = fdpn + fdzmi + ((1._rk - self%xfdfrac1) * fdpd) + ((1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetan) * (finmi + finme))
   fslowc  = (self%xthetapn * fdpn) + (self%xthetazmi * fdzmi) + (self%xthetapd * (1._rk - self%xfdfrac1) * fdpd) + (self%xthetazme * (1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetac) * (ficmi + ficme))
 
+  _SET_DIAGNOSTIC_(self%id_detn, fslown / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_detc, fslowc / d_per_s)
+
   !Nutrient regeneration !Should be saved as diagnostics
-!  fregen = (( (self%xphi * (fgmipn + fgmid)) +                            &  ! messy feeding
-!  (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed)) +                     &  ! messy feeding
-!  fmiexcr + fmeexcr + fdd +                                               &  ! excretion + D remin.
-!  fdpn2 + fdpd2 + fdzmi2 + fdzme2))                                          ! linear mortality
+  fregen = (( (self%xphi * (fgmipn + fgmid)) +                            &  ! messy feeding
+  (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed)) +                     &  ! messy feeding
+  fmiexcr + fmeexcr + fdd +                                               &  ! excretion + D remin.
+  fdpn2 + fdpd2 + fdzmi2 + fdzme2))                                          ! linear mortality
+ 
+ _SET_DIAGNOSTIC_(self%id_fregen,fregen / d_per_s)
+
   !silicon
 !  fregensi = (( fsdiss + ((1._rk - self%xfdfrac1) * fdpds) +              &  ! dissolution + non-lin. mortality
 !  ((1._rk - self%xfdfrac3) * fgmepds) +                                   &  ! egestion by zooplankton
@@ -503,11 +585,11 @@ contains
   ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
 
   _GET_(self%id_om_cal,om_cal)
-  if (om_cal .ge. 1._rk) then !get f3_omcal!
-     fq1 = (om_cal - 1._rk)**0.81_rk
-  else
+ ! if (om_cal .ge. 1._rk) then !get f3_omcal!
+ !    fq1 = (om_cal - 1._rk)**0.81_rk
+ ! else
     fq1 = 0._rk
-  endif
+ ! endif
   fcaco3 = self%xridg_r0 * fq1
   ftempca = ftempc * fcaco3
   _SET_ODE_(self%id_tempca,ftempca)
@@ -521,6 +603,8 @@ contains
   _SET_ODE_(self%id_ZPHN,(fprn * ZPHN) - fgmipn - fgmepn - fdpn - fdpn2 )
   _SET_ODE_(self%id_ZPHD,(fprd * ZPHD) - fgmepd - fdpd - fdpd2 )
   _SET_ODE_(self%id_ZPDS,(fprds * ZPDS) - fgmepds - fdpds - fsdiss - fdpds2 )
+
+  _SET_DIAGNOSTIC_(self%id_OPAL, (fprds * ZPDS) / d_per_s)
 
   ! zooplankton
   _SET_ODE_(self%id_ZZMI, fmigrow - fgmezmi - fdzmi - fdzmi2 )
@@ -630,6 +714,7 @@ contains
 
     real(rk) :: ZSEDC,ZSEDN,ZSEDFE,ZDET,ZDTC
     real(rk) :: fluxc,fluxn,fluxfe
+    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
     _HORIZONTAL_LOOP_BEGIN_
 
@@ -648,6 +733,10 @@ contains
     _SET_BOTTOM_ODE_(self%id_ZSEDFE, + fluxfe)
 
      _SET_BOTTOM_ODE_(self%id_ZSEDP, + fluxc/106._rk)
+
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_sbenin_c,  + fluxc / d_per_s)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_sbenin_n,  + fluxn / d_per_s)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_sbenin_fe, + fluxfe / d_per_s)
 
     _HORIZONTAL_LOOP_END_
 
