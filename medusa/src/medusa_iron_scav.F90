@@ -46,10 +46,10 @@ contains
    call self%register_state_dependency(self%id_ZFER,'FER','mmol Fe/m**3', 'iron nutrient')
    call self%register_dependency(self%id_depth, standard_variables%depth)
    call self%register_dependency(self%id_ffastc_loc,'ffastc_loc','mmol C m-2 s-1','local remineralisation of detritus (C)')
-call self%register_dependency(self%id_ffastca_loc,'ffastca_loc','mmol Ca m-2 s-1','local remineralisation of detritus (Ca)')
-call self%register_dependency(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1','local remineralisation of detritus (Si)')
+   call self%register_dependency(self%id_ffastca_loc,'ffastca_loc','mmol Ca m-2 s-1','local remineralisation of detritus (Ca)')
+   call self%register_dependency(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1','local remineralisation of detritus (Si)')
    call self%register_dependency(self%id_fscal_part,'fscal_part','nmol C cm-2 s-1','carbon in suspended particles')
-   call self%register_diagnostic_variable(self%id_ffescav,'scav_flux','mmol Fe/m**3','scavenged iron')
+   call self%register_diagnostic_variable(self%id_ffescav,'SCAVENGE','mmol Fe/m**3','scavenged iron')
 
 
    end subroutine initialize
