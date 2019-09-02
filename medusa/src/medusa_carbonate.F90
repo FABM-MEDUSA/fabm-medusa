@@ -15,7 +15,7 @@ module medusa_carbonate
       type (type_horizontal_dependency_id) :: id_PCO2A,id_kw660,id_fr_i
       type (type_diagnostic_variable_id)   :: id_ph,id_pco2,id_CarbA,id_BiCarb,id_Carb,id_TA_diag
       type (type_diagnostic_variable_id)   :: id_Om_cal,id_Om_arg
-      type (type_horizontal_diagnostic_variable_id) ::  id_fairco2
+      type (type_horizontal_diagnostic_variable_id) ::  id_fairco2,id_pco2s
 
    contains
      procedure :: initialize
@@ -62,6 +62,7 @@ contains
      call self%register_horizontal_dependency(self%id_kw660, 'KW660', 'm/s', 'gas transfer velocity')
      call self%register_dependency(self%id_fr_i, type_horizontal_standard_variable(name='ice_fraction'))
      call self%register_diagnostic_variable(self%id_fairco2,'CO2FLUX','mmol C/m^2/d','Air-sea CO2 flux')
+        call self%register_diagnostic_variable(self%id_pco2s,'OCN_PCO2','-','Surface ocean pCO2')
     end subroutine
 
     subroutine do(self,_ARGUMENTS_DO_)
@@ -844,7 +845,7 @@ contains
     flux = (1._rk - fr_i) * flux
     _SET_SURFACE_EXCHANGE_(self%id_ZDIC,flux /86400._rk)
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fairco2,flux)
-
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_pco2s,PCO2 * 1.0e6_rk)
    _HORIZONTAL_LOOP_END_
 
    end subroutine do_surface
