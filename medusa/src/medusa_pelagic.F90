@@ -23,7 +23,7 @@ module medusa_pelagic
       type (type_diagnostic_variable_id) :: id_GMIPn,id_GMID,id_MZMI,id_MZME,id_GMEPN,id_GMEPD,id_GMEZMI,id_GMED
       type (type_diagnostic_variable_id) :: id_GMIDC,id_GMEDC,id_PN_LLOSS,id_PD_LLOSS,id_ZI_LLOSS,id_ZE_LLOSS
       type (type_diagnostic_variable_id) :: id_pd_jlim,id_pd_nlim,id_pd_felim,id_pd_silim,id_pd_silim2,id_pn_jlim,id_pn_nlim,id_pn_felim
-      type (type_diagnostic_variable_id) :: id_fregen,id_slowdetflux,id_fscal_part
+      type (type_diagnostic_variable_id) :: id_fregen,id_fregensi,id_slowdetflux,id_fscal_part
       type (type_diagnostic_variable_id) :: id_ZI_MES_N,id_ZI_MES_D,id_ZI_MES_C,id_ZI_MESDC,id_ZE_MES_N,id_ZE_MES_D,id_ZE_MES_C,id_ZE_MESDC
       type (type_diagnostic_variable_id) :: id_ZI_EXCR,id_ZI_RESP,id_ZI_GROW,id_ZE_EXCR,id_ZE_RESP,id_ZE_GROW
       type (type_horizontal_diagnostic_variable_id) :: id_f_sbenin_c,id_f_sbenin_n,id_f_sbenin_fe
@@ -206,6 +206,7 @@ contains
    call self%register_diagnostic_variable(self%id_GMIDC,'GMIDC','mmolC/m3/d','Microzoo grazing on detritus, carbon')
    call self%register_diagnostic_variable(self%id_GMEDC,'GMEDC','mmolC/m3/d','Mesozoo  grazing on detritus, carbon')
    call self%register_diagnostic_variable(self%id_fregen,'regen_slow','mmolN/m3/d','Total slow remin flux N 3D')
+   call self%register_diagnostic_variable(self%id_fregensi,'regenSi_slow','mmolSi/m3/d','Total slow remin flux Si 3D')
    call self%register_diagnostic_variable(self%id_slowdetflux,'flux_slow','mmolN/m3/d','Total slow detrital flux 3D')
    call self%register_diagnostic_variable(self%id_pd_jlim,'PD_JLIM','-','Diatom light limitation')
    call self%register_diagnostic_variable(self%id_pd_nlim,'PD_NLIM','-','Diatom N limitation')
@@ -599,9 +600,12 @@ contains
  _SET_DIAGNOSTIC_(self%id_fregen,fregen / d_per_s)
 
   !silicon
-!  fregensi = (( fsdiss + ((1._rk - self%xfdfrac1) * fdpds) +              &  ! dissolution + non-lin. mortality
-!  ((1._rk - self%xfdfrac3) * fgmepds) +                                   &  ! egestion by zooplankton
-!  fdpds2))                                                                   ! linear mortality
+  fregensi = (( fsdiss + ((1._rk - self%xfdfrac1) * fdpds) +              &  ! dissolution + non-lin. mortality
+  ((1._rk - self%xfdfrac3) * fgmepds) +                                   &  ! egestion by zooplankton
+  fdpds2))                                                                   ! linear mortality
+
+ _SET_DIAGNOSTIC_(self%id_fregensi,fregensi / d_per_s)
+
   !carbon
 !  fregenc  = (( (self%xphi * ((self%xthetapn * fgmipn) + fgmidc)) +       &  ! messy feeding
 !  (self%xphi * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) +     &  ! messy feeding
