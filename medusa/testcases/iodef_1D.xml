@@ -22,7 +22,7 @@
 ============================================================================================================
     -->
 
-    <file_definition type="one_file" name="@expname@_@freq@_@startdate@_@enddate@" sync_freq="10d" min_digits="4">
+    <file_definition type="multiple_file" name="@expname@_@freq@_@startdate@_@enddate@" sync_freq="1d" min_digits="4">
       <file_group id="1ts" output_freq="1ts"  output_level="10" enabled=".TRUE.">
          <!-- 1 time step files -->
   <!--  <file id="file57" name_suffix="_ptrc_T" description="tracer variables"  sync_freq="1ts"> 
@@ -187,6 +187,7 @@
           <field field_ref="pelagic_ZE_EXCR" name='ZE_EXCR' operation="average" />
           <field field_ref="pelagic_ZE_RESP" name='ZE_RESP' operation="average" />
           <field field_ref="pelagic_ZE_GROW" name='ZE_GROW' operation="average" />
+          <field field_ref="pelagic_COM_RESP" name='COM_RESP' operation="average" />
           <field field_ref="fast_detritus_SEAFLRC" name='SEAFLRC' operation="average" />
           <field field_ref="fast_detritus_SEAFLRN" name='SEAFLRN' operation="average" />
           <field field_ref="fast_detritus_SEAFLRSI" name='SEAFLRSI' operation="average" />
@@ -224,25 +225,7 @@
 
       <file_group id="5d" output_freq="5d"  output_level="10" enabled=".TRUE." />  <!-- 5d files -->
 
-      <file_group id="1m" output_freq="1mo" output_level="10" enabled=".TRUE." > <!-- real monthly files -->
-
-        <file id="file21" name_suffix="_grid_T" description="ocean T grid variables" >
-          <field field_ref="taubot" name="avtaubot" operation="average" />
-          <field field_ref="taubot" name="maxtaubot" operation="maximum" />
-        </file>
-
-        <file id="file25" name_suffix="_grid_W" description="ocean W grid variables" >
-          <field field_ref="e3w"  />
-          <field field_ref="avt"          name="difvho"  operation="maximum" long_name="ocean_vertical_heat_diffusivity" />
-        </file>
-
-        <file id="file26" name_suffix="_ptrc_T" description="ocean tracers" >
-          <field field_ref="e3t"      operation="average" />
-        </file>
-
-      </file_group>
-
-
+      <file_group id="1m" output_freq="1mo" output_level="10" enabled=".TRUE."/> <!-- real monthly files -->
       <file_group id="2m" output_freq="2mo" output_level="10" enabled=".TRUE."/> <!-- real 2m files -->
       <file_group id="3m" output_freq="3mo" output_level="10" enabled=".TRUE."/> <!-- real 3m files -->
       <file_group id="4m" output_freq="4mo" output_level="10" enabled=".TRUE."/> <!-- real 4m files -->
@@ -296,7 +279,7 @@
 	  <variable id="buffer_size"               type="integer">5000000</variable>
 	  <variable id="buffer_server_factor_size" type="integer">2</variable>
 	  <variable id="info_level"                type="integer">0</variable>
-	  <variable id="using_server"              type="boolean">true</variable>
+	  <variable id="using_server"              type="boolean">false</variable>
 	  <variable id="using_oasis"               type="boolean">false</variable>
 	  <variable id="oasis_codes_id"            type="string" >oceanx</variable>
 

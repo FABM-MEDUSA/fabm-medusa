@@ -21,7 +21,7 @@ module medusa_pelagic
       type (type_state_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
       type (type_diagnostic_variable_id) :: id_prn,id_prd,id_mpn,id_mpd,id_OPAL,id_OPALDISS,id_detn,id_detc,id_MDET,id_MDETC
       type (type_diagnostic_variable_id) :: id_GMIPn,id_GMID,id_MZMI,id_MZME,id_GMEPN,id_GMEPD,id_GMEZMI,id_GMED
-      type (type_diagnostic_variable_id) :: id_GMIDC,id_GMEDC,id_PN_LLOSS,id_PD_LLOSS,id_ZI_LLOSS,id_ZE_LLOSS
+      type (type_diagnostic_variable_id) :: id_GMIDC,id_GMEDC,id_PN_LLOSS,id_PD_LLOSS,id_ZI_LLOSS,id_ZE_LLOSS,id_fcomm_resp
       type (type_diagnostic_variable_id) :: id_pd_jlim,id_pd_nlim,id_pd_felim,id_pd_silim,id_pd_silim2,id_pn_jlim,id_pn_nlim,id_pn_felim
       type (type_diagnostic_variable_id) :: id_fregen,id_fregensi,id_slowdetflux,id_fscal_part
       type (type_diagnostic_variable_id) :: id_ZI_MES_N,id_ZI_MES_D,id_ZI_MES_C,id_ZI_MESDC,id_ZE_MES_N,id_ZE_MES_D,id_ZE_MES_C,id_ZE_MESDC
@@ -234,6 +234,7 @@ contains
    call self%register_diagnostic_variable(self%id_ZE_EXCR,'ZE_EXCR','mmolN/m3/d','Mesozoo excretion')
    call self%register_diagnostic_variable(self%id_ZE_RESP,'ZE_RESP','mmolN/m3/d','Mesozoo respiration')
    call self%register_diagnostic_variable(self%id_ZE_GROW,'ZE_GROW','mmolN/m3/d','Mesozoo growth')
+   call self%register_diagnostic_variable(self%id_fcomm_resp,'COM_RESP','mmolC/m3/d','Community respiration')
    call self%register_diagnostic_variable(self%id_f_sbenin_c,'sbenin_c','mmolC/m2/d','Benthic input slow carbon',source=source_do_bottom)
    call self%register_diagnostic_variable(self%id_f_sbenin_n,'sbenin_n','mmolN/m2/d','Benthic input slow nitrogen',source=source_do_bottom)
    call self%register_diagnostic_variable(self%id_f_sbenin_fe,'sbenin_fe','mmolFe/m2/d','Benthic input slow iron',source=source_do_bottom)
@@ -695,6 +696,8 @@ contains
              + (self%xthetazme * fdzme2)                                                          ! losses
 
    _SET_DIAGNOSTIC_(self%id_fscal_part, (self%xthetapn * ZPHN + self%xthetapd * ZPHD + self%xthetazmi * ZZMI + self%xthetazme * ZZME + self%xthetad * ZDET) * 0.002_rk)
+
+   _SET_DIAGNOSTIC_(self%id_fcomm_resp, fc_prod / d_per_s) !! community respiration (does not include CaCO3 terms)
 
    fc_prod = fc_prod - ftempca         ! CaCO3
 
