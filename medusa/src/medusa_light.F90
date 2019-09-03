@@ -59,7 +59,7 @@ contains
    _DECLARE_ARGUMENTS_VERTICAL_
 
     real(rk) :: dz,ZCHN,ZCHD,qsr
-    real(rk) :: totchl,zpar0m
+    real(rk) :: totchl,zpar0m,zpar100
     real(rk) :: zpig,zkr,zkg,zparr,zparg,xpar,zparr1,zparg1
 
     _GET_HORIZONTAL_(self%id_qsr,qsr)
@@ -68,6 +68,9 @@ contains
      zpar0m = qsr * 0.43_rk
     
     if (zpar0m .le. 0.0_rk) zpar0m = 0.001_rk
+
+    zpar100 = zpar0m * 0.01_rk
+
     xpar = zpar0m
     zparr = 0.5_rk * zpar0m
     zparg = 0.5_rk * zpar0m
