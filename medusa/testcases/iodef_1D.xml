@@ -117,6 +117,7 @@
           <field field_ref="carbonate_Om_arg" name='Om_arg' operation="average" />
           <field field_ref="carbonate_PH3" name='PH3' operation="average" />
           <field field_ref="oxygen_O2FLUX" name='O2FLUX' operation="average" />
+          <field field_ref="oxygen_O2SAT" name='O2SAT' operation="average" />
           <field field_ref="gas_transfer_KW660" name='KW660' operation="average" />
           <field field_ref="gas_transfer_WIND" name='WIND' operation="average" /> 
           <field field_ref="benthic_BEN_C" name='BEN_C' operation="average" />
