@@ -11,7 +11,7 @@ module medusa_carbonate
    type,extends(type_base_model),public :: type_medusa_carbonate
       type (type_dependency_id)            :: id_ZALK
       type (type_state_variable_id)        :: id_ZDIC
-      type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres,id_depth
+      type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres,id_depth,id_deptht
       type (type_horizontal_dependency_id) :: id_PCO2A,id_kw660,id_fr_i
       type (type_diagnostic_variable_id)   :: id_ph,id_pco2,id_CarbA,id_BiCarb,id_Carb,id_TA_diag
       type (type_diagnostic_variable_id)   :: id_Om_cal,id_Om_arg
@@ -61,6 +61,7 @@ contains
      call self%register_dependency(self%id_pres,standard_variables%pressure)
      call self%register_horizontal_dependency(self%id_kw660, 'KW660', 'm/s', 'gas transfer velocity')
      call self%register_dependency(self%id_fr_i, type_horizontal_standard_variable(name='ice_fraction'))
+     call self%register_dependency(self%id_deptht, type_bulk_standard_variable(name='deptht'))
      call self%register_diagnostic_variable(self%id_fairco2,'CO2FLUX','mmol C/m^2/d','Air-sea CO2 flux')
         call self%register_diagnostic_variable(self%id_pco2s,'OCN_PCO2','-','Surface ocean pCO2')
     end subroutine
@@ -84,7 +85,7 @@ contains
          _GET_(self%id_dens,density)
 
          _GET_(self%id_pres,pres)
-         _GET_(self%id_depth,depth)
+         _GET_(self%id_deptht,depth)
 
     call CO2_dynamics(temp,salt,depth,ZDIC,ZALK,pCO2a,pco2w,ph,h2co3,hco3,co3,henry,om_cal,om_arg,TDIC,TALK,dcf,iters)
 
