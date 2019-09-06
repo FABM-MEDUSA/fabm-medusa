@@ -16,9 +16,9 @@ module medusa_light
   type,extends(type_base_model),public :: type_medusa_light
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD
-      type (type_dependency_id)            :: id_dz
+      type (type_dependency_id)            :: id_dz,id_depth
       type (type_diagnostic_variable_id)   :: id_xpar
-      type (type_horizontal_diagnostic_variable_id) :: id_qsr_diag
+      type (type_horizontal_diagnostic_variable_id) :: id_qsr_diag, id_MED_XZE
       type (type_horizontal_dependency_id) :: id_qsr
       ! Parameters
 
@@ -49,8 +49,11 @@ contains
    call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
    call self%register_dependency(self%id_qsr, standard_variables%surface_downwelling_shortwave_flux)
    call self%register_diagnostic_variable(self%id_qsr_diag,'MED_QSR','W/m^2','Sea surface radiation',source=source_do_column)
+   call self%register_diagnostic_variable(self%id_MED_XZE,'MED_XZE','m','Euphotic depth',source=source_do_column)
    call self%register_diagnostic_variable(self%id_xpar,'MED_XPAR','W/m^2','photosynthetically active radiation', &
         standard_variable=standard_variables%downwelling_photosynthetic_radiative_flux,source=source_do_column)
+   call self%register_dependency(self%id_depth, standard_variables%depth)
+
    end subroutine initialize
 
    subroutine get_light(self,_ARGUMENTS_VERTICAL_)
@@ -58,7 +61,7 @@ contains
    
    _DECLARE_ARGUMENTS_VERTICAL_
 
-    real(rk) :: dz,ZCHN,ZCHD,qsr
+    real(rk) :: dz,ZCHN,ZCHD,qsr,depth,check=0
     real(rk) :: totchl,zpar0m,zpar100
     real(rk) :: zpig,zkr,zkg,zparr,zparg,xpar,zparr1,zparg1
 
@@ -76,7 +79,7 @@ contains
     zparg = 0.5_rk * zpar0m
 
    _VERTICAL_LOOP_BEGIN_
-
+    
     _GET_(self%id_dz,dz)
     _GET_(self%id_ZCHN,ZCHN)
     _GET_(self%id_ZCHD,ZCHD)
@@ -89,14 +92,19 @@ contains
     zparg1    = zparg / zkg / dz * ( 1._rk - EXP( -zkg*dz ) ) ! green compound of par
     xpar = MAX( zparr1 + zparg1, 1.e-15_rk )
     _SET_DIAGNOSTIC_(self%id_xpar,xpar)
-
+    if ((xpar .lt. zpar100).and.(check==0)) then
+        check = 1
+        _GET_(self%id_depth,depth)
+        _SET_HORIZONTAL_DIAGNOSTIC_(self%id_MED_XZE, depth)
+    end if
     zparr = zparr * EXP( -zkr * dz )
     zparg = zparg * EXP( -zkg * dz )
 
 
    _VERTICAL_LOOP_END_
 
-  
+   check = 0
+
    end subroutine get_light
 
 end module medusa_light
