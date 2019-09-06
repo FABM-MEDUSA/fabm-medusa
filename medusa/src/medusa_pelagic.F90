@@ -26,6 +26,7 @@ module medusa_pelagic
       type (type_diagnostic_variable_id) :: id_fregen,id_fregensi,id_slowdetflux,id_fscal_part
       type (type_diagnostic_variable_id) :: id_ZI_MES_N,id_ZI_MES_D,id_ZI_MES_C,id_ZI_MESDC,id_ZE_MES_N,id_ZE_MES_D,id_ZE_MES_C,id_ZE_MESDC
       type (type_diagnostic_variable_id) :: id_ZI_EXCR,id_ZI_RESP,id_ZI_GROW,id_ZE_EXCR,id_ZE_RESP,id_ZE_GROW
+      type (type_diagnostic_variable_id) :: id_C_PROD,id_C_CONS,id_N_PROD,id_N_CONS,id_foxy_prod,id_foxy_cons,id_foxy_anox
       type (type_horizontal_diagnostic_variable_id) :: id_f_sbenin_c,id_f_sbenin_n,id_f_sbenin_fe
       type (type_bottom_state_variable_id) :: id_ZSEDC,id_ZSEDN,id_ZSEDP,id_ZSEDFE
 
@@ -232,6 +233,13 @@ contains
    call self%register_diagnostic_variable(self%id_ZI_RESP,'ZI_RESP','mmolN/m3/d','Microzoo respiration')
    call self%register_diagnostic_variable(self%id_ZI_GROW,'ZI_GROW','mmolN/m3/d','Microzoo growth')
    call self%register_diagnostic_variable(self%id_ZE_EXCR,'ZE_EXCR','mmolN/m3/d','Mesozoo excretion')
+   call self%register_diagnostic_variable(self%id_C_PROD,'C_PROD','mmolC/m3/d','Carbon production')
+   call self%register_diagnostic_variable(self%id_C_CONS,'C_CONS','mmolC/m3/d','Carbon consumption')
+   call self%register_diagnostic_variable(self%id_N_PROD,'N_PROD','mmolN/m3/d','Nitogen production')
+   call self%register_diagnostic_variable(self%id_N_CONS,'N_CONS','mmolN/m3/d','Nitrogen consumption')
+   call self%register_diagnostic_variable(self%id_foxy_prod,'O2_PROD','mmolO2/m3/d','Oxygen production')
+   call self%register_diagnostic_variable(self%id_foxy_cons,'O2_CONS','mmolO2/m3/d','Oxygen consumption')
+   call self%register_diagnostic_variable(self%id_foxy_anox,'O2_ANOX','mmolO2/m3/d','Unrealised oxygen consumption')
    call self%register_diagnostic_variable(self%id_ZE_RESP,'ZE_RESP','mmolN/m3/d','Mesozoo respiration')
    call self%register_diagnostic_variable(self%id_ZE_GROW,'ZE_GROW','mmolN/m3/d','Mesozoo growth')
    call self%register_diagnostic_variable(self%id_fcomm_resp,'COM_RESP','mmolC/m3/d','Community respiration')
@@ -667,6 +675,8 @@ contains
              + fmiexcr + fmeexcr + fdd                            &  ! excretion and remin.
              + fdpn2 + fdpd2 + fdzmi2 + fdzme2                       ! metab. losses
 
+   _SET_DIAGNOSTIC_(self%id_N_PROD, fn_prod / d_per_s)
+   _SET_DIAGNOSTIC_(self%id_N_CONS, fn_cons / d_per_s)
    _SET_ODE_(self%id_ZDIN,fn_prod + fn_cons)
 
   ! dissolved silicic acid
@@ -701,6 +711,8 @@ contains
 
    fc_prod = fc_prod - ftempca         ! CaCO3
 
+   _SET_DIAGNOSTIC_(self%id_C_PROD, fc_prod / d_per_s)
+   _SET_DIAGNOSTIC_(self%id_C_CONS, fc_cons / d_per_s)
    _SET_ODE_(self%id_ZDIC,fc_prod + fc_cons)
 
   ! alkalinity
@@ -746,8 +758,12 @@ contains
 
    if (ZOXY .lt. self%xo2min) then                     ! deficient O2; production fluxes only
       _SET_ODE_(self%id_ZOXY, fo2_prod )
+      _SET_DIAGNOSTIC_(self%id_foxy_anox, fo2_cons / d_per_s)
+      _SET_DIAGNOSTIC_(self%id_foxy_prod, fo2_prod / d_per_s)
    else                                                ! sufficient O2; production + consumption fluxes
       _SET_ODE_(self%id_ZOXY, fo2_prod + fo2_cons )
+      _SET_DIAGNOSTIC_(self%id_foxy_prod, fo2_prod / d_per_s)
+      _SET_DIAGNOSTIC_(self%id_foxy_cons, fo2_cons / d_per_s)
    endif
 
    _LOOP_END_
