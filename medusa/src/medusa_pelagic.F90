@@ -239,7 +239,7 @@ contains
    call self%register_diagnostic_variable(self%id_N_CONS,'N_CONS','mmolN/m3/d','Nitrogen consumption')
    call self%register_diagnostic_variable(self%id_foxy_prod,'O2_PROD','mmolO2/m3/d','Oxygen production')
    call self%register_diagnostic_variable(self%id_foxy_cons,'O2_CONS','mmolO2/m3/d','Oxygen consumption')
-   call self%register_diagnostic_variable(self%id_foxy_anox,'O2_ANOX','mmolO2/m3/d','Unrealised oxygen consumption')
+   call self%register_diagnostic_variable(self%id_foxy_anox,'O2_ANOX','mmolO2/m3/d','Unrealised oxygen consumption',missing_value=0.0_rk)
    call self%register_diagnostic_variable(self%id_ZE_RESP,'ZE_RESP','mmolN/m3/d','Mesozoo respiration')
    call self%register_diagnostic_variable(self%id_ZE_GROW,'ZE_GROW','mmolN/m3/d','Mesozoo growth')
    call self%register_diagnostic_variable(self%id_fcomm_resp,'COM_RESP','mmolC/m3/d','Community respiration')
