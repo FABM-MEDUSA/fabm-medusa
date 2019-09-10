@@ -61,7 +61,8 @@ contains
    
    _DECLARE_ARGUMENTS_VERTICAL_
 
-    real(rk) :: dz,ZCHN,ZCHD,qsr,depth,check=0
+    real(rk) :: dz,ZCHN,ZCHD,qsr,depth=0._rk
+    integer  :: check=0
     real(rk) :: totchl,zpar0m,zpar100
     real(rk) :: zpig,zkr,zkg,zparr,zparg,xpar,zparr1,zparg1
 
@@ -100,8 +101,9 @@ contains
     zparr = zparr * EXP( -zkr * dz )
     zparg = zparg * EXP( -zkg * dz )
 
-
    _VERTICAL_LOOP_END_
+
+     if (check == 0) _SET_HORIZONTAL_DIAGNOSTIC_(self%id_MED_XZE, depth)
 
    check = 0
 
