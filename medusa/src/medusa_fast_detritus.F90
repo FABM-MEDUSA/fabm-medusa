@@ -205,7 +205,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
      ffastc = fq1
    end if
   _SET_DIAGNOSTIC_(self%id_freminc,freminc)
-  !_SET_DIAGNOSTIC_(self%id_ffastc_loc,ffastc)
+  _SET_DIAGNOSTIC_(self%id_ffastc_loc,ffastc)
 
    !Nitrogen
    fq0      = ffastn                            !! how much organic N enters this box        (mol)
