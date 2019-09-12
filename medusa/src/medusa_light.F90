@@ -78,7 +78,7 @@ contains
     zparr = 0.5_rk * zpar0m
     zparg = 0.5_rk * zpar0m
 
-    depth = 0
+    depth = 0._rk
     check = 0
 
    _VERTICAL_LOOP_BEGIN_
