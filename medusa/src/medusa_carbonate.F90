@@ -12,7 +12,7 @@ module medusa_carbonate
       type (type_dependency_id)            :: id_ZALK
       type (type_state_variable_id)        :: id_ZDIC
       type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres,id_depth,id_omcal1,id_dz
-      type (type_horizontal_dependency_id) :: id_PCO2A,id_kw660,id_fr_i,id_bathy
+      type (type_horizontal_dependency_id) :: id_PCO2A,id_kw660,id_fr_i
       type (type_diagnostic_variable_id)   :: id_ph,id_pco2,id_CarbA,id_BiCarb,id_Carb,id_TA_diag
       type (type_diagnostic_variable_id)   :: id_Om_cal,id_Om_arg
       type (type_horizontal_diagnostic_variable_id) ::  id_fairco2,id_pco2s,id_ATM_PCO2,id_CAL_CCD
@@ -60,7 +60,6 @@ contains
      call self%register_dependency(self%id_depth, standard_variables%depth)
      call self%register_dependency(self%id_omcal1,'OM_CAL3','-','Omega calcite 3D')
      call self%register_dependency(self%id_dens,standard_variables%density)
-     call self%register_horizontal_dependency(self%id_bathy,standard_variables%bottom_depth_below_geoid)
      call self%register_dependency(self%id_pres,standard_variables%pressure)
      call self%register_horizontal_dependency(self%id_kw660, 'KW660', 'm/s', 'gas transfer velocity')
      call self%register_dependency(self%id_fr_i, type_horizontal_standard_variable(name='ice_fraction'))
@@ -860,63 +859,42 @@ contains
    
    _DECLARE_ARGUMENTS_VERTICAL_
 
-    real(rk) :: depth,dz,f_omcal,f_omcal_a
-    real(rk) :: fq0,fq1,fq2,fq3,fq4, f2_ccd_cal, bathy
-    integer :: i2_omcal,switch,check
+    real(rk) :: depth,depthb,dz,f_omcal,f_omcal_a
+    real(rk) :: fq0,fq1,fq2,fq3,fq4, f2_ccd_cal
+    integer :: i2_omcal,check
 
-    _GET_HORIZONTAL_(self%id_bathy,bathy)
- !   print*,'BATHY',bathy
-    switch = 0
     i2_omcal = 0
-    f2_ccd_cal = 0._rk
-
-    check = 0
-    depth = 0._rk
+    check = 0 !0 for surface layer
 
    _VERTICAL_LOOP_BEGIN_
 
      _GET_(self%id_dz,dz)
      _GET_(self%id_omcal1, f_omcal)
-
-   !  print*,'get first',f_omcal
      _GET_(self%id_depth,depth)
 
-   !  print*,'get_second',depth
     if ((i2_omcal == 0).and.(f_omcal .lt. 1._rk)) then
        if (check == 0) then 
            f2_ccd_cal = depth
-           check = 1
-  !       print*,'i am here'
        else
           fq0 = f_omcal_a - f_omcal
           fq1 = f_omcal_a - 1._rk
           fq2 = fq1 / (fq0 + tiny(fq0))
-          fq3 = dz
+          fq3 = depth-depthb
           fq4 = fq2 * fq3
-          f2_ccd_cal = depth + fq4
-   !       print*,'I am here now'
+          f2_ccd_cal = depthb + fq4
        endif
     i2_omcal = 1
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_CAL_CCD, f2_ccd_cal)
     endif
 
-    depth = depth + dz
+    check = 1
+    depthb = depth
     f_omcal_a = f_omcal
-
- 
-
-
-     print*, f2_ccd_cal
-
    _VERTICAL_LOOP_END_
 
-   if ((i2_omcal == 0).and.(depth == bathy)) then
-    !     _GET_(self%id_depth,depthw)
-    !     f2_ccd_cal = depthw
-   !      print*,'even here!'
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_CAL_CCD, depth)
+   if (i2_omcal == 0) then
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_CAL_CCD, depth + 0.5_rk * dz)
     endif
-
 
    end subroutine do_ccd
 
