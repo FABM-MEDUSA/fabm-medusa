@@ -52,7 +52,6 @@ contains
    call self%register_diagnostic_variable(self%id_MED_XZE,'MED_XZE','m','Euphotic depth',source=source_do_column)
    call self%register_diagnostic_variable(self%id_xpar,'MED_XPAR','W/m^2','photosynthetically active radiation', &
         standard_variable=standard_variables%downwelling_photosynthetic_radiative_flux,source=source_do_column)
-   call self%register_dependency(self%id_depth, standard_variables%depth)
 
    end subroutine initialize
 
@@ -61,8 +60,8 @@ contains
    
    _DECLARE_ARGUMENTS_VERTICAL_
 
-    real(rk) :: dz,ZCHN,ZCHD,qsr,depth=0._rk
-    integer  :: check=0
+    real(rk) :: dz,ZCHN,ZCHD,qsr,depth
+    integer  :: check
     real(rk) :: totchl,zpar0m,zpar100
     real(rk) :: zpig,zkr,zkg,zparr,zparg,xpar,zparr1,zparg1
 
@@ -78,6 +77,9 @@ contains
     xpar = zpar0m
     zparr = 0.5_rk * zpar0m
     zparg = 0.5_rk * zpar0m
+
+    depth = 0
+    check = 0
 
    _VERTICAL_LOOP_BEGIN_
     
@@ -95,17 +97,15 @@ contains
     _SET_DIAGNOSTIC_(self%id_xpar,xpar)
     if ((xpar .lt. zpar100).and.(check==0)) then
         check = 1
-        _GET_(self%id_depth,depth)
         _SET_HORIZONTAL_DIAGNOSTIC_(self%id_MED_XZE, depth)
     end if
     zparr = zparr * EXP( -zkr * dz )
     zparg = zparg * EXP( -zkg * dz )
 
+    depth = depth + dz
    _VERTICAL_LOOP_END_
 
      if (check == 0) _SET_HORIZONTAL_DIAGNOSTIC_(self%id_MED_XZE, depth)
-
-   check = 0
 
    end subroutine get_light
 
