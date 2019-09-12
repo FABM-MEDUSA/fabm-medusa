@@ -11,16 +11,17 @@ module medusa_carbonate
    type,extends(type_base_model),public :: type_medusa_carbonate
       type (type_dependency_id)            :: id_ZALK
       type (type_state_variable_id)        :: id_ZDIC
-      type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres,id_depth,id_deptht
-      type (type_horizontal_dependency_id) :: id_PCO2A,id_kw660,id_fr_i
+      type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres,id_depth,id_omcal1,id_dz
+      type (type_horizontal_dependency_id) :: id_PCO2A,id_kw660,id_fr_i,id_bathy
       type (type_diagnostic_variable_id)   :: id_ph,id_pco2,id_CarbA,id_BiCarb,id_Carb,id_TA_diag
       type (type_diagnostic_variable_id)   :: id_Om_cal,id_Om_arg
-      type (type_horizontal_diagnostic_variable_id) ::  id_fairco2,id_pco2s
+      type (type_horizontal_diagnostic_variable_id) ::  id_fairco2,id_pco2s,id_ATM_PCO2,id_CAL_CCD
 
    contains
      procedure :: initialize
      procedure :: do
      procedure :: do_surface
+     procedure :: get_light => do_ccd
 
    end type
 
@@ -43,7 +44,7 @@ contains
      call self%register_diagnostic_variable(self%id_Carb,  'Carb',  'mmol/m^3','carbonate concentration')
      call self%register_diagnostic_variable(self%id_Om_cal,'OM_CAL3','-','Omega calcite 3D')
      call self%register_diagnostic_variable(self%id_Om_arg,'Om_arg','-','aragonite saturation')
-
+     call self%register_diagnostic_variable(self%id_CAL_CCD,'CAL_CCD','m','Calcite CCD depth',source=source_do_column)
      self%id_ph%link%target%prefill = prefill_previous_value
      self%id_pco2%link%target%prefill = prefill_previous_value
      self%id_CarbA%link%target%prefill = prefill_previous_value
@@ -52,18 +53,20 @@ contains
      self%id_Om_cal%link%target%prefill = prefill_previous_value
      self%id_Om_arg%link%target%prefill = prefill_previous_value
 
+     call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
      call self%register_dependency(self%id_temp, standard_variables%temperature)
      call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
      call self%register_dependency(self%id_PCO2A,standard_variables%mole_fraction_of_carbon_dioxide_in_air)
      call self%register_dependency(self%id_depth, standard_variables%depth)
-
+     call self%register_dependency(self%id_omcal1,'OM_CAL3','-','Omega calcite 3D')
      call self%register_dependency(self%id_dens,standard_variables%density)
+     call self%register_horizontal_dependency(self%id_bathy,standard_variables%bottom_depth_below_geoid)
      call self%register_dependency(self%id_pres,standard_variables%pressure)
      call self%register_horizontal_dependency(self%id_kw660, 'KW660', 'm/s', 'gas transfer velocity')
      call self%register_dependency(self%id_fr_i, type_horizontal_standard_variable(name='ice_fraction'))
-     call self%register_dependency(self%id_deptht, type_bulk_standard_variable(name='deptht'))
      call self%register_diagnostic_variable(self%id_fairco2,'CO2FLUX','mmol C/m^2/d','Air-sea CO2 flux')
-        call self%register_diagnostic_variable(self%id_pco2s,'OCN_PCO2','-','Surface ocean pCO2')
+     call self%register_diagnostic_variable(self%id_pco2s,'OCN_PCO2','-','Surface ocean pCO2')
+     call self%register_diagnostic_variable(self%id_ATM_PCO2,'ATM_PCO2','ppmv','Atmospheric pCO2')
     end subroutine
 
     subroutine do(self,_ARGUMENTS_DO_)
@@ -81,11 +84,10 @@ contains
          _GET_(self%id_temp,temp)
          _GET_(self%id_salt,salt)
          _GET_HORIZONTAL_(self%id_pco2a,pco2a)
-
          _GET_(self%id_dens,density)
 
          _GET_(self%id_pres,pres)
-         _GET_(self%id_deptht,depth)
+         _GET_(self%id_depth,depth)
 
     call CO2_dynamics(temp,salt,depth,ZDIC,ZALK,pCO2a,pco2w,ph,h2co3,hco3,co3,henry,om_cal,om_arg,TDIC,TALK,dcf,iters)
 
@@ -827,6 +829,7 @@ contains
    _GET_(self%id_ZALK,ZALK)
    _GET_(self%id_ZDIC,ZDIC)
    _GET_HORIZONTAL_(self%id_pco2a,pco2a)
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ATM_PCO2,pco2a)  
 
           a   =  8.24493e-1_rk - 4.0899e-3_rk*temp +  7.6438e-5_rk*temp**2 - 8.2467e-7_rk*temp**3 + 5.3875e-9_rk*temp**4 
           b   = -5.72466e-3_rk + 1.0227e-4_rk*temp - 1.6546e-6_rk*temp**2  
@@ -847,7 +850,74 @@ contains
     _SET_SURFACE_EXCHANGE_(self%id_ZDIC,flux /86400._rk)
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fairco2,flux)
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_pco2s,PCO2 * 1.0e6_rk)
+
    _HORIZONTAL_LOOP_END_
 
    end subroutine do_surface
+
+   subroutine do_ccd(self,_ARGUMENTS_VERTICAL_)
+   class(type_medusa_carbonate),intent(in) :: self
+   
+   _DECLARE_ARGUMENTS_VERTICAL_
+
+    real(rk) :: depth,dz,f_omcal,f_omcal_a
+    real(rk) :: fq0,fq1,fq2,fq3,fq4, f2_ccd_cal, bathy
+    integer :: i2_omcal,switch,check
+
+    _GET_HORIZONTAL_(self%id_bathy,bathy)
+ !   print*,'BATHY',bathy
+    switch = 0
+    i2_omcal = 0
+    f2_ccd_cal = 0._rk
+
+    check = 0
+    depth = 0._rk
+
+   _VERTICAL_LOOP_BEGIN_
+
+     _GET_(self%id_dz,dz)
+     _GET_(self%id_omcal1, f_omcal)
+
+   !  print*,'get first',f_omcal
+     _GET_(self%id_depth,depth)
+
+   !  print*,'get_second',depth
+    if ((i2_omcal == 0).and.(f_omcal .lt. 1._rk)) then
+       if (check == 0) then 
+           f2_ccd_cal = depth
+           check = 1
+  !       print*,'i am here'
+       else
+          fq0 = f_omcal_a - f_omcal
+          fq1 = f_omcal_a - 1._rk
+          fq2 = fq1 / (fq0 + tiny(fq0))
+          fq3 = dz
+          fq4 = fq2 * fq3
+          f2_ccd_cal = depth + fq4
+   !       print*,'I am here now'
+       endif
+    i2_omcal = 1
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_CAL_CCD, f2_ccd_cal)
+    endif
+
+    depth = depth + dz
+    f_omcal_a = f_omcal
+
+ 
+
+
+     print*, f2_ccd_cal
+
+   _VERTICAL_LOOP_END_
+
+   if ((i2_omcal == 0).and.(depth == bathy)) then
+    !     _GET_(self%id_depth,depthw)
+    !     f2_ccd_cal = depthw
+   !      print*,'even here!'
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_CAL_CCD, depth)
+    endif
+
+
+   end subroutine do_ccd
+
 end module
