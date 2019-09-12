@@ -639,11 +639,11 @@ contains
   ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
 
   _GET_(self%id_om_cal,om_cal)
- ! if (om_cal .ge. 1._rk) then !get f3_omcal!
- !    fq1 = (om_cal - 1._rk)**0.81_rk
- ! else
+  if (om_cal .ge. 1._rk) then !get f3_omcal!
+     fq1 = (om_cal - 1._rk)**0.81_rk
+  else
     fq1 = 0._rk
- ! endif
+  endif
   fcaco3 = self%xridg_r0 * fq1
   ftempca = ftempc * fcaco3
   _SET_ODE_(self%id_tempca,ftempca)
@@ -761,6 +761,7 @@ contains
       _SET_DIAGNOSTIC_(self%id_foxy_prod, fo2_prod / d_per_s)
    else                                                ! sufficient O2; production + consumption fluxes
       _SET_ODE_(self%id_ZOXY, fo2_prod + fo2_cons )
+      _SET_DIAGNOSTIC_(self%id_foxy_anox, 0._rk)
       _SET_DIAGNOSTIC_(self%id_foxy_prod, fo2_prod / d_per_s)
       _SET_DIAGNOSTIC_(self%id_foxy_cons, fo2_cons / d_per_s)
    endif
