@@ -202,6 +202,8 @@
           <field field_ref="pelagic_O2_CONS" name='O2_CONS' operation="average" />
           <field field_ref="pelagic_O2_ANOX" name='O2_ANOX' operation="average" />
           <field field_ref="light_MED_XZE" name='MED_XZE' operation="average" />
+          <field field_ref="carbonate_ATM_PCO2" name='ATM_PCO2' operation="average" />
+          <field field_ref="carbonate_CAL_CCD" name='CAL_CCD' operation="average" />
      </file> 
 
         <file id="file60" name_suffix="_grid_T" description="tracer variables"  sync_freq="1d">
