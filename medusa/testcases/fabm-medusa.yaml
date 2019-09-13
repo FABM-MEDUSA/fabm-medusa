@@ -129,7 +129,7 @@ instances:
       tempsi: fast_detritus/tempsi
       tempfe: fast_detritus/tempfe
       tempca: fast_detritus/tempca
-      OM_CAL3: zero #carbonate/OM_CAL3
+      OM_CAL3: carbonate/OM_CAL3
       #BEN_C: benthic/BEN_C
       #BEN_N: benthic/BEN_N
       BEN: benthic
