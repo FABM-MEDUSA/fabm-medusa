@@ -170,7 +170,8 @@ instances:
       BEN_CA: benthic/BEN_CA
       BEN_FE: benthic/BEN_FE
       #BEN_P: zero_hz
-      OM_CAL3: zero #carbonate/OM_CAL3
+      OM_CAL3: carbonate/OM_CAL3
+      CAL_CCD: carbonate/CAL_CCD
   benthic:
     model: medusa/medusa_benthic
     use: true
