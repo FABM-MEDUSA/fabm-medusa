@@ -27,7 +27,7 @@ module medusa_fast_detritus
       type (type_diagnostic_variable_id)   :: id_ffastc_loc,id_ffastn_loc,id_ffastca_loc,id_ffastsi_loc
       type (type_horizontal_diagnostic_variable_id) :: id_ffastc,id_ffastn,id_ffastsi,id_ffastfe,id_ffastca
       type (type_horizontal_diagnostic_variable_id) :: id_SEAFLRN,id_SEAFLRSI,id_SEAFLRFE,id_SEAFLRC,id_SEAFLRCA
-      type (type_horizontal_dependency_id) :: id_ffastc1,id_ffastn1,id_ffastfe1,id_ffastsi1,id_ffastca1
+      type (type_horizontal_dependency_id) :: id_ffastc1,id_ffastn1,id_ffastfe1,id_ffastsi1,id_ffastca1,id_CAL_CCD
       type (type_diagnostic_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
       ! Parameters
       real(rk) :: xthetanit,xthetarem,xo2min,xrfn,xfe_sed
@@ -74,6 +74,8 @@ contains
    call self%register_dependency(self%id_ftempfe,'ftempfe', 'mmol Fe m-3 s-1', 'production of fast-sinking detritus (Fe)')
    call self%register_dependency(self%id_ftempsi,'ftempsi', 'mmol Si m-3 s-1', 'production of fast-sinking detritus (Si)')
    call self%register_dependency(self%id_ftempca,'ftempca', 'mmol CaCO3 m-3 s-1', 'production of fast-sinking detritus (CaCO3)')
+
+   call self%register_dependency(self%id_CAL_CCD,'CAL_CCD','m','calcite CCD depth')
 
    call self%request_coupling(self%id_ftempca,'tempca_sms_tot')
    call self%request_coupling(self%id_ftempc, 'tempc_sms_tot')
@@ -164,8 +166,10 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    real(rk) :: ffastc,ffastn,ffastca,ffastsi,ffastfe
    real(rk) :: ftempc,ftempn,ftempfe,ftempsi,ftempca
    real(rk) :: freminc,freminn,freminfe,freminsi,freminca
-   real(rk) :: om_cal,collect
+   real(rk) :: om_cal,collect,fdep1,cal_ccd
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
+
+   fdep1 = 0._rk
 
    ffastc=0._rk
    ffastn=0._rk
@@ -176,7 +180,6 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    _VERTICAL_LOOP_BEGIN_
 
     _GET_(self%id_dz,dz)
-
 !   !Carbon
    fq0      = ffastc                            !! how much organic C enters this box        (mol)
    if (self%iball .eq. 1) then
@@ -249,17 +252,26 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    _SET_DIAGNOSTIC_(self%id_ffastsi_loc,ffastsi)
 
    !biogenic calcium carbonate
-  
+
+    fdep1 = fdep1 + dz
+
+   _GET_HORIZONTAL_(self%id_CAL_CCD,cal_ccd)
    _GET_(self%id_om_cal,om_cal)
-   !om_cal = 4._rk
+ 
+  !om_cal = 4._rk
    fq0      = ffastca                           !! how much CaCO3 enters this box            (mol)
- !  if (om_cal .ge. 1._rk) then
-   fq1      = fq0                               !! above lysocline, no Ca dissolves          (mol)
-   freminca = 0._rk                               !! above lysocline, no Ca dissolves          (mol)
- !  elseif (om_cal.lt. 1._rk) then
- !  fq1      = fq0 * exp(-(dz / xfastca))        !! how much CaCO3 leaves this box            (mol)
- !  freminca = (fq0 - fq1) / dz                  !! Ca remineralisation in this box           (mol)
- !  endif
+   if (fdep1-dz.le.cal_ccd) then
+    fq1      = fq0                               !! above lysocline, no Ca dissolves          (mol)
+    freminca = 0._rk                               !! above lysocline, no Ca dissolves          (mol)
+   elseif (fdep1-dz.ge.cal_ccd) then
+    fq1      = fq0 * exp(-(dz / xfastca))        !! how much CaCO3 leaves this box            (mol)
+    freminca = (fq0 - fq1) / dz                  !! Ca remineralisation in this box           (mol)
+   else
+    fq2      = fdep1 - cal_ccd
+    fq1      = fq0 * exp (-(fq2 / xfastca))
+    freminca = (fq0 - fq1) / dz
+   endif
+
    _SET_DIAGNOSTIC_(self%id_freminca,freminca)
    ffastca = fq1
    _SET_DIAGNOSTIC_(self%id_ffastca_loc,ffastca)
