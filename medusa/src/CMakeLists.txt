@@ -8,6 +8,7 @@ add_library(fabm_models_medusa OBJECT
             medusa_benthic.F90
             gas_transfer.F90
             medusa_iron_scav.F90
+            medusa_ccd.F90
            )
 
 add_dependencies(fabm_models_medusa fabm_base)
