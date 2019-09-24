@@ -86,6 +86,7 @@ contains
 
     real(rk) :: ZSEDC,ZSEDN,ZSEDFE,ZSEDSI,ZSEDCA,ZDET,ZDTC,ZSIL,ZALK,ZOXY
     real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
+    real(rk) :: f_benout_c,f_benout_n,f_benout_fe,f_benout_ca,f_benout_si
 
     _HORIZONTAL_LOOP_BEGIN_
 
@@ -98,29 +99,35 @@ contains
     _GET_(self%id_ZDTC,ZDTC)
     _GET_(self%id_ZOXY,ZOXY)
 
-    _SET_BOTTOM_ODE_(self%id_ZSEDC,  -self%xsedc * ZSEDC)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, + self%xsedc * ZSEDC)
+     f_benout_c =  self%xsedc * ZSEDC
+     f_benout_n =  self%xsedn * ZSEDN
+     f_benout_fe = self%xsedfe * ZSEDFE
+     f_benout_si = self%xsedsi * ZSEDSI
+     f_benout_ca = self%xsedca * ZSEDCA
 
-    _SET_BOTTOM_ODE_(self%id_ZSEDN,  -self%xsedn * ZSEDN)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZDIN, + self%xsedn * ZSEDN)
+    _SET_BOTTOM_ODE_(self%id_ZSEDC,     -f_benout_c)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, +f_benout_c)
+
+    _SET_BOTTOM_ODE_(self%id_ZSEDN,     -f_benout_n)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDIN, +f_benout_n)
      
-     if (ZOXY .ge. self%xo2min) _SET_BOTTOM_EXCHANGE_(self%id_ZOXY, - self%xthetanit * self%xsedn * ZSEDN - self%xthetarem * self%xsedc * ZSEDC)
+     if (ZOXY .ge. self%xo2min) _SET_BOTTOM_EXCHANGE_(self%id_ZOXY, - self%xthetanit * f_benout_n - self%xthetarem * f_benout_c)
 
-    _SET_BOTTOM_ODE_(self%id_ZSEDFE, -self%xsedfe * ZSEDFE)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZFER, + self%xsedfe * ZSEDFE)
+    _SET_BOTTOM_ODE_(self%id_ZSEDFE,    -f_benout_fe)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZFER, +f_benout_fe)
 
-    _SET_BOTTOM_ODE_(self%id_ZSEDSI, -self%xsedsi * ZSEDSI)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, + self%xsedsi * ZSEDSI)
+    _SET_BOTTOM_ODE_(self%id_ZSEDSI,    -f_benout_si)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, +f_benout_si)
 
-    _SET_BOTTOM_ODE_(self%id_ZSEDCA, -self%xsedca * ZSEDCA)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZALK, + 2._rk * self%xsedca * ZSEDCA)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, self%xsedca * ZSEDCA)
+    _SET_BOTTOM_ODE_(self%id_ZSEDCA,    -f_benout_ca)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZALK, + 2._rk * f_benout_ca)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, +f_benout_ca)
 
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_c,self%xsedc * ZSEDC / d_per_s)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_n,self%xsedn * ZSEDN / d_per_s)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_fe,self%xsedfe * ZSEDFE / d_per_s)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_si,self%xsedsi * ZSEDSI / d_per_s)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_ca,self%xsedca * ZSEDCA / d_per_s)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_c, f_benout_c  / d_per_s)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_n, f_benout_n  / d_per_s)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_fe,f_benout_fe / d_per_s)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_si,f_benout_si / d_per_s)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_ca,f_benout_ca / d_per_s)
 
     _HORIZONTAL_LOOP_END_
 
