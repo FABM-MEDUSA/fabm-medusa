@@ -11,17 +11,16 @@ module medusa_carbonate
    type,extends(type_base_model),public :: type_medusa_carbonate
       type (type_dependency_id)            :: id_ZALK
       type (type_state_variable_id)        :: id_ZDIC
-      type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres,id_depth,id_omcal1,id_dz
+      type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres,id_depth,id_dz
       type (type_horizontal_dependency_id) :: id_PCO2A,id_kw660,id_fr_i
       type (type_diagnostic_variable_id)   :: id_ph,id_pco2,id_CarbA,id_BiCarb,id_Carb,id_TA_diag
       type (type_diagnostic_variable_id)   :: id_Om_cal,id_Om_arg
-      type (type_horizontal_diagnostic_variable_id) ::  id_fairco2,id_pco2s,id_ATM_PCO2,id_CAL_CCD
+      type (type_horizontal_diagnostic_variable_id) ::  id_fairco2,id_pco2s,id_ATM_PCO2
 
    contains
      procedure :: initialize
      procedure :: do
      procedure :: do_surface
-     procedure :: get_light => do_ccd
 
    end type
 
@@ -43,8 +42,7 @@ contains
      call self%register_diagnostic_variable(self%id_BiCarb,'BiCarb','mmol/m^3','bicarbonate concentration')
      call self%register_diagnostic_variable(self%id_Carb,  'Carb',  'mmol/m^3','carbonate concentration')
      call self%register_diagnostic_variable(self%id_Om_cal,'OM_CAL3','-','Omega calcite 3D')
-     call self%register_diagnostic_variable(self%id_Om_arg,'Om_arg','-','aragonite saturation')
-     call self%register_diagnostic_variable(self%id_CAL_CCD,'CAL_CCD','m','Calcite CCD depth',source=source_do_column)
+     call self%register_diagnostic_variable(self%id_Om_arg,'OM_ARG','-','aragonite saturation')
      self%id_ph%link%target%prefill = prefill_previous_value
      self%id_pco2%link%target%prefill = prefill_previous_value
      self%id_CarbA%link%target%prefill = prefill_previous_value
@@ -58,7 +56,6 @@ contains
      call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
      call self%register_dependency(self%id_PCO2A,standard_variables%mole_fraction_of_carbon_dioxide_in_air)
      call self%register_dependency(self%id_depth, standard_variables%depth)
-     call self%register_dependency(self%id_omcal1,'OM_CAL3','-','Omega calcite 3D')
      call self%register_dependency(self%id_dens,standard_variables%density)
      call self%register_dependency(self%id_pres,standard_variables%pressure)
      call self%register_horizontal_dependency(self%id_kw660, 'KW660', 'm/s', 'gas transfer velocity')
@@ -853,49 +850,5 @@ contains
    _HORIZONTAL_LOOP_END_
 
    end subroutine do_surface
-
-   subroutine do_ccd(self,_ARGUMENTS_VERTICAL_)
-   class(type_medusa_carbonate),intent(in) :: self
-   
-   _DECLARE_ARGUMENTS_VERTICAL_
-
-    real(rk) :: depth,depthb,dz,f_omcal,f_omcal_a
-    real(rk) :: fq0,fq1,fq2,fq3,fq4, f2_ccd_cal
-    integer :: i2_omcal,check
-
-    i2_omcal = 0
-    check = 0 !0 for surface layer
-
-   _VERTICAL_LOOP_BEGIN_
-
-     _GET_(self%id_dz,dz)
-     _GET_(self%id_omcal1, f_omcal)
-     _GET_(self%id_depth,depth)
-
-    if ((i2_omcal == 0).and.(f_omcal .lt. 1._rk)) then
-       if (check == 0) then 
-           f2_ccd_cal = depth
-       else
-          fq0 = f_omcal_a - f_omcal
-          fq1 = f_omcal_a - 1._rk
-          fq2 = fq1 / (fq0 + tiny(fq0))
-          fq3 = depth-depthb
-          fq4 = fq2 * fq3
-          f2_ccd_cal = depthb + fq4
-       endif
-    i2_omcal = 1
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_CAL_CCD, f2_ccd_cal)
-    endif
-
-    check = 1
-    depthb = depth
-    f_omcal_a = f_omcal
-   _VERTICAL_LOOP_END_
-
-   if (i2_omcal == 0) then
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_CAL_CCD, depth + 0.5_rk * dz)
-    endif
-
-   end subroutine do_ccd
 
 end module
