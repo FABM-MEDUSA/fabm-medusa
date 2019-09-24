@@ -128,7 +128,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
 
    call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
 
-   call self%get_parameter(self%seafloor,'seafloor','-','seafloor handling: 1-inorganic returns, 2-organic returns, 3-coupled benthic model', default = 1)
+   call self%get_parameter(self%seafloor,'seafloor','-','seafloor parameterisation: 1-inorganic returns, 2-organic returns, 3-coupled benthic model', default = 3)
    call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=0.03_rk)
 
    if (self%seafloor .eq. 3) then

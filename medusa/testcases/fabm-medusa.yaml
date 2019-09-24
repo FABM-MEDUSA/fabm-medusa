@@ -42,8 +42,8 @@ instances:
       xnld: 0.75                # N nutrient uptake half-saturation constant (non-diatoms) (mmol N m-3), default=0.75
       xsld: 3.0                 # Si nutrient uptake half-saturation constant (diatoms) (mmol Si m-3), default=3.0	
       xfld: 0.00067             # Fe nutrient uptake half-saturation constant (diatoms) (mmol Fe m-3), default=0.00067
-      xvpn: 0.640 #0.53                # Maximum phytoplankton growth rate (non-diatoms) (d-1), default=0.53
-      xvpd: 0.6 #0.50                # Maximum phytoplankton growth rate (diatoms) (d-1), default=0.50
+      xvpn: 0.640               # Maximum phytoplankton growth rate (non-diatoms) (d-1), default=0.640
+      xvpd: 0.6                 # Maximum phytoplankton growth rate (diatoms) (d-1), default=0.6
       jphy: 1                   # Temperature regulation (phyto growth), 1-Eppley,2-q10,default=1
       jq10: 1.5                 # q10 factor for temperature regulation option 2, default=1.5
       xsin0: 0.2                # minimum diatom Si:N ratio (mol Si mol N-1), default=0.2
@@ -66,7 +66,7 @@ instances:
       xthetapn: 6.625           # phytoplankton C:N ratio (non-diatoms) (mol C mol N-1), default=6.625
       xthetapd: 6.625           # phytoplankton C:N ratio (diatoms) (mol C mol N-1), default=6.625
       xbetan: 0.77              # zooplankton N assimilation efficiency, default=0.77
-      xthetazmi: 5.625          # microzooplankton C:N ratio (mol C mol N-1), default=5.625	
+      xthetazmi: 5.625          # microzooplankton C:N ratio (mol C mol N-1), default=5.625
       xbetac: 0.64              # zooplankton C assimilation efficiency, default=0.64
       xkc: 0.8                  # zooplankton net C growth efficiency, default=0.8
       xthetazme: 5.625          # mesozooplankton C:N ratio (mol C mol N-1), default=5.625
@@ -86,20 +86,20 @@ instances:
       jmpd: 3                   # mortality formulation (diatoms), 1-linear, 2-quadratic, 3-hyperbolic, 4-sigmoid', default=3
       jmzmi: 3                  # mortality formulation (non-diatoms), 1-linear, 2-quadratic, 3-hyperbolic, 4-sigmoid', default=3
       jmzme: 3                  # mortality formulation (non-diatoms), 1-linear, 2-quadratic, 3-hyperbolic, 4-sigmoid', default=3
-      jmd: 2                    # Temperature regulation (detritus remin), 1-Eppley,2-q10',default=1
-      xmd: 0.0190 #0.0158               # detrital N remineralisation rate (d-1), default=0.0158
-      xmdc: 0.0152 #0.0127              # detrital C remineralisation rate (d-1), default=0.0127
+      jmd: 2                    # Temperature regulation (detritus remin), 1-Eppley,2-q10',default=2
+      xmd: 0.0190               # detrital N remineralisation rate (d-1), default=0.0190
+      xmdc: 0.0152              # detrital C remineralisation rate (d-1), default=0.0152
       xsdiss: 0.006             # diatom frustule dissolution rate (d-1), default=0.006
-      xfdfrac1: 0.333            # fast detritus fraction of diatom losses, default=0.33
+      xfdfrac1: 0.333           # fast detritus fraction of diatom losses, default=0.333
       xfdfrac2: 1.              # fast detritus fraction of mesozooplankton losses, default=1.
       xfdfrac3: 0.8             # fast detritus fraction of mesozooplankton grazing, default=0.8
-      xrfn: 30.0e-6                # phytoplankton Fe:N uptake ratio (mmol Fe mol N-1 m), default=0.03
+      xrfn: 30.0e-6             # phytoplankton Fe:N uptake ratio (mmol Fe mol N-1 m), default=30.0e-6
       xridg_r0: 0.026           # CaCO3:POC export rain ratio scalar, Ridgwell et al (2007), default=0.026
       xthetanit: 2.0            # O2 consumption by N remineralisation (mol O_2 mol N-1), default=2.0
       xthetarem: 1.1226         # O2 consumption by C remineralisation (mol O_2 mol C-1), default=1.1226
       xo2min: 4.0               # minimum O2 concentration (mmol O_2 m-3), default=4.0
-      wg: -2.999808 #-2.5                  # detritus sinking rate (m d-1), default = -2.5
-      wdep: 2.999808 # -wg
+      wg: -2.999808             # detritus sinking rate (m d-1), default = -2.999808
+      wdep: 2.999808            # detritus deposition rate (m d-1), default = -wg
     initialization:
       CHN: 0.01
       CHD: 0.01
@@ -128,10 +128,10 @@ instances:
   iron_scavenging:
     model: medusa/medusa_iron_scav
     parameters:
-      xk_FeL: 100.              # dissociation constant for (Fe+ligand) (mmol m-3)-1, default=0.1
-      xLgT: 1.                  # total ligand concentration (mmol m-3), default=0.001	
-      xk_sc_Fe: 1.e-3           # scavenging rate of "free" Fe (d-1), default=0.001
-      jiron: 1          # iron scavenging scheme, 1-Dutkiewicz et al. (2005),2-Moore et al. (2004),3-Moore et al. (2008),4-Galbraith et al. (2010)',default=1
+      xk_FeL: 100.              # dissociation constant for (Fe+ligand) (mmol m-3)-1, default=100.
+      xLgT: 1.                  # total ligand concentration (mmol m-3), default=1.
+      xk_sc_Fe: 1.e-3           # scavenging rate of "free" Fe (d-1), default=1.e-3
+      jiron: 1                  # iron scavenging scheme, 1-Dutkiewicz et al(2005),2-Moore et al(2004),3-Moore et al(2008),4-Galbraith et al. (2010)',default=1
     coupling:
       FER: pelagic/FER
       ffastc_loc: fast_detritus/ffastc_loc
@@ -141,8 +141,8 @@ instances:
   fast_detritus:
     model: medusa/medusa_fast_detritus
     parameters:
-      seafloor: 3              # seafloor handling (1-inorganic returns, 2-organic returns, 3-couple benthos (nothing to do in this model), default = 1
-      xrfn: 30.0e-6               # phytoplankton Fe:N uptake ratio (mmol Fe mol N-1 m), default=0.03
+      seafloor: 3               # seafloor parameterisation (1-inorganic returns, 2-organic returns, 3-couple benthos (nothing to do in this model), default = 3
+      xrfn: 30.0e-6             # phytoplankton Fe:N uptake ratio (mmol Fe mol N-1 m), default=30.0e-6
     coupling:
       OXY: pelagic/OXY
       DIN: pelagic/DIN
@@ -169,12 +169,12 @@ instances:
     model: medusa/medusa_benthic
     use: true
     parameters:
-      xsedc: 0.05
-      xsedn: 0.05
-      xsedfe: 0.05
-      xsedsi: 0.01
-      xsedca: 0.01
-      xrfn: 30.0e-6
+      xsedc: 0.05              # benthic C remineralisation rate (d-1), default=0.05_rk
+      xsedn: 0.05              # benthic N remineralisation rate (d-1), default=0.05_rk
+      xsedfe: 0.05             # benthic Fe remineralisation rate (d-1), default=0.05_rk
+      xsedsi: 0.01             # benthic Si remineralisation rate (d-1) default=0.01_rk
+      xsedca: 0.01             # benthic CaCO3 remineralisation rate (d-1) default=0.01_rk
+      xrfn: 30.0e-6            # phytoplankton Fe:N uptake ratio (mmol Fe mol N-1 m),default=30.0e-6_rk
     initialization:
       BEN_C: 0.
       BEN_N: 0.
@@ -196,6 +196,7 @@ instances:
     parameters:
       value: 400.
       standard_name: mole_fraction_of_carbon_dioxide_in_air
+# DIAGNOSTIC OUTPUT
   TPP3:
     model: weighted_sum
     long_name: Total primary production 3D
