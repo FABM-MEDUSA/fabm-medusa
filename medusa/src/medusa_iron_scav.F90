@@ -90,12 +90,6 @@ contains
 
      ffescav     = ffescav + fdeltaFe * d_per_s        ! = mmol/m3/d !assuming time scale of fdeltaFe of 1 day
 
-   !  if ((depth .gt. 1000._rk) .and. (xFeT .lt. 0.5_rk)) then
-
-   !     ffescav = 0._rk
-
-   !  endif
-
   elseif (self%jiron == 2) then
 
      _GET_(self%id_ffastc_loc, ffastc)
@@ -137,7 +131,7 @@ contains
         fscal_scav = fscal_scav + (xFeT- 0.6_rk) * 0.00904_rk
                      
      else
-    ! Do nothing... what do you mean do nothing??
+    ! Do nothing
 
     endif
 

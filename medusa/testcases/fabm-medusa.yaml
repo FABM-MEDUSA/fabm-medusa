@@ -5,13 +5,6 @@ instances:
     coupling:
       CHN: pelagic/CHN
       CHD: pelagic/CHD
-#  nflux:
-#    model: constant_surface_flux
-#    use: false
-#    parameters:
-#      flux: 1.6e-10
-#    coupling:
-#      target: medusa_pelagic/FER
   gas_transfer:
     model: medusa/gas_transfer
     parameters:
@@ -151,8 +144,6 @@ instances:
   fast_detritus:
     model: medusa/medusa_fast_detritus
     parameters:
-      xfe_sed: 0. #0.000228
-      iball: 1                 # ballast model formulation (1- ballast model (Yool et al., 2011), 2- ballast-sans-ballast model), default = 1
       seafloor: 3              # seafloor handling (1-inorganic returns, 2-organic returns, 3-couple benthos (nothing to do in this model), default = 1
       xrfn: 30.0e-6               # phytoplankton Fe:N uptake ratio (mmol Fe mol N-1 m), default=0.03
     coupling:

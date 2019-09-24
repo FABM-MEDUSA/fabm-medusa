@@ -19,7 +19,7 @@ module medusa_fast_detritus
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZDIC,id_ZDIN,id_ZSIL,id_ZOXY,id_ZFER,id_ZDET,id_ZDTC,id_ZALK
       type (type_bottom_state_variable_id) :: id_ZSEDSI,id_ZSEDC,id_ZSEDN,id_ZSEDCA,id_ZSEDFE, id_ZSEDP
-      type (type_dependency_id)            :: id_dz,id_depth
+      type (type_dependency_id)            :: id_dz
       type (type_dependency_id)            :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca
       type (type_dependency_id)            :: id_freminc1,id_freminn1,id_freminsi1,id_freminfe1,id_freminca1
       type (type_dependency_id)            :: id_om_cal
@@ -30,9 +30,8 @@ module medusa_fast_detritus
       type (type_horizontal_dependency_id) :: id_ffastc1,id_ffastn1,id_ffastfe1,id_ffastsi1,id_ffastca1,id_CAL_CCD
       type (type_diagnostic_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
       ! Parameters
-      real(rk) :: xthetanit,xthetarem,xo2min,xrfn,xfe_sed
+      real(rk) :: xthetanit,xthetarem,xo2min,xrfn
       integer :: seafloor
-      integer :: iball
 
    contains
 
@@ -51,11 +50,9 @@ contains
    integer,                         intent(in)           :: configunit
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
-   call self%get_parameter(self%xfe_sed,'xfe_sed','mmol Fe m-2 d-1','sedimentary flux of iron',default=0.000228_rk,scale_factor=d_per_s)
    call self%get_parameter(self%xthetanit,'xthetanit','mol O_2 mol N-1','O2 consumption by N remineralisation',default=2.0_rk)
    call self%get_parameter(self%xthetarem,'xthetarem','mol O_2 mol C-1','O2 consumption by C remineralisation',default=1.1226_rk)
    call self%get_parameter(self%xo2min,'xo2min','mmol O_2 m-3','minimum O2 concentration',default=4.0_rk)
-   call self%get_parameter(self%iball,'iball','ballast model formulation (1- ballast model (Yool et al., 2011), 2- ballast-sans-ballast model)', default=1)
 
    ! Create diagnostics for fast-sinking detritus that acts as state variables, so they can receive sources.
    call self%register_diagnostic_variable(self%id_tempc,'tempc','mmol C m-3','fast-sinking detritus (C)', act_as_state_variable=.true., missing_value=0.0_rk,source=source_none, output=output_none)
@@ -130,7 +127,6 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    call self%register_horizontal_dependency(self%id_ffastca1,'ffastca','mmol CaCO3 m-2 s-1','remineralisation of calcite (CaCO3)')
 
    call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
-   call self%register_dependency(self%id_depth, standard_variables%depth)
 
    call self%get_parameter(self%seafloor,'seafloor','-','seafloor handling: 1-inorganic returns, 2-organic returns, 3-coupled benthic model', default = 1)
    call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=0.03_rk)
@@ -182,65 +178,50 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
     _GET_(self%id_dz,dz)
 !   !Carbon
    fq0      = ffastc                            !! how much organic C enters this box        (mol)
-   if (self%iball .eq. 1) then
-     fq1      = (fq0 * xmassc)                    !! how much it weighs                        (mass)
-     fq2      = (ffastca * xmassca)               !! how much CaCO3 enters this box            (mass)
-     fq3      = (ffastsi * xmasssi)               !! how much opal enters this box             (mass)
-     fq4      = (fq2 * xprotca) + (fq3 * xprotsi) !! total protected organic C                 (mass)
+   fq1      = (fq0 * xmassc)                    !! how much it weighs                        (mass)
+   fq2      = (ffastca * xmassca)               !! how much CaCO3 enters this box            (mass)
+   fq3      = (ffastsi * xmasssi)               !! how much opal enters this box             (mass)
+   fq4      = (fq2 * xprotca) + (fq3 * xprotsi) !! total protected organic C                 (mass)
 !
 !   !! this next term is calculated for C but used for N and Fe as well
 !   !! it needs to be protected in case ALL C is protected
 !
-     if (fq4.lt.fq1) then
-        fprotf   = (fq4 / (fq1 + tiny(fq1)))      !! protected fraction of total organic C     (non-dim)
-     else
-        fprotf   = 1._rk                         !! all organic C is protected                (non-dim)
-     endif
-     fq5      = (1._rk - fprotf)                !! unprotected fraction of total organic C   (non-dim)
-     fq6      = (fq0 * fq5)                     !! how much organic C is unprotected         (mol)
-     fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected C leaves this box    (mol)
-     fq8      = (fq7 + (fq0 * fprotf))          !! how much total C leaves this box          (mol)
-     freminc  = (fq0 - fq8) / dz                !! C remineralisation in this box            (mol)
-     ffastc = fq8
+   if (fq4.lt.fq1) then
+      fprotf   = (fq4 / (fq1 + tiny(fq1)))      !! protected fraction of total organic C     (non-dim)
    else
-     fq1=fq0 * exp(-(dz/xfastc))
-     freminc = (fq0 - fq1) / dz
-     ffastc = fq1
-   end if
+      fprotf   = 1._rk                         !! all organic C is protected                (non-dim)
+   endif
+   fq5      = (1._rk - fprotf)                !! unprotected fraction of total organic C   (non-dim)
+   fq6      = (fq0 * fq5)                     !! how much organic C is unprotected         (mol)
+   fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected C leaves this box    (mol)
+   fq8      = (fq7 + (fq0 * fprotf))          !! how much total C leaves this box          (mol)
+   freminc  = (fq0 - fq8) / dz                !! C remineralisation in this box            (mol)
+   ffastc = fq8
+
   _SET_DIAGNOSTIC_(self%id_freminc,freminc)
   _SET_DIAGNOSTIC_(self%id_ffastc_loc,ffastc)
 
    !Nitrogen
    fq0      = ffastn                            !! how much organic N enters this box        (mol)
-   if (self%iball .eq. 1) then
-     fq5      = (1._rk - fprotf)                !! unprotected fraction of total organic N   (non-dim)
-     fq6      = (fq0 * fq5)                     !! how much organic N is unprotected         (mol)
-     fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected N leaves this box    (mol)
-     fq8      = (fq7 + (fq0 * fprotf))          !! how much total N leaves this box          (mol)
-     freminn  = (fq0 - fq8) / dz                !! N remineralisation in this box            (mol)
-     ffastn = fq8
-   else
-     fq1 = fq0 * exp(-(dz / xfastc))
-     freminn = (fq0 - fq1) / dz
-     ffastn = fq1
-   end if
+   fq5      = (1._rk - fprotf)                !! unprotected fraction of total organic N   (non-dim)
+   fq6      = (fq0 * fq5)                     !! how much organic N is unprotected         (mol)
+   fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected N leaves this box    (mol)
+   fq8      = (fq7 + (fq0 * fprotf))          !! how much total N leaves this box          (mol)
+   freminn  = (fq0 - fq8) / dz                !! N remineralisation in this box            (mol)
+   ffastn = fq8
+
    _SET_DIAGNOSTIC_(self%id_freminn,freminn)
   _SET_DIAGNOSTIC_(self%id_ffastn_loc,ffastn)
 
    !Iron
    fq0      = ffastfe                           !! how much organic Fe enters this box       (mol)
-   if (self%iball .eq. 1) then
-     fq5      = (1._rk - fprotf)                !! unprotected fraction of total organic Fe  (non-dim)
-     fq6      = (fq0 * fq5)                     !! how much organic Fe is unprotected        (mol)
-     fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected Fe leaves this box   (mol)
-     fq8      = (fq7 + (fq0 * fprotf))          !! how much total Fe leaves this box         (mol)            
-     freminfe = (fq0 - fq8) / dz                !! Fe remineralisation in this box           (mol)
-     ffastfe = fq8
-   else
-     fq1 = fq0 * exp(-(dz / xfastc))
-     freminfe = (fq0 - fq1) / dz
-     ffastfe = fq1
-   end if
+   fq5      = (1._rk - fprotf)                !! unprotected fraction of total organic Fe  (non-dim)
+   fq6      = (fq0 * fq5)                     !! how much organic Fe is unprotected        (mol)
+   fq7      = (fq6 * exp(-(dz / xfastc)))     !! how much unprotected Fe leaves this box   (mol)
+   fq8      = (fq7 + (fq0 * fprotf))          !! how much total Fe leaves this box         (mol)
+   freminfe = (fq0 - fq8) / dz                !! Fe remineralisation in this box           (mol)
+   ffastfe = fq8
+
   _SET_DIAGNOSTIC_(self%id_freminfe,freminfe)
 
    !biogenic silicon
@@ -338,7 +319,6 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
      _DECLARE_ARGUMENTS_DO_BOTTOM_
      
      real(rk) :: ffastc,ffastn,ffastsi,ffastca,ffastfe
-     real(rk) :: depth
      real(rk) :: ZOXY
 
      !TO-DO: oxygen consumption
@@ -350,11 +330,6 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
     _GET_HORIZONTAL_(self%id_ffastsi1,ffastsi)
     _GET_HORIZONTAL_(self%id_ffastca1,ffastca)
     _GET_HORIZONTAL_(self%id_ffastfe1,ffastfe)
-
-    _GET_(self%id_depth,depth)
-    if (depth .lt. 500._rk) then 
-    _SET_BOTTOM_EXCHANGE_(self%id_ZFER, self%xfe_sed) ! sit here for now...
-    end if
 
      if (self%seafloor .eq. 1) then
 
