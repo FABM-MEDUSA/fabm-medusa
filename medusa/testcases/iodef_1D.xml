@@ -114,7 +114,7 @@
      <file id="file222" name_suffix="_diad_T" description="tracer variables"  sync_freq="1d">
           <field field_ref="carbonate_CO2FLUX" name='CO2FLUX' operation="average" />
           <field field_ref="carbonate_OM_CAL3" name='OM_CAL3' operation="average" />
-          <field field_ref="carbonate_Om_arg" name='Om_arg' operation="average" />
+          <field field_ref="carbonate_OM_ARG" name='OM_ARG' operation="average" />
           <field field_ref="carbonate_PH3" name='PH3' operation="average" />
           <field field_ref="oxygen_O2FLUX" name='O2FLUX' operation="average" />
           <field field_ref="oxygen_O2SAT" name='O2SAT' operation="average" />
@@ -203,7 +203,8 @@
           <field field_ref="pelagic_O2_ANOX" name='O2_ANOX' operation="average" />
           <field field_ref="light_MED_XZE" name='MED_XZE' operation="average" />
           <field field_ref="carbonate_ATM_PCO2" name='ATM_PCO2' operation="average" />
-          <field field_ref="carbonate_CAL_CCD" name='CAL_CCD' operation="average" />
+          <field field_ref="ccd_cal_CCD" name='CAL_CCD' operation="average" />
+          <field field_ref="ccd_arg_CCD" name='ARG_CCD' operation="average" />
      </file> 
 
         <file id="file60" name_suffix="_grid_T" description="tracer variables"  sync_freq="1d">

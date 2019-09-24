@@ -171,7 +171,15 @@ instances:
       BEN_FE: benthic/BEN_FE
       #BEN_P: zero_hz
       OM_CAL3: carbonate/OM_CAL3
-      CAL_CCD: carbonate/CAL_CCD
+      CAL_CCD: ccd_cal/CCD
+  ccd_cal:
+    model: medusa/medusa_ccd
+    coupling:
+      OMEGA: carbonate/OM_CAL3
+  ccd_arg:
+    model: medusa/medusa_ccd
+    coupling:
+      OMEGA: carbonate/OM_ARG
   benthic:
     model: medusa/medusa_benthic
     use: true
