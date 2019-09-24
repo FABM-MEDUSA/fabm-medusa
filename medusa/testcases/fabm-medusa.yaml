@@ -123,11 +123,8 @@ instances:
       tempfe: fast_detritus/tempfe
       tempca: fast_detritus/tempca
       OM_CAL3: carbonate/OM_CAL3
-      #BEN_C: benthic/BEN_C
-      #BEN_N: benthic/BEN_N
       BEN: benthic
       BEN_FE: benthic/BEN_FE
-      #BEN_P: zero_hz
   iron_scavenging:
     model: medusa/medusa_iron_scav
     parameters:
@@ -155,12 +152,9 @@ instances:
       DET: pelagic/DET
       DTC: pelagic/DTC
       ALK: pelagic/ALK
-      #BEN_SI: benthic/BEN_SI
       BEN: benthic
-      #BEN_N: benthic/BEN_N
       BEN_CA: benthic/BEN_CA
       BEN_FE: benthic/BEN_FE
-      #BEN_P: zero_hz
       OM_CAL3: carbonate/OM_CAL3
       CAL_CCD: ccd_cal/CCD
   ccd_cal:

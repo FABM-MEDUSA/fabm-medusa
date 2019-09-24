@@ -162,7 +162,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    real(rk) :: ffastc,ffastn,ffastca,ffastsi,ffastfe
    real(rk) :: ftempc,ftempn,ftempfe,ftempsi,ftempca
    real(rk) :: freminc,freminn,freminfe,freminsi,freminca
-   real(rk) :: om_cal,collect,fdep1,cal_ccd
+   real(rk) :: om_cal,fdep1,cal_ccd
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
    fdep1 = 0._rk
@@ -172,7 +172,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    ffastca=0._rk
    ffastsi=0._rk
    ffastfe=0._rk
-  ! collect=0
+
    _VERTICAL_LOOP_BEGIN_
 
     _GET_(self%id_dz,dz)
@@ -239,7 +239,6 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    _GET_HORIZONTAL_(self%id_CAL_CCD,cal_ccd)
    _GET_(self%id_om_cal,om_cal)
  
-  !om_cal = 4._rk
    fq0      = ffastca                           !! how much CaCO3 enters this box            (mol)
    if (fdep1-dz.le.cal_ccd) then
     fq1      = fq0                               !! above lysocline, no Ca dissolves          (mol)
@@ -262,13 +261,12 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
     _GET_(self%id_ftempfe,ftempfe)
     _GET_(self%id_ftempsi,ftempsi)
     _GET_(self%id_ftempca,ftempca)
- !    collect = collect + ftempca * dz
     ffastc  = ffastc + ftempc * dz
     ffastn  = ffastn  + ftempn * dz
     ffastfe = ffastfe + ftempfe * dz
     ffastsi = ffastsi + ftempsi * dz
     ffastca = ffastca + ftempca * dz
- !   _SET_DIAGNOSTIC_(self%id_freminc,ftempc)
+
    _VERTICAL_LOOP_END_
 
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastc,ffastc)
@@ -321,8 +319,6 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
      real(rk) :: ffastc,ffastn,ffastsi,ffastca,ffastfe
      real(rk) :: ZOXY
 
-     !TO-DO: oxygen consumption
-
     _HORIZONTAL_LOOP_BEGIN_
     _GET_(self%id_ZOXY,ZOXY)
     _GET_HORIZONTAL_(self%id_ffastc1,ffastc)
@@ -342,7 +338,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
     _SET_BOTTOM_EXCHANGE_(self%id_ZFER, + ffastn * self%xrfn)
 
      elseif (self%seafloor .eq. 2) then
-     ! Seafloor 2 not tested yet...
+     ! not tested!
      if (ZOXY .ge. self%xo2min) _SET_BOTTOM_EXCHANGE_(self%id_ZOXY, - self%xthetarem * ffastc - self%xthetanit * ffastn)
     _SET_BOTTOM_EXCHANGE_(self%id_ZALK, 2._rk * ffastca)
     _SET_BOTTOM_EXCHANGE_(self%id_ZDTC, + ffastc + ffastca)

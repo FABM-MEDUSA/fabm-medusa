@@ -19,8 +19,8 @@ module medusa_iron_scav
       type (type_dependency_id)            :: id_depth
       type (type_dependency_id)            :: id_ffastc_loc,id_ffastca_loc,id_ffastsi_loc,id_fscal_part
       type (type_diagnostic_variable_id)   :: id_ffescav
-  ! Parameters
 
+  ! Parameters
       real(rk) :: xk_FeL,xLgT,xk_sc_Fe
       integer :: jiron
    contains

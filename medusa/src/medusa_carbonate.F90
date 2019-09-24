@@ -116,7 +116,7 @@ contains
       real(rk),intent( inout ) :: TCO2       ! total dissolved inorganic carbon (mol.kg-1) 
       real(rk),intent( inout ) :: TA         ! total alkalinity (eq.kg-1) 
       real(rk),intent( inout ) :: dcf        ! density conversion factor 
-      integer,intent( inout ) :: iters      ! # iterations to convergence 
+      integer,intent( inout ) :: iters       ! iterations to convergence
       real(rk) :: a, b, c 
       real(rk) :: ca, bc, cb 
       real(rk) :: pco2water, fairco2
@@ -171,7 +171,7 @@ contains
       CALL POLYCO(PRSS,T,S,CONCS,MCONC,AKVAL,MKVAL,ICALC,ICONST,iters) 
       if(iters.eq.25) then
          CONCS(3) = PCO2A * 1E-06_rk ! atmospheric value
-         CONCS(4) = 8.1_rk         ! global average pH
+         CONCS(4) = 8.1_rk           ! global average pH
          CONCS(5) = TCO2 * 0.005_rk  ! some "standard" values plucked
          CONCS(6) = TCO2 * 0.865_rk  ! from pages 5-6 of Zeebe & Wolf-
          CONCS(7) = TCO2 * 0.130_rk  ! Gladow (2001)

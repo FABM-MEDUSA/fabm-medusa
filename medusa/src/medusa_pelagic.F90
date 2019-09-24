@@ -254,15 +254,14 @@ contains
    class(type_medusa_pelagic), INTENT(IN) :: self
   _DECLARE_ARGUMENTS_DO_
 
-! !LOCAL VARIABLES:
-
+   !LOCAL VARIABLES:
     real(rk) :: ZCHN,ZCHD,ZPHN,ZPHD,ZPDS,ZDIN,ZFER,ZSIL,ZDET,ZDTC,ZZMI,ZZME,ZALK,ZDIC,ZOXY,loc_T,par
-    real(rk) :: fthetan,fthetad,faln,fald !scaled chl/biomass ratio
-    real(rk) :: fnln,ffln ! non-diatom Qn/Qf terms
-    real(rk) :: fnld,fsld,ffld ! diatom Qn/Qs/Qf terms
+    real(rk) :: fthetan,fthetad,faln,fald
+    real(rk) :: fnln,ffln
+    real(rk) :: fnld,fsld,ffld
     real(rk) :: fun_T,fun_q10,xvpnT,xvpdT,fchn1,fchn,fjln,fchd1,fchd,fjld
     real(rk) :: fsin,fnsi,fsin1,fnsi1,fnsi2,fprn,fprd,fsld2,frn,frd,fprds
-    real(rk) :: fpnlim,fpdlim !nutrient limitation of primary production
+    real(rk) :: fpnlim,fpdlim
     real(rk) :: fmi1,fmi,fgmipn,fgmid,fgmidc,finmi,ficmi,fstarmi,fmith,fmigrow,fmiexcr,fmiresp
     real(rk) :: fme1,fme,fgmepn,fgmepd,fgmepds,fgmezmi,fgmed,fgmedc,finme,ficme,fstarme,fmeth,fmegrow,fmeexcr,fmeresp
     real(rk) :: fdpn2,fdpd2,fdpds2,fdzmi2,fdzme2,fdpn,fdpd,fdpds,fdzmi,fdzme
@@ -275,7 +274,6 @@ contains
     _LOOP_BEGIN_
 
     ! Retrieve current (local) state variable values
-
     _GET_(self%id_ZCHN,ZCHN)
     _GET_(self%id_ZCHD,ZCHD)
     _GET_(self%id_ZPHN,ZPHN)
@@ -433,7 +431,7 @@ contains
   fgmipn = fmi * self%xpmipn * ZPHN * ZPHN !grazing on non-diatoms
   fgmid = fmi * self%xpmid * ZDET * ZDET   !grazing on detrital nitrogen
   fgmidc = rsmall
-  if (ZDET .gt. rsmall) fgmidc = (ZDTC / (ZDET + tiny(ZDET))) * fgmid !ROAM formulation
+  if (ZDET .gt. rsmall) fgmidc = (ZDTC / (ZDET + tiny(ZDET))) * fgmid
 
   _SET_DIAGNOSTIC_(self%id_GMIPn,fgmipn / d_per_s)
   _SET_DIAGNOSTIC_(self%id_GMID,fgmid / d_per_s)
@@ -450,7 +448,7 @@ contains
      fmigrow = (self%xbetac * self%xkc * ficmi) / self%xthetazmi
      fmiexcr = ficmi * ((self%xbetan / (fmith + tiny(fmith))) - ((self%xbetac * self%xkc) / self%xthetazmi))
   end if
-  fmiresp = (self%xbetac * ficmi) - (self%xthetazmi * fmigrow) !Respiration
+  fmiresp = (self%xbetac * ficmi) - (self%xthetazmi * fmigrow)
 
   !Mesozooplankton
   fme1 = (self%xkme * self%xkme) + (self%xpmepn * ZPHN * ZPHN) + (self%xpmepd * ZPHD * ZPHD) + (self%xpmezmi * ZZMI * ZZMI) + (self%xpmed * ZDET * ZDET)
@@ -461,7 +459,7 @@ contains
   fgmezmi = fme * self%xpmezmi * ZZMI * ZZMI
   fgmed = fme * self%xpmed * ZDET * ZDET
   fgmedc = rsmall
-  if (ZDET .gt. rsmall) fgmedc = (ZDTC / (ZDET + tiny(ZDET))) * fgmed !ROAM formulation
+  if (ZDET .gt. rsmall) fgmedc = (ZDTC / (ZDET + tiny(ZDET))) * fgmed
 
   _SET_DIAGNOSTIC_(self%id_GMEPN,fgmepn / d_per_s)
   _SET_DIAGNOSTIC_(self%id_GMEPD,fgmepd / d_per_s)
@@ -569,7 +567,6 @@ contains
   _SET_DIAGNOSTIC_(self%id_MZME, fdpd / d_per_s)
 
   !Detritus remineralisation (temperature-dependent)
-
   if (self%jmd == 1) then
     fdd = self%xmd * fun_T * ZDET
     fddc = self%xmdc * fun_T * ZDTC
@@ -584,13 +581,9 @@ contains
   _SET_DIAGNOSTIC_(self%id_MDET, fdd / d_per_s)
   _SET_DIAGNOSTIC_(self%id_MDETC, fddc / d_per_s)
 
-  !Original contains accelerated detrital remineralisation in the bottom box
-
   !Diatom frustule dissolution
   fsdiss = self%xsdiss * ZPDS
   _SET_DIAGNOSTIC_(self%id_OPALDISS, fsdiss / d_per_s)
-
-  !!Aeolian iron deposition and seafloor iron addition - should be dealt with through model inputs.
 
   !Slow detritus creation
   fslown  = fdpn + fdzmi + ((1._rk - self%xfdfrac1) * fdpd) + ((1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetan) * (finmi + finme))
@@ -639,7 +632,7 @@ contains
   ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
 
   _GET_(self%id_om_cal,om_cal)
-  if (om_cal .ge. 1._rk) then !get f3_omcal!
+  if (om_cal .ge. 1._rk) then
      fq1 = (om_cal - 1._rk)**0.81_rk
   else
     fq1 = 0._rk
@@ -679,17 +672,15 @@ contains
    _SET_ODE_(self%id_ZDIN,fn_prod + fn_cons)
 
   ! dissolved silicic acid
-   fs_cons = - (fprds * ZPDS)                                       ! opal production
+   fs_cons = - (fprds * ZPDS)                                        ! opal production
    fs_prod = + fsdiss                                             &  ! opal dissolution
-             + ((1.0_rk - self%xfdfrac1) * fdpds)                    &  ! mort. loss
-             + ((1.0_rk - self%xfdfrac3) * fgmepds)                  &  ! egestion of grazed Si
+             + ((1.0_rk - self%xfdfrac1) * fdpds)                 &  ! mort. loss
+             + ((1.0_rk - self%xfdfrac3) * fgmepds)               &  ! egestion of grazed Si
              + fdpds2                                                ! metab. losses
    _SET_ODE_(self%id_ZSIL,fs_prod + fs_cons)
 
   ! dissolved iron
-
    _SET_ODE_(self%id_ZFER, self%xrfn * (fn_prod + fn_cons))
-
 
   ! detrital carbon
    _SET_ODE_(self%id_ZDTC, fslowc - fgmidc - fgmedc - fddc)
@@ -706,16 +697,15 @@ contains
 
    _SET_DIAGNOSTIC_(self%id_fscal_part, (self%xthetapn * ZPHN + self%xthetapd * ZPHD + self%xthetazmi * ZZMI + self%xthetazme * ZZME + self%xthetad * ZDET) * 0.002_rk)
 
-   _SET_DIAGNOSTIC_(self%id_fcomm_resp, fc_prod / d_per_s) !! community respiration (does not include CaCO3 terms)
+   _SET_DIAGNOSTIC_(self%id_fcomm_resp, fc_prod / d_per_s) ! community respiration (does not include CaCO3 terms)
 
-   fc_prod = fc_prod - ftempca         ! CaCO3
+   fc_prod = fc_prod - ftempca ! CaCO3
 
    _SET_DIAGNOSTIC_(self%id_C_PROD, fc_prod / d_per_s)
    _SET_DIAGNOSTIC_(self%id_C_CONS, fc_cons / d_per_s)
    _SET_ODE_(self%id_ZDIC,fc_prod + fc_cons)
 
   ! alkalinity
-
    fa_cons = -2._rk * ftempca                                                    ! CaCO3 production
 
   _SET_ODE_(self%id_ZALK, fa_cons)
@@ -775,8 +765,7 @@ contains
    class(type_medusa_pelagic), INTENT(IN) :: self
   _DECLARE_ARGUMENTS_DO_BOTTOM_
 
-! !LOCAL VARIABLES
-
+   !LOCAL VARIABLES
     real(rk) :: ZSEDC,ZSEDN,ZSEDFE,ZDET,ZDTC
     real(rk) :: fluxc,fluxn,fluxfe
     real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
