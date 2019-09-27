@@ -4,6 +4,14 @@
 !*********************************************************
 !            FABM-MEDUSA pelagic biogeochemistry
 !*********************************************************
+!   This module calculates:
+!   - Phytoplankton growth
+!   - Zooplankton grazing
+!   - Plankton losses
+!   - Fast detritus production
+!   - Corresponding oxygen dynamics
+!   - Detritus deposition fluxes
+!----------------------------------------------------------
 
 module medusa_pelagic
 
@@ -59,7 +67,7 @@ contains
    integer,               intent(in)           :: configunit
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
-   !Register parameters
+   ! Register parameters
    call self%get_parameter(self%xxi, 'xxi', 'mol N g C-1','C : N conversion factor', default=0.01257_rk)
    call self%get_parameter(self%xaln, 'xaln', 'g C(g chl)-1 (W m-2)-1 d-1','chl-specific initial slope of P-I curve (non-diatoms)', default=15.0_rk,scale_factor=d_per_s)
    call self%get_parameter(self%xald, 'xald', 'g C(g chl)-1 (W m-2)-1 d-1','chl-specific initial slope of P-I curve (diatoms)', default=11.25_rk,scale_factor=d_per_s)
@@ -296,8 +304,11 @@ contains
 
    rsmall = 0.5_rk * EPSILON( 1._rk )
 
-   !PHYTOPLANKTON GROWTH
-   !Chlorophyll
+   ! PHYTOPLANKTON GROWTH
+
+   ! Chlorophyll calculations
+ 
+   ! non-diatoms
    if (ZPHN .gt. rsmall) then
     fthetan = max(tiny(ZCHN),(ZCHN * self%xxi) / (ZPHN + tiny(ZPHN)))
     faln = self%xaln * fthetan
@@ -306,6 +317,7 @@ contains
     faln    = 0._rk
    end if
 
+   ! diatoms
    if (ZPHD .gt. rsmall) then
     fthetad = max(tiny(ZCHD),(ZCHD * self%xxi) / (ZPHD + tiny(ZPHD)))
     fald = self%xald * fthetad
@@ -314,8 +326,8 @@ contains
     fald    = 0._rk
    end if
 
-  !Temperature limitation
-   fun_T = 1.066_rk**loc_T
+   ! Temperature limitation
+   fun_T = 1.066_rk**loc_T        ! temperature for Eppley-style phytoplankton growth
    fun_q10 = self%jq10**((loc_T - 0._rk) / 10._rk)
    if (self%jphy .eq. 1) then
      xvpnT = self%xvpn * fun_T
@@ -327,47 +339,77 @@ contains
      xvpnT = self%xvpn
      xvpdT = self%xvpd
    endif
-  !Phytoplankton light limitation
+
+  ! Phytoplankton light limitation
+
+  ! It is assumed par is the depth-averaged (vertical layer) PAR 
+  ! Light limitation in W/m2
+  !
+  ! Note that there is no temperature dependence in phytoplankton
+  ! growth rate or any other function. 
+  ! In calculation of Chl/Phy ratio tiny(phyto) is introduced to 
+  ! avoid NaNs in case of Phy==0.  
+  !
+  ! fthetad and fthetan are Chl:C ratio (gChl/gC) in diat and 
+  ! non-diat: 
+  ! for 1:1 Chl:Phy ratio (mgChl/mmolN) theta=0.012
+  !
+
+   ! non-diatoms
    fchn1 = (xvpnT * xvpnT) + (faln * faln * par * par)
    if (fchn1 .gt. rsmall) then
     fchn = xvpnT / (sqrt(fchn1) + tiny(fchn1))
    else
     fchn = 0._rk
    endif
-   fjln = fchn * faln * par !non-diatom J term
+   fjln = fchn * faln * par ! non-diatom J term
    fjlim_pn = fjln / xvpnT
 
+   ! diatoms
    fchd1 = (xvpdT * xvpdT) + (fald * fald * par * par)
    if (fchd1 .gt. rsmall) then
     fchd = xvpdT / (sqrt(fchd1) + tiny(fchd1))
    else
     fchd = 0._rk
    end if
-   fjld = fchd * fald * par !diatom J term
+   fjld = fchd * fald * par ! diatom J term
    fjlim_pd = fjld / xvpdT
 
    ! Phytoplankton nutrient limitation
-   !! Non-diatoms (N, Fe)
-   fnln = ZDIN / (ZDIN + self%xnln) !non-diatom Qn term
-   ffln = ZFER / (ZFER + self%xfln) !non-diatom Qf term
-   !! Diatoms (N, Si, Fe)
-   fnld = ZDIN / (ZDIN + self%xnld) !diatom Qn term
-   fsld = ZSIL / (ZSIL + self%xsld) !diatom Qs term
-   ffld = ZFER / (ZFER + self%xfld) !diatom Qf term
+   ! non-diatoms (N, Fe)
+   fnln = ZDIN / (ZDIN + self%xnln)    !non-diatom Qn term
+   ffln = ZFER / (ZFER + self%xfln)    !non-diatom Qf term
+   ! aiatoms (N, Si, Fe)
+   fnld = ZDIN / (ZDIN + self%xnld)    !diatom Qn term
+   fsld = ZSIL / (ZSIL + self%xsld)    !diatom Qs term
+   ffld = ZFER / (ZFER + self%xfld)    !diatom Qf term
 
    ! Primary production (non-diatoms)
+   ! (note: still needs multiplying by phytoplankton concentration)
+
    if (self%jliebig.eqv..false.) then
+     ! multiplicative nutrient limitation
      fpnlim = fnln * ffln
    else
+     ! Liebig Law (= most limiting) nutrient limitation
      fpnlim = min(fnln,ffln)
    end if
 
    fprn = fjln * fpnlim
 
-   !Primary production (diatoms)
+   ! Primary production (diatoms)
+   ! (note: still needs multiplying by phytoplankton concentration)
+   !
+   ! Production here is split between nitrogen production and that of silicon; 
+   ! depending upon the "intracellular" ratio of Si:N, 
+   ! model diatoms will uptake nitrogen/silicon differentially; 
+   ! this borrows from the diatom model of Mongin et al. (2006)
+
    if (self%jliebig.eqv..false.) then
+     ! multiplicative nutrient limitation
      fpdlim = fnld * ffld
    else
+     ! Liebig Law (= most limiting) nutrient limitation
      fpdlim = min(fnld,ffld)
    end if
 
@@ -377,9 +419,13 @@ contains
    if ( zphd .gt. rsmall) fsin = ZPDS / ZPHD
    fnsi = 0._rk
    if ( zpds .gt. rsmall) fnsi = ZPHD / ZPDS
-   fsin1 = 3.0_rk * self%xsin0   ! = 0.6
-   fnsi1 = 1.0_rk / fsin1        ! = 1.667
-   fnsi2 = 1.0_rk / self%xsin0   ! = 5.0
+   !these three next variables derive from Mongin et al. (2003)
+   fsin1 = 3.0_rk * self%xsin0      ! = 0.6
+   fnsi1 = 1.0_rk / fsin1           ! = 1.667
+   fnsi2 = 1.0_rk / self%xsin0      ! = 5.0
+   !
+   ! conditionalities based on ratios
+   ! nitrogen (and iron and carbon)
    if (fsin .le. self%xsin0) then
       fprd = 0._rk
       fsld2 = 0._rk
@@ -390,8 +436,8 @@ contains
       fprd = fjld * fpdlim
       fsld2 = 1.0_rk
    end if
-
-  !Silicon
+  !
+  ! silicon
    if (fsin.lt.fnsi1) then
      fprds = (fjld * fsld)
    elseif (fsin.lt.fnsi2) then
@@ -420,26 +466,41 @@ contains
    _SET_DIAGNOSTIC_(self%id_prn, (fprn * ZPHN) / d_per_s)
    _SET_DIAGNOSTIC_(self%id_prd, (fprd * ZPHD) / d_per_s)
 
-  !Chlorophyll production
+  ! Chlorophyll production
   frn = (self%xthetam * fchn * fnln * ffln) / (fthetan + tiny(fthetan))
   frd = (self%xthetamd * fchd * fnld * ffld * fsld2) / (fthetad + tiny(fthetad))  
 
-  !ZOOPLANKTON GRAZING
-  !Microzooplankton
+  ! ZOOPLANKTON GRAZING
+  ! this code supplements the base grazing model with one that considers the C:N ratio 
+  ! of grazed food and balances this against the requirements of zooplankton growth;
+  ! this model is derived from that of Anderson & Pondaven (2003)
+  !
+  ! The current version of the code assumes a fixed C:N ratio for detritus (in contrast to Anderson & Pondaven, 2003), 
+  ! though the full equations are retained for future extension
+  !--------------------------------------------------------------------
+
+  ! Microzooplankton
   fmi1 = (self%xkmi * self%xkmi) + (self%xpmipn * ZPHN * ZPHN) + (self%xpmid * ZDET * ZDET)
   fmi = self%xgmi * ZZMI / fmi1
-  fgmipn = fmi * self%xpmipn * ZPHN * ZPHN !grazing on non-diatoms
-  fgmid = fmi * self%xpmid * ZDET * ZDET   !grazing on detrital nitrogen
-  fgmidc = rsmall
+  fgmipn = fmi * self%xpmipn * ZPHN * ZPHN      ! grazing on non-diatoms
+  fgmid = fmi * self%xpmid * ZDET * ZDET        ! grazing on detrital nitrogen
+  fgmidc = rsmall                               ! grazing on detrital carbon
   if (ZDET .gt. rsmall) fgmidc = (ZDTC / (ZDET + tiny(ZDET))) * fgmid
 
   _SET_DIAGNOSTIC_(self%id_GMIPn,fgmipn / d_per_s)
   _SET_DIAGNOSTIC_(self%id_GMID,fgmid / d_per_s)
   _SET_DIAGNOSTIC_(self%id_GMIDC,fgmidc / d_per_s)
 
+  ! which translates to these incoming N and C fluxes
   finmi = (1.0_rk - self%xphi) * (fgmipn + fgmid)
   ficmi = (1.0_rk - self%xphi) * ((self%xthetapn * fgmipn) + fgmidc)
-  fstarmi = (self%xbetan * self%xthetazmi) / (self%xbetac * self%xkc) !the ideal food C : N ratio for microzooplankton
+  ! the ideal food C : N ratio for microzooplankton
+  ! xbetan = 0.77; xthetaz = 5.625; xbetac = 0.64; xkc = 0.80
+  fstarmi = (self%xbetan * self%xthetazmi) / (self%xbetac * self%xkc)
+  !
+  ! process these to determine proportioning of grazed N and C
+  ! (since there is no explicit consideration of respiration,
+  ! only growth and excretion are calculated here)
   fmith = (ficmi / (finmi + tiny(finmi)))
   if (fmith .ge. fstarmi) then
      fmigrow = self%xbetan * finmi
@@ -450,15 +511,15 @@ contains
   end if
   fmiresp = (self%xbetac * ficmi) - (self%xthetazmi * fmigrow)
 
-  !Mesozooplankton
+  ! Mesozooplankton
   fme1 = (self%xkme * self%xkme) + (self%xpmepn * ZPHN * ZPHN) + (self%xpmepd * ZPHD * ZPHD) + (self%xpmezmi * ZZMI * ZZMI) + (self%xpmed * ZDET * ZDET)
   fme = self%xgme * ZZME / fme1
-  fgmepn = fme * self%xpmepn * ZPHN * ZPHN
-  fgmepd = fme * self%xpmepd * ZPHD * ZPHD
-  fgmepds = fsin * fgmepd
-  fgmezmi = fme * self%xpmezmi * ZZMI * ZZMI
-  fgmed = fme * self%xpmed * ZDET * ZDET
-  fgmedc = rsmall
+  fgmepn = fme * self%xpmepn * ZPHN * ZPHN     ! grazing on non-diatoms
+  fgmepd = fme * self%xpmepd * ZPHD * ZPHD     ! grazing on diatoms
+  fgmepds = fsin * fgmepd                      ! grazing on diatom silicon
+  fgmezmi = fme * self%xpmezmi * ZZMI * ZZMI   ! grazing on microzooplankton
+  fgmed = fme * self%xpmed * ZDET * ZDET       ! grazing on detrital nitrogen
+  fgmedc = rsmall                              ! grazing on detrital carbon
   if (ZDET .gt. rsmall) fgmedc = (ZDTC / (ZDET + tiny(ZDET))) * fgmed
 
   _SET_DIAGNOSTIC_(self%id_GMEPN,fgmepn / d_per_s)
@@ -466,10 +527,17 @@ contains
   _SET_DIAGNOSTIC_(self%id_GMEZMI,fgmezmi / d_per_s)
   _SET_DIAGNOSTIC_(self%id_GMED,fgmed / d_per_s)
   _SET_DIAGNOSTIC_(self%id_GMEDC,fgmedc / d_per_s)
-
+  !
+  ! which translates to these incoming N and C fluxes
   finme = (1.0_rk - self%xphi) * (fgmepn + fgmepd + fgmezmi + fgmed)
-  ficme = (1.0_rk - self%xphi) * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc) 
+  ficme = (1.0_rk - self%xphi) * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc)
+  ! the ideal food C:N ratio for mesozooplankton
+  ! xbetan = 0.77; xthetaz = 5.625; xbetac = 0.64; xkc = 0.80
   fstarme = (self%xbetan * self%xthetazme) / (self%xbetac * self%xkc)
+  !
+  ! process these to determine proportioning of grazed N and C
+  ! (since there is no explicit consideration of respiration,
+  ! only growth and excretion are calculated here)
   fmeth = (ficme / (finme + tiny(finme)))
   if (fmeth .ge. fstarme) then
      fmegrow = self%xbetan * finme
@@ -496,8 +564,9 @@ contains
   _SET_DIAGNOSTIC_(self%id_ZE_RESP, fmeresp / d_per_s)
   _SET_DIAGNOSTIC_(self%id_ZE_GROW, fmegrow / d_per_s)
 
-  !Plankton metabolic losses
-  !Linear loss processes assumed to be metabolic in origin
+  ! Plankton metabolic losses
+
+  ! Linear loss processes assumed to be metabolic in origin
   fdpn2 = self%xmetapn * ZPHN
   fdpd2 = self%xmetapd * ZPHD
   fdpds2 = self%xmetapd * ZPDS
@@ -509,7 +578,8 @@ contains
   _SET_DIAGNOSTIC_(self%id_ZI_LLOSS, fdzmi2 / d_per_s)
   _SET_DIAGNOSTIC_(self%id_ZE_LLOSS, fdzme2 / d_per_s)
 
-  !Plankton mortality losses
+  ! Plankton mortality losses
+
   ! non-diatom phytoplankton
   if (self%jmpn == 1) then
       fdpn = self%xmpn * ZPHN                                     !! linear
@@ -523,14 +593,14 @@ contains
   end if
   ! diatom phytoplankton
   if (self%jmpd == 1) then
-      fdpd = self%xmpd * ZPHD               !! linear
+      fdpd = self%xmpd * ZPHD                                     !! linear
   elseif (self%jmpd == 2) then
-      fdpd = self%xmpd * ZPHD * ZPHD        !! quadratic
+      fdpd = self%xmpd * ZPHD * ZPHD                              !! quadratic
   elseif (self%jmpd == 3) then
-      fdpd = self%xmpd * ZPHD * &           !! hyperbolic
+      fdpd = self%xmpd * ZPHD * &                                 !! hyperbolic
                   (ZPHD / (self%xkphd + ZPHD))
   elseif (self%jmpd == 4) then
-      fdpd = self%xmpd * ZPHD * &           !! sigmoid
+      fdpd = self%xmpd * ZPHD * &                                 !! sigmoid
                   ((ZPHD * ZPHD) / (self%xkphd + (ZPHD * ZPHD)))
   end if
   fdpds = fdpd * fsin
@@ -540,40 +610,47 @@ contains
 
   ! microzooplankton
   if (self%jmzmi == 1) then
-     fdzmi = self%xmzmi * ZZMI            !! linear
+     fdzmi = self%xmzmi * ZZMI                                    !! linear
   elseif (self%jmzmi == 2) then
-     fdzmi = self%xmzmi * ZZMI * ZZMI     !! quadratic
+     fdzmi = self%xmzmi * ZZMI * ZZMI                             !! quadratic
   elseif (self%jmzmi == 3) then
-     fdzmi = self%xmzmi * ZZMI * &        !! hyperbolic
+     fdzmi = self%xmzmi * ZZMI * &                                !! hyperbolic
                   (ZZMI / (self%xkzmi + ZZMI))
   elseif (self%jmzmi == 4) then
-     fdzmi = self%xmzmi * ZZMI * &        !! sigmoid
+     fdzmi = self%xmzmi * ZZMI * &                                !! sigmoid
                   ((ZZMI * ZZMI) / (self%xkzmi + (ZZMI * ZZMI)))
   end if
   ! mesozooplankton
   if (self%jmzme == 1) then
-     fdzme = self%xmzme * ZZME            !! linear
+     fdzme = self%xmzme * ZZME                                    !! linear
   elseif (self%jmzme == 2) then
-     fdzme = self%xmzme * ZZME * ZZME     !! quadratic
+     fdzme = self%xmzme * ZZME * ZZME                             !! quadratic
   elseif (self%jmzme == 3) then
-     fdzme = self%xmzme * ZZME * &        !! hyperbolic
+     fdzme = self%xmzme * ZZME * &                                !! hyperbolic
                   (ZZME / (self%xkzme + ZZME))
   elseif (self%jmzme == 4) then
-     fdzme = self%xmzme * ZZME * &        !! sigmoid
+     fdzme = self%xmzme * ZZME * &                                !! sigmoid
                   ((ZZME * ZZME) / (self%xkzme + (ZZME * ZZME)))
   end if
 
   _SET_DIAGNOSTIC_(self%id_MZMI, fdpn / d_per_s)
   _SET_DIAGNOSTIC_(self%id_MZME, fdpd / d_per_s)
 
-  !Detritus remineralisation (temperature-dependent)
+  ! Diatom frustule dissolution
+  fsdiss = self%xsdiss * ZPDS
+  _SET_DIAGNOSTIC_(self%id_OPALDISS, fsdiss / d_per_s)
+
+  ! Detritus remineralisation
   if (self%jmd == 1) then
+    ! temperature-dependent
     fdd = self%xmd * fun_T * ZDET
     fddc = self%xmdc * fun_T * ZDTC
   elseif (self%jmd == 2) then
+    ! Q10-based temperature-dependent
     fdd  = self%xmd  * fun_Q10 * ZDET
     fddc = self%xmdc * fun_Q10 * ZDTC
   else
+    ! temperature-independent
     fdd  = self%xmd  * ZDET
     fddc = self%xmdc * ZDTC
   end if
@@ -581,18 +658,14 @@ contains
   _SET_DIAGNOSTIC_(self%id_MDET, fdd / d_per_s)
   _SET_DIAGNOSTIC_(self%id_MDETC, fddc / d_per_s)
 
-  !Diatom frustule dissolution
-  fsdiss = self%xsdiss * ZPDS
-  _SET_DIAGNOSTIC_(self%id_OPALDISS, fsdiss / d_per_s)
-
-  !Slow detritus creation
+  ! Slow detritus creation
   fslown  = fdpn + fdzmi + ((1._rk - self%xfdfrac1) * fdpd) + ((1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetan) * (finmi + finme))
   fslowc  = (self%xthetapn * fdpn) + (self%xthetazmi * fdzmi) + (self%xthetapd * (1._rk - self%xfdfrac1) * fdpd) + (self%xthetazme * (1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetac) * (ficmi + ficme))
 
   _SET_DIAGNOSTIC_(self%id_detn, fslown / d_per_s)
   _SET_DIAGNOSTIC_(self%id_detc, fslowc / d_per_s)
 
-  !Nutrient regeneration !Should be saved as diagnostics
+  ! Nutrient regeneration !Should be saved as diagnostics
   fregen = (( (self%xphi * (fgmipn + fgmid)) +                            &  ! messy feeding
   (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed)) +                     &  ! messy feeding
   fmiexcr + fmeexcr + fdd +                                               &  ! excretion + D remin.
@@ -600,17 +673,17 @@ contains
  
  _SET_DIAGNOSTIC_(self%id_fregen,fregen / d_per_s)
 
-  !silicon
+  ! silicon
   fregensi = (( fsdiss + ((1._rk - self%xfdfrac1) * fdpds) +              &  ! dissolution + non-lin. mortality
   ((1._rk - self%xfdfrac3) * fgmepds) +                                   &  ! egestion by zooplankton
   fdpds2))                                                                   ! linear mortality
 
  _SET_DIAGNOSTIC_(self%id_fregensi,fregensi / d_per_s)
 
-  !carbon
+  ! carbon
 !  fregenc  = (( (self%xphi * ((self%xthetapn * fgmipn) + fgmidc)) +       &  ! messy feeding
 !  (self%xphi * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) +     &  ! messy feeding
-! (self%xthetazmi * fgmezmi) + fgmedc)) +                                 &  ! messy feeding
+! (self%xthetazmi * fgmezmi) + fgmedc)) +                                  &  ! messy feeding
 !  fmiresp + fmeresp + fddc +                                              &  ! respiration + D remin.
 !  (self%xthetapn * fdpn2) + (self%xthetapd * fdpd2) +                     &  ! linear mortality
 !  (self%xthetazmi * fdzmi2) + (self%xthetazme * fdzme2)))                    ! linear mortality
@@ -660,7 +733,7 @@ contains
   ! detritus
   _SET_ODE_(self%id_ZDET,fslown-fgmid-fgmed-fdd)
 
-  !dissolved inorganic nitrogen
+  ! dissolved inorganic nitrogen
    fn_cons = - (fprn * ZPHN) - (fprd * ZPHD)                         ! primary production
    fn_prod = + (self%xphi * (fgmipn + fgmid))                     &  ! messy feeding remin.
              + (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed))  &  ! messy feeding remin.
@@ -762,6 +835,11 @@ contains
 
    subroutine do_bottom(self,_ARGUMENTS_DO_)
 
+  !--------------------------------------------------------------------------------------
+  ! Detritus addition to benthos
+  ! If activated (seafloor=3) slow detritus in the bottom box will enter the benthic pool
+  !--------------------------------------------------------------------------------------
+  
    class(type_medusa_pelagic), INTENT(IN) :: self
   _DECLARE_ARGUMENTS_DO_BOTTOM_
 
