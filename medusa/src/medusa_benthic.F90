@@ -1,9 +1,9 @@
 #include "fabm_driver.h"
 
 !
-!*********************************************************
-!            FABM-MEDUSA benthic module
-!*********************************************************
+!*************************************************************
+!            FABM-MEDUSA benthic remineralisation module
+!*************************************************************
 
 module medusa_benthic
 
@@ -105,6 +105,7 @@ contains
      f_benout_si = self%xsedsi * ZSEDSI
      f_benout_ca = self%xsedca * ZSEDCA
 
+     ! organic components
     _SET_BOTTOM_ODE_(self%id_ZSEDC,     -f_benout_c)
     _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, +f_benout_c)
 
@@ -116,6 +117,7 @@ contains
     _SET_BOTTOM_ODE_(self%id_ZSEDFE,    -f_benout_fe)
     _SET_BOTTOM_EXCHANGE_(self%id_ZFER, +f_benout_fe)
 
+     ! inorganic components
     _SET_BOTTOM_ODE_(self%id_ZSEDSI,    -f_benout_si)
     _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, +f_benout_si)
 
