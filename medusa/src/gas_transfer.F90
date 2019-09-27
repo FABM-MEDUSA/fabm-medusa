@@ -1,4 +1,40 @@
 #include "fabm_driver.h"
+
+!
+!********************************************************************
+!            FABM-MEDUSA gas transfer velocity
+!********************************************************************
+!     Original author: Andrew Yool (15/10/04, revised 12/06/15)
+! 
+! This subroutine uses near-surface wind speed to calculate gas
+! transfer velocity for use in CO2 and O2 exchange calculations.
+!
+! Note that the parameterisation of Wanninkhof quoted here is a
+! truncation of the original equation.  It excludes a chemical
+! enhancement function (based on temperature), although such
+! temperature dependence is reported negligible by Etcheto & 
+! Merlivat (1988).
+!
+! Note also that in calculating scalar wind, the variance of the
+! wind over the period of a timestep is ignored.  Some authors,
+! for instance OCMIP-2, favour including some reference to the
+! variability of wind.  However, their wind fields are averaged
+! over relatively long time periods, and so this issue may be
+! safely (!) ignored here.
+! 
+!     eqn       choice of parameterisation:
+!               1 = Liss & Merlivat (1986)    [approximated]
+!               2 = Wanninkhof (1992)         [sans enhancement]
+!               3 = Nightingale et al. (2000) [good]
+!               4 = Nightingale et al. (2000) [better]
+!               5 = Nightingale et al. (2000) [best]
+!               6 = OCMIP-2                   [sans variability]
+!               7 = Wanninkhof (2014)         [assumes 6h avg winds]
+!
+! Wanninkhof, R. (2014). Relationship between wind speed and gas 
+! exchange over the ocean revisited. LIMNOLOGY AND OCEANOGRAPHY-METHODS
+! 12, 351-362, doi:10.4319/lom.2014.12.351
+
 module gas_transfer
 
    use fabm_types
