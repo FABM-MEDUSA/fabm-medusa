@@ -1,6 +1,11 @@
 #include "fabm_driver.h"
 module medusa_ccd
 
+!************************************************************
+! calculate compensation depth for calcite and aragonite
+! providing corresponding saturation states as input
+!************************************************************
+
    use fabm_types
    use fabm_standard_variables
 
@@ -71,7 +76,7 @@ contains
     f_om_a = f_om
    _VERTICAL_LOOP_END_
 
-   if (i2_om == 0) then
+   if (i2_om == 0) then ! reached seafloor and still no dissolution; set to seafloor (W-point)
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_CCD, depth + 0.5_rk * dz)
     endif
 

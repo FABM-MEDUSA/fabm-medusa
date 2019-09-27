@@ -1,6 +1,19 @@
 #include "fabm_driver.h"
 module medusa_carbonate
 
+!******************************************************************************************
+!                       MEDUSA carbonate chemistry
+!******************************************************************************************
+!
+! Calculate the carbonate chemistry for the whole ocean
+!
+! Global simulations imply calculations on the first timestep and every month subsequently;
+! the resulting 3D field of omega calcite is used to determine the depth of the CCD
+! This is achieved by implemeting FABM capability for scheduling calls to subroutines
+!
+! Air-sea exchange of carbon dioxide is also calculated in this module
+!------------------------------------------------------------------------------------------
+!
    use fabm_types
    use fabm_standard_variables
 
@@ -809,7 +822,9 @@ contains
    subroutine do_surface(self,_ARGUMENTS_DO_SURFACE_)
 
    class(type_medusa_carbonate),intent(in) :: self
-
+   !**********************************
+   ! Air-sea exchange of CO2
+   !**********************************
    _DECLARE_ARGUMENTS_DO_SURFACE_
 
     real(rk) :: ZALK,ZDIC,temp,salt,sc,fwind,flux,kw660,fr_i
@@ -841,6 +856,8 @@ contains
     sc    = 2073.1_rk-125.62_rk*temp+3.6276_rk*temp**2._rk-0.0432190_rk*temp**3._rk
     fwind = kw660 * (sc/660._rk)**(-0.5_rk)
     fwind = fwind * 24._rk/100._rk
+
+    ! Calculate air-sea flux, correct for sea-ice
     flux = fwind * henry * ( pco2a - pco2 * 1.0e6_rk) * dcf / 1000._rk
     flux = (1._rk - fr_i) * flux
     _SET_SURFACE_EXCHANGE_(self%id_ZDIC,flux /86400._rk)
