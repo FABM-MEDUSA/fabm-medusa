@@ -2,7 +2,7 @@
 
 !
 !*********************************************************
-!            FABM-MEDUSA iron scavenging module
+!            FABM-MEDUSA iron chemsitry and scavenging
 !*********************************************************
 
 module medusa_iron_scav
@@ -56,6 +56,11 @@ contains
 
    subroutine do(self,_ARGUMENTS_DO_)
 
+   !------------------------------------------------------------------
+   ! Iron chemistry and fractionation following the Parekh et al. (2004) scheme adopted 
+   ! by the Met.Office, MEDUSA models total iron but considers "free" and ligand-bound forms
+   ! for the purposes of scavenging (only "free" iron can be scavenged)
+   !------------------------------------------------------------------
    class(type_medusa_iron_scav), INTENT(IN) :: self
   _DECLARE_ARGUMENTS_DO_
 
@@ -75,23 +80,37 @@ contains
 
   xFeT = ZFER * 1.e3_rk !total iron concentration (mmolFe/m3 -> umolFe/m3)
 
+  ! calculate fractionation (based on Diat-HadOCC; in turn based on Parekh et al., 2004)
   xb_coef_tmp = self%xk_FeL * (self%xLgT - xFeT) - 1.0_rk
   xb2M4ac = max(((xb_coef_tmp * xb_coef_tmp) + (4.0_rk * self%xk_FeL * self%xLgT)), 0._rk)
-  xLgF = 0.5_rk * (xb_coef_tmp + (xb2M4ac**0.5_rk)) / self%xk_FeL ! "free" ligand concentration
-  xFeL = self%xLgT - xLgF ! ligand-bound iron concentration
-  xFeF = (xFeT - xFeL) * 1.e-3_rk ! "free" iron concentration (and convert to mmolFe/m3)
+  ! "free" ligand concentration
+  xLgF = 0.5_rk * (xb_coef_tmp + (xb2M4ac**0.5_rk)) / self%xk_FeL
+  ! ligand-bound iron concentration
+  xFeL = self%xLgT - xLgF
+  ! "free" iron concentration (and convert to mmolFe/m3)
+  xFeF = (xFeT - xFeL) * 1.e-3_rk
   xFree = xFeF / (ZFER + tiny(ZFER))
-
- ! ! Scavenging of iron
+  !
+  ! scavenging of iron (multiple schemes); Andrew Yool is only really happy with the first one at the moment 
+  ! - the others involve assumptions (sometimes guessed at by him) that are potentially questionable
+  !
   if (self%jiron == 1) then
+  !----------------------------------------------------------------------------------------------------------------
+  ! Scheme 1: Dutkiewicz et al. (2005)
+  ! This scheme includes a single scavenging term based solely on a fixed rate and the availablility of "free" iron
+  !----------------------------------------------------------------------------------------------------------------
      ffescav = self%xk_sc_Fe * xFeF
-     xmaxFeF = min((xFeF * 1.e3_rk), 0.3_rk)        ! = umol/m3
+     xmaxFeF = min((xFeF * 1.e3_rk), 0.3_rk)           ! = umol/m3
      fdeltaFe = (xFeT - (xFeL + xmaxFeF)) * 1.e-3_rk   ! = mmol/m3
 
      ffescav     = ffescav + fdeltaFe * d_per_s        ! = mmol/m3/d !assuming time scale of fdeltaFe of 1 day
 
   elseif (self%jiron == 2) then
-
+   !---------------------------------------------------------------------------------------------------------------
+   ! Scheme 2: Moore et al. (2004)
+   ! This scheme includes a single scavenging term that accounts for both suspended and sinking particles in 
+   ! the water column; this term scavenges total iron rather than "free" iron
+   !---------------------------------------------------------------------------------------------------------------
      _GET_(self%id_ffastc_loc, ffastc)
      _GET_(self%id_fscal_part, fscal_part)
 
@@ -110,15 +129,20 @@ contains
 
      ffescav = fscal_scav * ZFER
   elseif (self%jiron == 3) then
-
+   !--------------------------------------------------------------------------------------------------------------
+   ! Scheme 3: Moore et al. (2008)
+   ! This scheme includes a single scavenging term that accounts for sinking particles in the water column, 
+   ! and includes organic C, biogenic opal, calcium carbonate and dust in this (though the latter is 
+   ! ignored here); this term scavenges total iron rather than "free" iron
+   !--------------------------------------------------------------------------------------------------------------
      _GET_(self%id_ffastc_loc, ffastc)
      _GET_(self%id_ffastsi_loc, ffastsi)
      _GET_(self%id_ffastca_loc, ffastca)
 
      fbase_scav = 0.00384_rk
-     fscal_csink  = ffastc  * 1.e6_rk * 12.011_rk  * 1.e-4_rk * d_per_s ! Using 12.011 rather than refer to parameter xmassc
-     fscal_sisink = ffastsi * 1.e6_rk * 60.084_rk * 1.e-4_rk * d_per_s !xmasssi = 60.084_rk
-     fscal_casink = ffastca * 1.e6_rk * 100.086_rk * 1.e-4_rk * d_per_s !xmassca = 100.086_rk
+     fscal_csink  = ffastc  * 1.e6_rk * 12.011_rk  * 1.e-4_rk * d_per_s ! xmassc = 12.011_rk
+     fscal_sisink = ffastsi * 1.e6_rk * 60.084_rk * 1.e-4_rk * d_per_s  ! xmasssi = 60.084_rk
+     fscal_casink = ffastca * 1.e6_rk * 100.086_rk * 1.e-4_rk * d_per_s ! xmassca = 100.086_rk
 
      fscal_sink = (fscal_csink * 6._rk + fscal_sisink + fscal_casink) / (100._rk * 1.e3_rk * d_per_s)
 
@@ -139,7 +163,12 @@ contains
 
 
   elseif (self%jiron == 4) then
-
+  !------------------------------------------------------
+  ! Scheme 4: Galbraith et al. (2010)
+  ! This scheme includes two scavenging terms, one for organic, particle-based scavenging, and another for 
+  ! inorganic scavenging; both terms scavenge "free" iron only
+  !------------------------------------------------------
+  !
     _GET_(self%id_ffastc_loc, ffastc)
     xCscav1    = (ffastc * 12.011_rk) / (100._rk * d_per_s)
     xCscav2    = (xCscav1 * 1.e-3_rk)**0.58_rk
