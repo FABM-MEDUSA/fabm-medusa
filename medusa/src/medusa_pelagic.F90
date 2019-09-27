@@ -657,22 +657,26 @@ contains
 
   _SET_DIAGNOSTIC_(self%id_MDET, fdd / d_per_s)
   _SET_DIAGNOSTIC_(self%id_MDETC, fddc / d_per_s)
-
-  ! Slow detritus creation
+  !
+  ! this variable integrates the creation of slow sinking detritus 
+  !to allow the split between fast and slow detritus to be diagnosed
   fslown  = fdpn + fdzmi + ((1._rk - self%xfdfrac1) * fdpd) + ((1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetan) * (finmi + finme))
+  ! and the same for detrital carbon
   fslowc  = (self%xthetapn * fdpn) + (self%xthetazmi * fdzmi) + (self%xthetapd * (1._rk - self%xfdfrac1) * fdpd) + (self%xthetazme * (1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetac) * (ficmi + ficme))
 
   _SET_DIAGNOSTIC_(self%id_detn, fslown / d_per_s)
   _SET_DIAGNOSTIC_(self%id_detc, fslowc / d_per_s)
 
-  ! Nutrient regeneration !Should be saved as diagnostics
+  ! Nutrient regeneration
+  ! this variable integrates total nitrogen regeneration down the watercolumn;
+  ! the corresponding dissolution flux of silicon (from sources other than fast detritus) is also integrated
   fregen = (( (self%xphi * (fgmipn + fgmid)) +                            &  ! messy feeding
   (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed)) +                     &  ! messy feeding
   fmiexcr + fmeexcr + fdd +                                               &  ! excretion + D remin.
   fdpn2 + fdpd2 + fdzmi2 + fdzme2))                                          ! linear mortality
  
  _SET_DIAGNOSTIC_(self%id_fregen,fregen / d_per_s)
-
+  !
   ! silicon
   fregensi = (( fsdiss + ((1._rk - self%xfdfrac1) * fdpds) +              &  ! dissolution + non-lin. mortality
   ((1._rk - self%xfdfrac3) * fgmepds) +                                   &  ! egestion by zooplankton
@@ -689,6 +693,11 @@ contains
 !  (self%xthetazmi * fdzmi2) + (self%xthetazme * fdzme2)))                    ! linear mortality
 
   ! Fast-sinking detritus terms
+  ! "local" variables declared so that conservation can be checked;
+  ! the calculated terms are added to the fast-sinking flux later on
+  ! only after the flux entering this level has experienced some remineralisation
+  ! note: these fluxes will be scaled by the level thickness
+  !
   ! nitrogen:   diatom and mesozooplankton mortality
   ftempn = (self%xfdfrac1 * fdpd)  + (self%xfdfrac2 * fdzme)
   _SET_ODE_(self%id_tempn,ftempn)
@@ -711,6 +720,10 @@ contains
     fq1 = 0._rk
   endif
   fcaco3 = self%xridg_r0 * fq1
+
+  ! Convert CaCO3 production from function of primary production into a function of fast-sinking material; technically, 
+  ! this is what Dunne et al. (2007) do anyway; they convert total primary production estimated from surface chlorophyll
+  ! to an export flux for which they apply conversion factors to estimate the various elemental fractions (Si, Ca)
   ftempca = ftempc * fcaco3
   _SET_ODE_(self%id_tempca,ftempca)
 
