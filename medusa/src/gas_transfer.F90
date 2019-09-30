@@ -65,8 +65,8 @@ contains
      call self%get_parameter(self%eqn,'eqn','-','choice of gas transfer coefficients', default = 7)
      call self%register_dependency(self%id_wnd,  standard_variables%wind_speed)
 
-     call self%register_diagnostic_variable(self%id_kw660,'KW660','m/s','Piston velocity', output=output_time_step_averaged)
-     call self%register_diagnostic_variable(self%id_wnd_diag,'WIND','m/s','Surface scalar wind')
+     call self%register_diagnostic_variable(self%id_kw660,'KW660','m/s','Piston velocity', output=output_time_step_averaged, source=source_do_surface)
+     call self%register_diagnostic_variable(self%id_wnd_diag,'WIND','m/s','Surface scalar wind',source=source_do_surface)
     end subroutine
 
     subroutine do_surface(self,_ARGUMENTS_DO_)

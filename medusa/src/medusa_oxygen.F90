@@ -42,8 +42,8 @@ contains
    call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
    call self%register_dependency(self%id_fr_i,standard_variables%ice_area_fraction)
    ! call self%register_dependency(self%id_apress, standard_variables%surface_air_pressure)
-   call self%register_diagnostic_variable(self%id_fairo2,'O2FLUX','mmol O_2/m^2/d','Air-sea O2 flux')
-   call self%register_diagnostic_variable(self%id_O2SAT,'O2SAT','mmol O_2/m2/d','Surface ocean O2 saturation')
+   call self%register_diagnostic_variable(self%id_fairo2,'O2FLUX','mmol O_2/m^2/d','Air-sea O2 flux',source=source_do_surface)
+   call self%register_diagnostic_variable(self%id_O2SAT,'O2SAT','mmol O_2/m2/d','Surface ocean O2 saturation',source=source_do_surface)
    call self%register_horizontal_dependency(self%id_kw660, 'KW660', 'm/s', 'gas transfer velocity')
 
    end subroutine initialize
