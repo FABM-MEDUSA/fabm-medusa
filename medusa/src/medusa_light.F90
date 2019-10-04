@@ -15,7 +15,7 @@ module medusa_light
 
   type,extends(type_base_model),public :: type_medusa_light
       ! Variable identifiers
-      type (type_state_variable_id)        :: id_ZCHN,id_ZCHD
+      type (type_dependency_id)        :: id_ZCHN,id_ZCHD
       type (type_dependency_id)            :: id_dz,id_depth
       type (type_diagnostic_variable_id)   :: id_xpar
       type (type_horizontal_diagnostic_variable_id) :: id_qsr_diag, id_MED_XZE
