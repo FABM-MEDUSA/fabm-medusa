@@ -36,6 +36,8 @@ contains
    class(type_medusa_oxygen),intent(inout),target :: self
    integer,               intent(in)           :: configunit
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk 
+
+   call self%register_implemented_routines((/source_do_surface/))
    call self%register_state_dependency(self%id_ZOXY,'OXY','mmol O_2/m**3', 'dissolved oxygen')
    ! Register environmental dependencies
    call self%register_dependency(self%id_temp, standard_variables%temperature)

@@ -35,6 +35,8 @@ contains
 
    class(type_medusa_light),intent(inout),target :: self
    integer,                         intent(in)           :: configunit
+
+   call self%register_implemented_routines((/source_do_column/))
    call self%get_parameter(self%xkg0,'xkg0','m-1','green water absorption coefficient',default=0.0232_rk)
    call self%get_parameter(self%xkr0,'xkr0','m-1','red water absorption coefficient',default=0.225_rk)
    call self%get_parameter(self%xkgp,'xkgp','m-1','pigment green absorption coefficient',default=0.074_rk)

@@ -40,12 +40,13 @@ module medusa_carbonate
    public :: CO2_dynamics,co2dyn,polyco,CaCO3_Saturation
 
 contains
-    
+
     subroutine initialize(self,configunit)
 
       class (type_medusa_carbonate), intent(inout), target :: self
       integer,                      intent(in)            :: configunit
 
+     call self%register_implemented_routines((/source_do, source_do_surface/))
      call self%register_state_dependency(self%id_ZDIC,'DiC','mmol C/m^3','dissolved inorganic carbon')
      call self%register_dependency(self%id_ZALK,'ALK','meq/m**3','total alkalinity')
 

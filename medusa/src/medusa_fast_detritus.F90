@@ -50,6 +50,7 @@ contains
    integer,                         intent(in)           :: configunit
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
+   call self%register_implemented_routines((/source_do, source_do_bottom, source_do_column/))
    call self%get_parameter(self%xthetanit,'xthetanit','mol O_2 mol N-1','O2 consumption by N remineralisation',default=2.0_rk)
    call self%get_parameter(self%xthetarem,'xthetarem','mol O_2 mol C-1','O2 consumption by C remineralisation',default=1.1226_rk)
    call self%get_parameter(self%xo2min,'xo2min','mmol O_2 m-3','minimum O2 concentration',default=4.0_rk)

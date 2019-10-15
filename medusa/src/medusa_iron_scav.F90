@@ -38,6 +38,7 @@ contains
    integer,               intent(in)           :: configunit
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
+   call self%register_implemented_routines((/source_do/))
    call self%get_parameter(self%xk_FeL,'xk_FeL','(umol m-3)-1','dissociation constant for (Fe+ligand)',default=100._rk)
    call self%get_parameter(self%xLgT,'xLgT','umol m-3','total ligand concentration',default=1._rk)
    call self%get_parameter(self%xk_sc_Fe,'xk_sc_Fe','d-1','scavenging rate of "free" Fe',default=1.e-3_rk,scale_factor=d_per_s)

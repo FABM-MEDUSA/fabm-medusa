@@ -62,6 +62,8 @@ contains
      class (type_gas_transfer), intent(inout), target :: self
      integer,                      intent(in)            :: configunit
 
+     call self%register_implemented_routines((/source_do_surface/))
+
      call self%get_parameter(self%eqn,'eqn','-','choice of gas transfer coefficients', default = 7)
      call self%register_dependency(self%id_wnd,  standard_variables%wind_speed)
 

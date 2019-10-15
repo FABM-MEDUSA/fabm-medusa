@@ -25,12 +25,13 @@ module medusa_ccd
    end type
 
 contains
-    
+
     subroutine initialize(self,configunit)
 
       class (type_medusa_ccd), intent(inout), target :: self
       integer,                      intent(in)            :: configunit
 
+     call self%register_implemented_routines((/source_do_column/))
      call self%register_diagnostic_variable(self%id_CCD,'CCD','m','CCD depth',source=source_do_column)
      call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
      call self%register_dependency(self%id_depth, standard_variables%depth)
