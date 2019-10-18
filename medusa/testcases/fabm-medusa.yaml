@@ -164,7 +164,7 @@ instances:
   ccd_arg:
     model: medusa/medusa_ccd
     coupling:
-      OMEGA: carbonate/OM_ARG
+      OMEGA: carbonate/OM_ARG3
   benthic:
     model: medusa/medusa_benthic
     use: true
@@ -266,3 +266,320 @@ instances:
       weight1: 86400.
     coupling:
       term1: fast_detritus/ffastca
+  XPAR:
+    model: surface_layer
+    coupling:
+      source: light/MED_XPAR
+  PRN:
+    model: vertical_integral
+    coupling:
+      source: pelagic/PRN
+  PRD:
+    model: vertical_integral
+    coupling:
+      source: pelagic/PRD
+  MPN:
+    model: vertical_integral
+    coupling:
+      source: pelagic/MPN
+  MPD:
+    model: vertical_integral
+    coupling:
+      source: pelagic/MPD
+  OPAL:
+    model: vertical_integral
+    coupling:
+      source: pelagic/OPAL
+  OPALDISS:
+    model: vertical_integral
+    coupling:
+      source: pelagic/OPALDISS
+  GMIPn:
+    model: vertical_integral
+    coupling:
+      source: pelagic/GMIPn
+  GMID:
+    model: vertical_integral
+    coupling:
+      source: pelagic/GMID
+  GMEPN:
+    model: vertical_integral
+    coupling:
+      source: pelagic/GMEPN
+  GMEPD:
+    model: vertical_integral
+    coupling:
+      source: pelagic/GMEPD
+  GMEZMI:
+    model: vertical_integral
+    coupling:
+      source: pelagic/GMEZMI
+  GMED:
+    model: vertical_integral
+    coupling:
+      source: pelagic/GMED
+  MZMI:
+    model: vertical_integral
+    coupling:
+      source: pelagic/MZMI
+  MZME:
+    model: vertical_integral
+    coupling:
+      source: pelagic/MZME
+  DETN:
+    model: vertical_integral
+    coupling:
+      source: pelagic/DETN
+  DETC:
+    model: vertical_integral
+    coupling:
+      source: pelagic/DETC
+  MDET:
+    model: vertical_integral
+    coupling:
+      source: pelagic/MDET
+  MDETC:
+    model: vertical_integral
+    coupling:
+      source: pelagic/MDETC
+  GMIDC:
+    model: vertical_integral
+    coupling:
+      source: pelagic/GMIDC
+  GMEDC:
+    model: vertical_integral
+    coupling:
+      source: pelagic/GMEDC
+  PD_JLIM:
+    model: vertical_integral
+    coupling:
+      source: pelagic/PD_JLIM
+  PD_NLIM:
+    model: vertical_integral
+    coupling:
+      source: pelagic/PD_NLIM
+  PD_FELIM:
+    model: vertical_integral
+    coupling:
+      source: pelagic/PD_FELIM
+  PD_SILIM:
+    model: vertical_integral
+    coupling:
+      source: pelagic/PD_SILIM
+  PD_SILIM2:
+    model: vertical_integral
+    coupling:
+      source: pelagic/PD_SILIM2
+  PN_JLIM:
+    model: vertical_integral
+    coupling:
+      source: pelagic/PN_JLIM
+  PN_NLIM:
+    model: vertical_integral
+    coupling:
+      source: pelagic/PN_NLIM
+  PN_FELIM:
+    model: vertical_integral
+    coupling:
+      source: pelagic/PN_FELIM
+  PN_LLOSS:
+    model: vertical_integral
+    coupling:
+      source: pelagic/PN_LLOSS
+  PD_LLOSS:
+    model: vertical_integral
+    coupling:
+      source: pelagic/PD_LLOSS
+  ZI_LLOSS:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZI_LLOSS
+  ZE_LLOSS:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZE_LLOSS
+  ZI_MES_N:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZI_MES_N
+  ZI_MES_D:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZI_MES_D
+  ZI_MES_C:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZI_MES_C
+  ZI_MESDC:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZI_MESDC
+  ZE_MES_N:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZE_MES_N
+  ZE_MES_D:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZE_MES_D
+  ZE_MES_C:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZE_MES_C
+  ZE_MESDC:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZE_MESDC
+  ZI_EXCR:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZI_EXCR
+  ZI_RESP:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZI_RESP
+  ZI_GROW:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZI_GROW
+  ZE_EXCR:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZE_EXCR
+  ZE_RESP:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZE_RESP
+  ZE_GROW:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZE_GROW
+  COM_RESP:
+    model: vertical_integral
+    coupling:
+      source: pelagic/COM_RESP
+  N_PROD:
+    model: vertical_integral
+    coupling:
+      source: pelagic/N_PROD
+  N_CONS:
+    model: vertical_integral
+    coupling:
+      source: pelagic/N_CONS
+  C_PROD:
+    model: vertical_integral
+    coupling:
+      source: pelagic/C_PROD
+  C_CONS:
+    model: vertical_integral
+    coupling:
+      source: pelagic/C_CONS
+  O2_PROD:
+    model: vertical_integral
+    coupling:
+      source: pelagic/O2_PROD
+  O2_CONS:
+    model: vertical_integral
+    coupling:
+      source: pelagic/O2_CONS
+  O2_ANOX:
+    model: vertical_integral
+    coupling:
+      source: pelagic/O2_ANOX
+  INT_PD:
+    model: vertical_integral
+    coupling:
+      source: pelagic/PHD
+  INT_PN:
+    model: vertical_integral
+    coupling:
+      source: pelagic/PHN
+  INT_ZMI:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZMI
+  INT_ZME:
+    model: vertical_integral
+    coupling:
+      source: pelagic/ZME
+  INT_DET:
+    model: vertical_integral
+    coupling:
+      source: pelagic/DET
+  INT_DTC:
+    model: vertical_integral
+    coupling:
+      source: pelagic/DTC
+  SCAVENGE:
+    model: vertical_integral
+    coupling:
+      source: iron_scavenging/SCAVENGE
+  TOTREG_N:
+    model: vertical_integral
+    coupling:
+      source: pelagic/regen_slow
+  TOTRG_SI:
+    model: vertical_integral
+    coupling:
+      source: pelagic/regenSi_slow
+  TOTRG_SI:
+    model: vertical_integral
+    coupling:
+      source: pelagic/regenSi_slow
+  FASTN:
+    model: vertical_integral
+    coupling:
+      source: pelagic/FASTN
+  FASTC:
+    model: vertical_integral
+    coupling:
+      source: pelagic/FASTC
+  FASTFE:
+    model: vertical_integral
+    coupling:
+      source: pelagic/FASTFE
+  FASTCA:
+    model: vertical_integral
+    coupling:
+      source: pelagic/FASTCA
+  FASTSI:
+    model: vertical_integral
+    coupling:
+      source: pelagic/FASTSI
+  REMINN:
+    model: vertical_integral
+    coupling:
+      source: fast_detritus/freminn
+  REMINSI:
+    model: vertical_integral
+    coupling:
+      source: fast_detritus/freminsi
+  REMINFE:
+    model: vertical_integral
+    coupling:
+      source: fast_detritus/freminfe
+  SFR_OCAL:
+    model: bottom_layer
+    coupling: 
+      source: carbonate/OM_CAL3
+  SFR_OARG:
+    model: bottom_layer
+    coupling: 
+       source: carbonate/OM_ARG3
+  OCN_PH:
+    model: surface_layer
+    coupling: 
+       source: carbonate/PH3
+  OCNH2CO3:
+    model: surface_layer
+    coupling: 
+       source: carbonate/CarbA
+  OCN_HCO3:
+    model: surface_layer
+    coupling: 
+       source: carbonate/BiCarb
+  OCN_CO3:
+    model: surface_layer
+    coupling: 
+       source: carbonate/Carb
+
