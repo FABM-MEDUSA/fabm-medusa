@@ -193,7 +193,6 @@
           <field field_ref="ZE_EXCR_result" name='ZE_EXCR' operation="average" />
           <field field_ref="ZE_RESP_result" name='ZE_RESP' operation="average" />
           <field field_ref="ZE_GROW_result" name='ZE_GROW' operation="average" />
-          <field field_ref="COM_RESP_result" name='COM_RESP' operation="average" />
           <field field_ref="fast_detritus_SEAFLRC" name='SEAFLRC' operation="average" />
           <field field_ref="fast_detritus_SEAFLRN" name='SEAFLRN' operation="average" />
           <field field_ref="fast_detritus_SEAFLRSI" name='SEAFLRSI' operation="average" />
@@ -232,6 +231,7 @@
           <field field_ref="SFR_OCAL_result" name='SFR_OCAL' operation="average" />
           <field field_ref="SFR_OARG_result" name='SFR_OARG' operation="average" />
           <field field_ref="COM_RESP_result" name='COM_RESP' operation="average" />
+          <field field_ref="benthic_LYSO_CA" name='LYSO_CA' operation="average" />
      </file> 
 
         <file id="file60" name_suffix="_grid_T" description="tracer variables"  sync_freq="1d">

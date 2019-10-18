@@ -191,6 +191,7 @@ instances:
       DTC: pelagic/DTC
       OXY: pelagic/OXY
       ALK: pelagic/ALK
+      CAL_CCD: ccd_cal/CCD
   pco2a:
     model: horizontal_constant
     parameters:
@@ -457,7 +458,7 @@ instances:
   COM_RESP:
     model: vertical_integral
     coupling:
-      source: pelagic/COM_RESP
+      source: pelagic/fcomm_resp
   N_PROD:
     model: vertical_integral
     coupling:
@@ -582,4 +583,3 @@ instances:
     model: surface_layer
     coupling: 
        source: carbonate/Carb
-
