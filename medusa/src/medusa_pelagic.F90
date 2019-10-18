@@ -794,7 +794,7 @@ contains
 
    _SET_DIAGNOSTIC_(self%id_fscal_part, (self%xthetapn * ZPHN + self%xthetapd * ZPHD + self%xthetazmi * ZZMI + self%xthetazme * ZZME + self%xthetad * ZDET) * 0.002_rk)
 
-   _SET_DIAGNOSTIC_(self%id_fcomm_resp, fc_prod / d_per_s) ! community respiration (does not include CaCO3 terms)
+   _SET_DIAGNOSTIC_(self%id_fcomm_resp, fc_prod / d_per_s) ! pelagic part of community respiration (does not include CaCO3 terms)
 
    fc_prod = fc_prod - ftempca ! CaCO3
 
