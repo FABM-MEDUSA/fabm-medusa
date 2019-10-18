@@ -15,10 +15,12 @@ module medusa_benthic
 
   type,extends(type_base_model),public :: type_medusa_benthic
       ! Variable identifiers
-      type (type_bottom_state_variable_id)        :: id_ZSEDC,id_ZSEDN,id_ZSEDFE,id_ZSEDSI,id_ZSEDCA
-      type (type_state_variable_id)               :: id_ZDIN,id_ZSIL,id_ZFER,id_ZDIC,id_ZDET,id_ZDTC,id_ZOXY,id_ZALK
-      type (type_horizontal_diagnostic_variable_id) :: id_f_benout_c,id_f_benout_n,id_f_benout_fe,id_f_benout_ca,id_f_benout_si
-
+      type (type_bottom_state_variable_id)          :: id_ZSEDC,id_ZSEDN,id_ZSEDFE,id_ZSEDSI,id_ZSEDCA
+      type (type_state_variable_id)                 :: id_ZDIN,id_ZSIL,id_ZFER,id_ZDIC,id_ZDET,id_ZDTC,id_ZOXY,id_ZALK
+      type (type_horizontal_diagnostic_variable_id) :: id_f_benout_c,id_f_benout_n,id_f_benout_fe
+      type (type_horizontal_diagnostic_variable_id) :: id_f_benout_ca,id_f_benout_si,id_f_lyso_ca
+      type (type_horizontal_dependency_id)          :: id_CAL_CCD
+      type (type_dependency_id)                     :: id_depth
       ! Parameters
       real(rk) :: xsedn,xsedc,xsedfe,xsedsi,xsedca
       real(rk) :: xrfn
@@ -70,11 +72,15 @@ contains
    call self%register_state_dependency(self%id_ZDTC,'DTC','mmol C m-3', 'detritus carbon')
    call self%register_state_dependency(self%id_ZALK,'ALK','meq m-3', 'total alkalinity')
 
+   call self%register_dependency(self%id_CAL_CCD,'CAL_CCD','m','calcite CCD depth')
+   call self%register_dependency(self%id_depth, standard_variables%depth)
+
    call self%register_diagnostic_variable(self%id_f_benout_c,'OBEN_C','mmolC/m2/d','Benthic output carbon',source=source_do_bottom)
    call self%register_diagnostic_variable(self%id_f_benout_n,'OBEN_N','mmolN/m2/d','Benthic output nitrogen',source=source_do_bottom)
    call self%register_diagnostic_variable(self%id_f_benout_fe,'OBEN_FE','mmolFe/m2/d','Benthic output iron',source=source_do_bottom)
    call self%register_diagnostic_variable(self%id_f_benout_si,'OBEN_SI','mmolSi/m2/d','Benthic output silicate',source=source_do_bottom)
    call self%register_diagnostic_variable(self%id_f_benout_ca,'OBEN_CA','mmolCa/m2/d','Benthic output CaCO3',source=source_do_bottom)
+   call self%register_diagnostic_variable(self%id_f_lyso_ca,'LYSO_CA','mmolCa/m2/d', 'Incorrect benthic output CaCO3', missing_value=0.0_rk, source=source_do_bottom)
 
    end subroutine initialize
 
@@ -87,7 +93,7 @@ contains
 
     real(rk) :: ZSEDC,ZSEDN,ZSEDFE,ZSEDSI,ZSEDCA,ZDET,ZDTC,ZSIL,ZALK,ZOXY
     real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
-    real(rk) :: f_benout_c,f_benout_n,f_benout_fe,f_benout_ca,f_benout_si
+    real(rk) :: f_benout_c,f_benout_n,f_benout_fe,f_benout_ca,f_benout_si,cal_ccd,depth
 
     _HORIZONTAL_LOOP_BEGIN_
 
@@ -131,6 +137,14 @@ contains
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_fe,f_benout_fe / d_per_s)
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_si,f_benout_si / d_per_s)
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_ca,f_benout_ca / d_per_s)
+
+   _GET_HORIZONTAL_(self%id_CAL_CCD,cal_ccd)
+   _GET_(self%id_depth,depth)
+   if (depth .le. cal_ccd) then   
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_lyso_ca,f_benout_ca / d_per_s)
+   else
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_lyso_ca, 0._rk)
+   end if
 
     _HORIZONTAL_LOOP_END_
 
