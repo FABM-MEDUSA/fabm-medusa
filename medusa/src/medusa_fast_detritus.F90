@@ -29,6 +29,7 @@ module medusa_fast_detritus
       type (type_horizontal_diagnostic_variable_id) :: id_SEAFLRN,id_SEAFLRSI,id_SEAFLRFE,id_SEAFLRC,id_SEAFLRCA
       type (type_horizontal_dependency_id) :: id_ffastc1,id_ffastn1,id_ffastfe1,id_ffastsi1,id_ffastca1,id_CAL_CCD
       type (type_diagnostic_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
+      type (type_horizontal_diagnostic_variable_id) :: id_OCAL_LVL
       ! Parameters
       real(rk) :: xthetanit,xthetarem,xo2min,xrfn
       integer :: seafloor
@@ -120,6 +121,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    call self%register_diagnostic_variable(self%id_SEAFLRCA,'SEAFLRCA','mmolCaCO3/m2/s','Seafloor flux of CaCO3',source=source_do_column)
 
    call self%register_dependency(self%id_om_cal,'OM_CAL3','-','calcite saturation')
+   call self%register_diagnostic_variable(self%id_OCAL_LVL,'OCAL_LVL','m','Calcite CCD level',source=source_do_column)
 
    call self%register_horizontal_dependency(self%id_ffastc1,'ffastc','mmol C m-2 s-1','remineralisation of detritus (C)')
    call self%register_horizontal_dependency(self%id_ffastn1,'ffastn','mmol N m-2 s-1','remineralisation of detritus (N)')
@@ -172,6 +174,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    real(rk) :: ftempc,ftempn,ftempfe,ftempsi,ftempca
    real(rk) :: freminc,freminn,freminfe,freminsi,freminca
    real(rk) :: om_cal,fdep1,cal_ccd
+   integer ::  ccd_count
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
       !==========================================================================================
       ! BALLAST SUBMODEL
@@ -191,6 +194,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
       !-----------------------------------------------------------------------------------------
       !
    fdep1 = 0._rk
+   ccd_count = 0
       ! this is the SURFACE OCEAN BOX (no remineralisation on first iteration of the vertical loop)
    ffastc=0._rk
    ffastn=0._rk
@@ -235,7 +239,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    freminn  = (fq0 - fq8) / dz                    ! N remineralisation in this box            (mol)
    ffastn = fq8
 
-   _SET_DIAGNOSTIC_(self%id_freminn,freminn)
+   _SET_DIAGNOSTIC_(self%id_freminn,freminn / d_per_s)
   _SET_DIAGNOSTIC_(self%id_ffastn_loc,ffastn)
 
    ! organic iron
@@ -247,13 +251,13 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    freminfe = (fq0 - fq8) / dz                    ! Fe remineralisation in this box           (mol)
    ffastfe = fq8
 
-  _SET_DIAGNOSTIC_(self%id_freminfe,freminfe)
+  _SET_DIAGNOSTIC_(self%id_freminfe,freminfe / d_per_s)
 
    ! biogenic silicon
    fq0      = ffastsi                             ! how much  opal centers this box           (mol) 
    fq1      = fq0 * exp(-(dz / xfastsi))          ! how much  opal leaves this box            (mol)
    freminsi = (fq0 - fq1) / dz                    ! Si remineralisation in this box           (mol)
-   _SET_DIAGNOSTIC_(self%id_freminsi,freminsi)
+   _SET_DIAGNOSTIC_(self%id_freminsi,freminsi / d_per_s)
    ffastsi = fq1
    _SET_DIAGNOSTIC_(self%id_ffastsi_loc,ffastsi)
 
@@ -268,6 +272,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    if (fdep1-dz.le.cal_ccd) then                  ! whole grid cell above CCD
     fq1      = fq0                                ! above lysocline, no Ca dissolves          (mol)
     freminca = 0._rk                              ! above lysocline, no Ca dissolves          (mol)
+    ccd_count = ccd_count + 1
    elseif (fdep1-dz.ge.cal_ccd) then              ! whole grid cell below CCD
     fq1      = fq0 * exp(-(dz / xfastca))         ! how much CaCO3 leaves this box            (mol)
     freminca = (fq0 - fq1) / dz                   ! Ca remineralisation in this box           (mol)
@@ -277,6 +282,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
     freminca = (fq0 - fq1) / dz                   ! Ca remineralisation in this box           (mol)
    endif
 
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_OCAL_LVL,ccd_count)
    _SET_DIAGNOSTIC_(self%id_freminca,freminca)
    ffastca = fq1
    _SET_DIAGNOSTIC_(self%id_ffastca_loc,ffastca)
@@ -321,6 +327,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
 
      real(rk) :: ZOXY
      real(rk) :: freminc,freminn,freminsi,freminfe,freminca
+     real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
     _LOOP_BEGIN_
        _GET_(self%id_ZOXY,ZOXY)
@@ -330,9 +337,9 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
        _GET_(self%id_freminfe1,freminfe)
        _GET_(self%id_freminca1,freminca)
        _SET_ODE_(self%id_ZDIC, + freminc + freminca)
-       _SET_ODE_(self%id_ZDIN, + freminn)
-       _SET_ODE_(self%id_ZSIL, + freminsi)
-       _SET_ODE_(self%id_ZFER, + freminfe)
+       _SET_ODE_(self%id_ZDIN, + freminn * d_per_s)
+       _SET_ODE_(self%id_ZSIL, + freminsi * d_per_s)
+       _SET_ODE_(self%id_ZFER, + freminfe * d_per_s)
 
        if (ZOXY .ge. self%xo2min) _SET_ODE_(self%id_ZOXY, - self%xthetarem * freminc - self%xthetanit * freminn)
 
