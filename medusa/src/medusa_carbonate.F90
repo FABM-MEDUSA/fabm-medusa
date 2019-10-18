@@ -28,7 +28,8 @@ module medusa_carbonate
       type (type_horizontal_dependency_id) :: id_PCO2A,id_kw660,id_fr_i
       type (type_diagnostic_variable_id)   :: id_ph,id_pco2,id_CarbA,id_BiCarb,id_Carb,id_TA_diag
       type (type_diagnostic_variable_id)   :: id_Om_cal,id_Om_arg
-      type (type_horizontal_diagnostic_variable_id) ::  id_fairco2,id_pco2s,id_ATM_PCO2
+      type (type_horizontal_diagnostic_variable_id) ::  id_fairco2,id_pco2s,id_ATM_PCO2,id_TALK,id_TCO2
+      type (type_horizontal_diagnostic_variable_id) ::  id_om_arg_surf,id_om_cal_surf
 
    contains
      procedure :: initialize
@@ -56,7 +57,7 @@ contains
      call self%register_diagnostic_variable(self%id_BiCarb,'BiCarb','mmol/m^3','bicarbonate concentration')
      call self%register_diagnostic_variable(self%id_Carb,  'Carb',  'mmol/m^3','carbonate concentration')
      call self%register_diagnostic_variable(self%id_Om_cal,'OM_CAL3','-','Omega calcite 3D')
-     call self%register_diagnostic_variable(self%id_Om_arg,'OM_ARG','-','aragonite saturation')
+     call self%register_diagnostic_variable(self%id_Om_arg,'OM_ARG3','-','aragonite saturation')
      self%id_ph%link%target%prefill = prefill_previous_value
      self%id_pco2%link%target%prefill = prefill_previous_value
      self%id_CarbA%link%target%prefill = prefill_previous_value
@@ -76,7 +77,12 @@ contains
      call self%register_dependency(self%id_fr_i,standard_variables%ice_area_fraction)
      call self%register_diagnostic_variable(self%id_fairco2,'CO2FLUX','mmol C/m^2/d','Air-sea CO2 flux',source=source_do_surface)
      call self%register_diagnostic_variable(self%id_pco2s,'OCN_PCO2','-','Surface ocean pCO2',source=source_do_surface)
+     call self%register_diagnostic_variable(self%id_TALK,'TALK','-','Surface ocean pCO2',source=source_do_surface)
+     call self%register_diagnostic_variable(self%id_TCO2,'TCO2','-','Surface ocean pCO2',source=source_do_surface)
      call self%register_diagnostic_variable(self%id_ATM_PCO2,'ATM_PCO2','ppmv','Atmospheric pCO2',source=source_do_surface)
+     call self%register_diagnostic_variable(self%id_om_cal_surf,'OM_CAL','-','Surface omega calcite',source=source_do_surface)
+     call self%register_diagnostic_variable(self%id_om_arg_surf,'OM_ARG','-','Surface_omega_aragonite',source=source_do_surface)
+
     end subroutine
 
     subroutine do(self,_ARGUMENTS_DO_)
@@ -829,7 +835,8 @@ contains
    _DECLARE_ARGUMENTS_DO_SURFACE_
 
     real(rk) :: ZALK,ZDIC,temp,salt,sc,fwind,flux,kw660,fr_i
-    real(rk) :: henry, pco2a, pco2, dcf, a, b, c, ca, bc, cb, ph, TA, TCO2
+    real(rk) :: henry, pco2a, pco2, dcf, a, b, c, ca, bc, cb, ph, TA, TCO2, dz
+    real(rk) :: om_cal_surf, om_arg_surf
     integer :: iters
 
    _HORIZONTAL_LOOP_BEGIN_
@@ -841,7 +848,7 @@ contains
    _GET_(self%id_ZALK,ZALK)
    _GET_(self%id_ZDIC,ZDIC)
    _GET_HORIZONTAL_(self%id_pco2a,pco2a)
-   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ATM_PCO2,pco2a)  
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ATM_PCO2,pco2a)
 
           a   =  8.24493e-1_rk - 4.0899e-3_rk*temp +  7.6438e-5_rk*temp**2 - 8.2467e-7_rk*temp**3 + 5.3875e-9_rk*temp**4 
           b   = -5.72466e-3_rk + 1.0227e-4_rk*temp - 1.6546e-6_rk*temp**2  
@@ -864,6 +871,13 @@ contains
     _SET_SURFACE_EXCHANGE_(self%id_ZDIC,flux /86400._rk)
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fairco2,flux)
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_pco2s,PCO2 * 1.0e6_rk)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_TALK,TA * 1.0e6_rk)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_TCO2,TCO2 * 1.0e6_rk)
+
+     call CaCO3_Saturation ( temp, salt, 0._rk, cb, om_cal_surf, om_arg_surf )
+
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_om_cal_surf,om_cal_surf)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_om_arg_surf,om_arg_surf)
 
    _HORIZONTAL_LOOP_END_
 
