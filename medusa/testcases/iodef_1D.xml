@@ -126,7 +126,7 @@
           <field field_ref="benthic_BEN_FE" name='BEN_FE' operation="average" />
           <field field_ref="benthic_BEN_SI" name='BEN_SI' operation="average" />
           <field field_ref="benthic_BEN_CA" name='BEN_CA' operation="average" /> 
-          <field field_ref="XPAR_result" name='MED_XPAR' operation="average" />
+          <field field_ref="MED_XPAR_result" name='MED_XPAR' operation="average" />
           <field field_ref="light_MED_QSR" name='MED_QSR' operation="average" />
           <field field_ref="carbonate_OCN_PCO2" name='OCN_PCO2' operation="average" />
           <field field_ref="OCNH2CO3_result" name='OCNH2CO3' operation="average" />
@@ -171,7 +171,7 @@
           <field field_ref="PD_NLIM_result" name='PD_NLIM' operation="average" />
           <field field_ref="PD_FELIM_result" name='PD_FELIM' operation="average" />
           <field field_ref="PD_SILIM_result" name='PD_SILIM' operation="average" />
-          <field field_ref="PD_SILIM2_result" name='PDSILIM2' operation="average" />
+          <field field_ref="PDSILIM2_result" name='PDSILIM2' operation="average" />
           <field field_ref="PN_JLIM_result" name='PN_JLIM' operation="average" />
           <field field_ref="PN_NLIM_result" name='PN_NLIM' operation="average" />
           <field field_ref="PN_FELIM_result" name='PN_FELIM' operation="average" />

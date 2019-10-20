@@ -267,319 +267,393 @@ instances:
       weight1: 86400.
     coupling:
       term1: fast_detritus/ffastca
-  XPAR:
+  MED_XPAR:
     model: surface_layer
+    long_name: Top level radiation
     coupling:
       source: light/MED_XPAR
   PRN:
     model: vertical_integral
+    long_name: Non-diatom primary production
     coupling:
       source: pelagic/PRN
   PRD:
     model: vertical_integral
+    long_name: Diatom primary production
     coupling:
       source: pelagic/PRD
   MPN:
     model: vertical_integral
+    long_name: Non-diatom non-grazing losses
     coupling:
       source: pelagic/MPN
   MPD:
     model: vertical_integral
+    long_name: Diatom non-grazing losses
     coupling:
       source: pelagic/MPD
   OPAL:
     model: vertical_integral
+    long_name: Diatom biogenic opal production
     coupling:
       source: pelagic/OPAL
   OPALDISS:
     model: vertical_integral
+    long_name: Diatom biogenic opal dissolution
     coupling:
       source: pelagic/OPALDISS
   GMIPn:
     model: vertical_integral
+    long_name: Microzoo grazing on non-diatoms
     coupling:
       source: pelagic/GMIPn
   GMID:
     model: vertical_integral
+    long_name: Microzoo grazing on detritus
     coupling:
       source: pelagic/GMID
   GMEPN:
     model: vertical_integral
+    long_name: Mesozoo grazing on non-diatoms
     coupling:
       source: pelagic/GMEPN
   GMEPD:
     model: vertical_integral
+    long_name: Mesozoo grazing on non-diatoms
     coupling:
       source: pelagic/GMEPD
   GMEZMI:
     model: vertical_integral
+    long_name: Mesozoo grazing on microzoo
     coupling:
       source: pelagic/GMEZMI
   GMED:
     model: vertical_integral
+    long_name: Mesozoo grazing on detritus
     coupling:
       source: pelagic/GMED
   MZMI:
     model: vertical_integral
+    long_name: Microzoo non-grazing losses
     coupling:
       source: pelagic/MZMI
   MZME:
     model: vertical_integral
+    long_name: Mesozoo non-grazing losses
     coupling:
       source: pelagic/MZME
   DETN:
     model: vertical_integral
+    long_name: Slow detritus creation
     coupling:
       source: pelagic/DETN
   DETC:
     model: vertical_integral
+    long_name: Slow detritus C creation
     coupling:
       source: pelagic/DETC
   MDET:
     model: vertical_integral
+    long_name: Detritus non-grazing losses
     coupling:
       source: pelagic/MDET
   MDETC:
     model: vertical_integral
+    long_name: Detritus non-grazing losses, carbon
     coupling:
       source: pelagic/MDETC
   GMIDC:
     model: vertical_integral
+    long_name: Microzoo grazing on detritus, carbon
     coupling:
       source: pelagic/GMIDC
   GMEDC:
     model: vertical_integral
+    long_name: Mesozoo  grazing on detritus, carbon
     coupling:
       source: pelagic/GMEDC
   PD_JLIM:
     model: vertical_integral
+    long_name: Diatom light limitation
     coupling:
       source: pelagic/PD_JLIM
   PD_NLIM:
     model: vertical_integral
+    long_name: Diatom N limitation
     coupling:
       source: pelagic/PD_NLIM
   PD_FELIM:
     model: vertical_integral
+    long_name: Diatom Fe limitation
     coupling:
       source: pelagic/PD_FELIM
   PD_SILIM:
     model: vertical_integral
+    long_name: Diatom Si limitation
     coupling:
       source: pelagic/PD_SILIM
-  PD_SILIM2:
+  PDSILIM2:
     model: vertical_integral
+    long_name: Diatom Si uptake limitation
     coupling:
       source: pelagic/PD_SILIM2
   PN_JLIM:
     model: vertical_integral
+    long_name: Non-diatom light limitation
     coupling:
       source: pelagic/PN_JLIM
   PN_NLIM:
     model: vertical_integral
+    long_name: Non-diatom N limitation
     coupling:
       source: pelagic/PN_NLIM
   PN_FELIM:
     model: vertical_integral
+    long_name: Diatom light limitation
     coupling:
       source: pelagic/PN_FELIM
   PN_LLOSS:
     model: vertical_integral
+    long_name: Non-diatom linear losses
     coupling:
       source: pelagic/PN_LLOSS
   PD_LLOSS:
     model: vertical_integral
+    long_name: Diatom linear losses
     coupling:
       source: pelagic/PD_LLOSS
   ZI_LLOSS:
     model: vertical_integral
+    long_name: Microzooplankton linear losses
     coupling:
       source: pelagic/ZI_LLOSS
   ZE_LLOSS:
     model: vertical_integral
+    long_name: Mesozooplankton linear losses
     coupling:
       source: pelagic/ZE_LLOSS
   ZI_MES_N:
     model: vertical_integral
+    long_name: Microzoo messy feeding loss to N
     coupling:
       source: pelagic/ZI_MES_N
   ZI_MES_D:
     model: vertical_integral
+    long_name: Microzoo messy feeding loss to D
     coupling:
       source: pelagic/ZI_MES_D
   ZI_MES_C:
     model: vertical_integral
+    long_name: Microzoo messy feeding loss to C
     coupling:
       source: pelagic/ZI_MES_C
   ZI_MESDC:
     model: vertical_integral
+    long_name: Microzoo messy feeding loss to Dc
     coupling:
       source: pelagic/ZI_MESDC
   ZE_MES_N:
     model: vertical_integral
+    long_name: Mesozoo messy feeding loss to N
     coupling:
       source: pelagic/ZE_MES_N
   ZE_MES_D:
     model: vertical_integral
+    long_name: Mesozoo messy feeding loss to D
     coupling:
       source: pelagic/ZE_MES_D
   ZE_MES_C:
     model: vertical_integral
+    long_name: Mesozoo messy feeding loss to C
     coupling:
       source: pelagic/ZE_MES_C
   ZE_MESDC:
     model: vertical_integral
+    long_name:  Mesozoo messy feeding loss to Dc
     coupling:
       source: pelagic/ZE_MESDC
   ZI_EXCR:
     model: vertical_integral
+    long_name: Microzoo excretion
     coupling:
       source: pelagic/ZI_EXCR
   ZI_RESP:
     model: vertical_integral
+    long_name: Microzoo respiration
     coupling:
       source: pelagic/ZI_RESP
   ZI_GROW:
     model: vertical_integral
+    long_name: Microzoo growth
     coupling:
       source: pelagic/ZI_GROW
   ZE_EXCR:
     model: vertical_integral
+    long_name: Mesozoo excretion
     coupling:
       source: pelagic/ZE_EXCR
   ZE_RESP:
     model: vertical_integral
+    long_name: Mesozoo respiration
     coupling:
       source: pelagic/ZE_RESP
   ZE_GROW:
     model: vertical_integral
+    long_name: Mesozoo growth
     coupling:
       source: pelagic/ZE_GROW
   COM_RESP:
     model: vertical_integral
+    long_name: Community respiration (pelagic)
     coupling:
       source: pelagic/fcomm_resp
   N_PROD:
     model: vertical_integral
+    long_name: Nitrogen production
     coupling:
       source: pelagic/N_PROD
   N_CONS:
     model: vertical_integral
+    long_name: Nitrogen consumption
     coupling:
       source: pelagic/N_CONS
   C_PROD:
     model: vertical_integral
+    long_name: Carbon production
     coupling:
       source: pelagic/C_PROD
   C_CONS:
     model: vertical_integral
+    long_name: Carbon consumption
     coupling:
       source: pelagic/C_CONS
   O2_PROD:
     model: vertical_integral
+    long_name: Oxygen production
     coupling:
       source: pelagic/O2_PROD
   O2_CONS:
     model: vertical_integral
+    long_name: Oxygen consumption
     coupling:
       source: pelagic/O2_CONS
   O2_ANOX:
     model: vertical_integral
+    long_name: Unrealised oxygen consumption
     coupling:
       source: pelagic/O2_ANOX
   INT_PD:
     model: vertical_integral
+    long_name: Vertically integrated Pd
     coupling:
       source: pelagic/PHD
   INT_PN:
     model: vertical_integral
+    long_name: Vertically integrated Pn
     coupling:
       source: pelagic/PHN
   INT_ZMI:
     model: vertical_integral
+    long_name: Vertically integrated Zmi
     coupling:
       source: pelagic/ZMI
   INT_ZME:
     model: vertical_integral
+    long_name: Vertically integrated Zme
     coupling:
       source: pelagic/ZME
   INT_DET:
     model: vertical_integral
+    long_name: Vertically integrated Det
     coupling:
       source: pelagic/DET
   INT_DTC:
     model: vertical_integral
+    long_name: Vertically integrated Dtc
     coupling:
       source: pelagic/DTC
   SCAVENGE:
     model: vertical_integral
+    long_name: Scavenged iron
     coupling:
       source: iron_scavenging/SCAVENGE
   TOTREG_N:
     model: vertical_integral
+    long_name: Full column regenerated N
     coupling:
       source: pelagic/regen_slow
   TOTRG_SI:
     model: vertical_integral
-    coupling:
-      source: pelagic/regenSi_slow
-  TOTRG_SI:
-    model: vertical_integral
+    long_name: Full column regenerated Si
     coupling:
       source: pelagic/regenSi_slow
   FASTN:
     model: vertical_integral
+    long_name: Fast-sinking flux N
     coupling:
       source: pelagic/FASTN
   FASTC:
     model: vertical_integral
+    long_name: Fast-sinking flux C
     coupling:
       source: pelagic/FASTC
   FASTFE:
     model: vertical_integral
+    long_name: Fast-sinking flux Fe
     coupling:
       source: pelagic/FASTFE
   FASTCA:
     model: vertical_integral
+    long_name: Fast-sinking flux CaCO3
     coupling:
       source: pelagic/FASTCA
   FASTSI:
     model: vertical_integral
+    long_name: Fast-sinking flux Si
     coupling:
       source: pelagic/FASTSI
   REMINN:
     model: vertical_integral
+    long_name: Fast-sinking remin flux N
     coupling:
       source: fast_detritus/freminn
   REMINSI:
     model: vertical_integral
+    long_name: Fast-sinking remin flux Si
     coupling:
       source: fast_detritus/freminsi
   REMINFE:
     model: vertical_integral
+    long_name: Fast-sinking remin flux Fe
     coupling:
       source: fast_detritus/freminfe
   SFR_OCAL:
     model: bottom_layer
+    long_name: Seafloor omega calcite
     coupling: 
       source: carbonate/OM_CAL3
   SFR_OARG:
     model: bottom_layer
+    long_name: Seafloor omega aragonite
     coupling: 
        source: carbonate/OM_ARG3
   OCN_PH:
     model: surface_layer
+    long_name: Surface ocean pH
     coupling: 
        source: carbonate/PH3
   OCNH2CO3:
     model: surface_layer
+    long_name: Surface ocean H2CO3 conc
     coupling: 
        source: carbonate/CarbA
   OCN_HCO3:
     model: surface_layer
+    long_name: Surface ocean HCO3 conc
     coupling: 
        source: carbonate/BiCarb
   OCN_CO3:
     model: surface_layer
+    long_name: Surface ocean CO3 conc
     coupling: 
        source: carbonate/Carb
