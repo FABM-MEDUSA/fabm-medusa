@@ -639,8 +639,8 @@ contains
                   ((ZZME * ZZME) / (self%xkzme + (ZZME * ZZME)))
   end if
 
-  _SET_DIAGNOSTIC_(self%id_MZMI, fdpn / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_MZME, fdpd / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_MZMI, fdzmi / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_MZME, fdzme / d_per_s)
 
   ! Diatom frustule dissolution
   fsdiss = self%xsdiss * ZPDS
