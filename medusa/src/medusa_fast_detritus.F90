@@ -341,7 +341,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
        _SET_ODE_(self%id_ZSIL, + freminsi * d_per_s)
        _SET_ODE_(self%id_ZFER, + freminfe * d_per_s)
 
-       if (ZOXY .ge. self%xo2min) _SET_ODE_(self%id_ZOXY, - self%xthetarem * freminc - self%xthetanit * freminn)
+       if (ZOXY .ge. self%xo2min) _SET_ODE_(self%id_ZOXY, - self%xthetarem * freminc - self%xthetanit * freminn * d_per_s)
 
       _SET_ODE_(self%id_ZALK, 2._rk * freminca)
 
