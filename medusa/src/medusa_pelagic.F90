@@ -25,19 +25,19 @@ module medusa_pelagic
   type,extends(type_particle_model),public :: type_medusa_pelagic
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
-      type (type_dependency_id)            :: id_temp,id_salt, id_om_cal, id_xpar
+      type (type_dependency_id)            :: id_temp,id_salt, id_om_cal, id_xpar, id_dz
       type (type_state_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
       type (type_diagnostic_variable_id) :: id_prn,id_prd,id_mpn,id_mpd,id_OPAL,id_OPALDISS,id_detn,id_detc,id_MDET,id_MDETC
       type (type_diagnostic_variable_id) :: id_GMIPn,id_GMID,id_MZMI,id_MZME,id_GMEPN,id_GMEPD,id_GMEZMI,id_GMED
       type (type_diagnostic_variable_id) :: id_GMIDC,id_GMEDC,id_PN_LLOSS,id_PD_LLOSS,id_ZI_LLOSS,id_ZE_LLOSS,id_fcomm_resp
       type (type_diagnostic_variable_id) :: id_pd_jlim,id_pd_nlim,id_pd_felim,id_pd_silim,id_pd_silim2,id_pn_jlim,id_pn_nlim,id_pn_felim
-      type (type_diagnostic_variable_id) :: id_fregen,id_fregensi,id_slowdetflux,id_fscal_part
+      type (type_diagnostic_variable_id) :: id_fregen,id_fregensi,id_slowdetflux,id_fscal_part,id_fregen2d
       type (type_diagnostic_variable_id) :: id_ZI_MES_N,id_ZI_MES_D,id_ZI_MES_C,id_ZI_MESDC,id_ZE_MES_N,id_ZE_MES_D,id_ZE_MES_C,id_ZE_MESDC
       type (type_diagnostic_variable_id) :: id_ZI_EXCR,id_ZI_RESP,id_ZI_GROW,id_ZE_EXCR,id_ZE_RESP,id_ZE_GROW
       type (type_diagnostic_variable_id) :: id_C_PROD,id_C_CONS,id_N_PROD,id_N_CONS,id_foxy_prod,id_foxy_cons,id_foxy_anox
       type (type_horizontal_diagnostic_variable_id) :: id_f_sbenin_c,id_f_sbenin_n,id_f_sbenin_fe
       type (type_bottom_state_variable_id) :: id_ZSEDC,id_ZSEDN,id_ZSEDP,id_ZSEDFE
-      type (type_diagnostic_variable_id) :: id_FASTN,id_FASTC,id_FASTCA,id_FASTFE,id_FASTSI
+      type (type_diagnostic_variable_id) :: id_FASTN,id_FASTC,id_FASTCA,id_FASTFE,id_FASTSI,id_fslownflux
 
       ! Parameters
       logical :: jliebig
@@ -217,6 +217,7 @@ contains
    call self%register_diagnostic_variable(self%id_GMIDC,'GMIDC','mmolC/m3/d','Microzoo grazing on detritus, carbon',output=output_none)
    call self%register_diagnostic_variable(self%id_GMEDC,'GMEDC','mmolC/m3/d','Mesozoo  grazing on detritus, carbon',output=output_none)
    call self%register_diagnostic_variable(self%id_fregen,'regen_slow','mmolN/m3/d','Total slow remin flux N 3D',output=output_none)
+   call self%register_diagnostic_variable(self%id_fregen2d,'regen2d','mmolN/m2/d','Total slow remin flux N 3D * dz',output=output_none)
    call self%register_diagnostic_variable(self%id_fregensi,'regenSi_slow','mmolSi/m3/d','Total slow remin flux Si 3D',output=output_none)
    call self%register_diagnostic_variable(self%id_slowdetflux,'flux_slow','mmolN/m3/d','Total slow detrital flux 3D',output=output_none)
    call self%register_diagnostic_variable(self%id_pd_jlim,'PD_JLIM','-','Diatom light limitation',output=output_none)
@@ -261,6 +262,9 @@ contains
    call self%register_diagnostic_variable(self%id_FASTSI,'FASTSI','mmol Si/m**3', 'fast-sinking detritus (Si)',output=output_none)
    call self%register_diagnostic_variable(self%id_FASTFE,'FASTFE','mmol Fe/m**3', 'fast-sinking detritus (Fe)',output=output_none)
    call self%register_diagnostic_variable(self%id_FASTCA,'FASTCA','mmol CaCO3/m**3', 'fast-sinking detritus (CaCO3)',output=output_none)
+   call self%register_diagnostic_variable(self%id_fslownflux,'fslownflux','mmol N/m**2', 'slow detritus sinking flux',output=output_none)
+   call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
+
    end subroutine initialize
 
    subroutine do(self,_ARGUMENTS_DO_)
@@ -282,7 +286,7 @@ contains
     real(rk) :: fdd,fddc,fsdiss,fjlim_pn,fjlim_pd
     real(rk) :: fslowc,fslown,fregen,fregensi,fregenc,ftempn,ftempsi,ftempfe,ftempc,fq1,fcaco3,ftempca
     real(rk) :: fn_prod,fn_cons,fs_cons,fs_prod,fc_cons,fc_prod,fa_prod,fa_cons,fo2_ccons,fo2_ncons,fo2_cons,fo2_prod
-    real(rk) :: rsmall, om_cal
+    real(rk) :: rsmall, om_cal, dz
     real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
     _LOOP_BEGIN_
@@ -305,6 +309,7 @@ contains
     _GET_(self%id_ZOXY,ZOXY)
     _GET_(self%id_temp,loc_T)
     _GET_(self%id_xpar,par)
+    _GET_(self%id_dz,dz)
 
    _SET_DIAGNOSTIC_(self%id_slowdetflux,-self%wg * ZDET)
 
@@ -673,6 +678,8 @@ contains
   _SET_DIAGNOSTIC_(self%id_detn, fslown / d_per_s)
   _SET_DIAGNOSTIC_(self%id_detc, fslowc / d_per_s)
 
+  _SET_DIAGNOSTIC_(self%id_fslownflux, ZDET * self%wdep / d_per_s)
+
   ! Nutrient regeneration
   ! this variable integrates total nitrogen regeneration down the watercolumn;
   ! the corresponding dissolution flux of silicon (from sources other than fast detritus) is also integrated
@@ -681,6 +688,7 @@ contains
   fmiexcr + fmeexcr + fdd +                                               &  ! excretion + D remin.
   fdpn2 + fdpd2 + fdzmi2 + fdzme2))                                          ! linear mortality
  
+ _SET_DIAGNOSTIC_(self%id_fregen2d,fregen * dz / d_per_s)
  _SET_DIAGNOSTIC_(self%id_fregen,fregen / d_per_s)
   !
   ! silicon
@@ -794,7 +802,7 @@ contains
 
    _SET_DIAGNOSTIC_(self%id_fscal_part, (self%xthetapn * ZPHN + self%xthetapd * ZPHD + self%xthetazmi * ZZMI + self%xthetazme * ZZME + self%xthetad * ZDET) * 0.002_rk)
 
-   _SET_DIAGNOSTIC_(self%id_fcomm_resp, fc_prod / d_per_s) ! pelagic part of community respiration (does not include CaCO3 terms)
+   _SET_DIAGNOSTIC_(self%id_fcomm_resp, fc_prod / dz / d_per_s) ! pelagic part of community respiration (does not include CaCO3 terms)
 
    fc_prod = fc_prod - ftempca ! CaCO3
 

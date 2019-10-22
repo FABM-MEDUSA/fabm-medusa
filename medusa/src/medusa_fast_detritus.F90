@@ -28,7 +28,7 @@ module medusa_fast_detritus
       type (type_horizontal_diagnostic_variable_id) :: id_ffastc,id_ffastn,id_ffastsi,id_ffastfe,id_ffastca
       type (type_horizontal_diagnostic_variable_id) :: id_SEAFLRN,id_SEAFLRSI,id_SEAFLRFE,id_SEAFLRC,id_SEAFLRCA
       type (type_horizontal_dependency_id) :: id_ffastc1,id_ffastn1,id_ffastfe1,id_ffastsi1,id_ffastca1,id_CAL_CCD
-      type (type_diagnostic_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
+      type (type_diagnostic_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca,id_freminn2d
       type (type_horizontal_diagnostic_variable_id) :: id_OCAL_LVL
       ! Parameters
       real(rk) :: xthetanit,xthetarem,xo2min,xrfn
@@ -122,7 +122,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
 
    call self%register_dependency(self%id_om_cal,'OM_CAL3','-','calcite saturation')
    call self%register_diagnostic_variable(self%id_OCAL_LVL,'OCAL_LVL','m','Calcite CCD level',source=source_do_column)
-
+   call self%register_diagnostic_variable(self%id_freminn2d,'freminn2d','mmol N m-2 s-1','remineralisation of detritus (N) * dz',source=source_do_column)
    call self%register_horizontal_dependency(self%id_ffastc1,'ffastc','mmol C m-2 s-1','remineralisation of detritus (C)')
    call self%register_horizontal_dependency(self%id_ffastn1,'ffastn','mmol N m-2 s-1','remineralisation of detritus (N)')
    call self%register_horizontal_dependency(self%id_ffastfe1,'ffastfe','mmol Fe m-2 s-1','remineralisation of detritus (Fe)')
@@ -228,7 +228,6 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    ffastc = fq8
 
   _SET_DIAGNOSTIC_(self%id_freminc,freminc)
-  _SET_DIAGNOSTIC_(self%id_ffastc_loc,ffastc)
 
    ! organic nitrogen
    fq0      = ffastn                              ! how much organic N enters this box        (mol)
@@ -238,9 +237,9 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    fq8      = (fq7 + (fq0 * fprotf))              ! how much total N leaves this box          (mol)
    freminn  = (fq0 - fq8) / dz                    ! N remineralisation in this box            (mol)
    ffastn = fq8
-
-   _SET_DIAGNOSTIC_(self%id_freminn,freminn / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ffastn_loc,ffastn)
+  
+  _SET_DIAGNOSTIC_(self%id_freminn2d,freminn * dz / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_freminn,freminn / d_per_s)
 
    ! organic iron
    fq0      = ffastfe                             ! how much organic Fe enters this box       (mol)
@@ -259,7 +258,6 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    freminsi = (fq0 - fq1) / dz                    ! Si remineralisation in this box           (mol)
    _SET_DIAGNOSTIC_(self%id_freminsi,freminsi / d_per_s)
    ffastsi = fq1
-   _SET_DIAGNOSTIC_(self%id_ffastsi_loc,ffastsi)
 
    ! biogenic calcium carbonate
 
@@ -285,7 +283,6 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_OCAL_LVL,ccd_count)
    _SET_DIAGNOSTIC_(self%id_freminca,freminca)
    ffastca = fq1
-   _SET_DIAGNOSTIC_(self%id_ffastca_loc,ffastca)
 
    !-------------------------------------------------------------------------------------------------
    ! Fast-sinking detritus fluxes, pt. 2: UPDATE FAST FLUXES
@@ -303,6 +300,11 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
     ffastfe = ffastfe + ftempfe * dz               ! diatom and mesozooplankton mortality
     ffastsi = ffastsi + ftempsi * dz               ! diatom mortality and grazed diatoms
     ffastca = ffastca + ftempca * dz               ! latitudinally-based fraction of total primary production
+
+   _SET_DIAGNOSTIC_(self%id_ffastc_loc,ffastc)
+   _SET_DIAGNOSTIC_(self%id_ffastn_loc,ffastn)
+   _SET_DIAGNOSTIC_(self%id_ffastsi_loc,ffastsi)
+   _SET_DIAGNOSTIC_(self%id_ffastca_loc,ffastca)
 
    _VERTICAL_LOOP_END_
 

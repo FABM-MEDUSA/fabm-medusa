@@ -211,10 +211,9 @@ instances:
     long_name: Total remin flux N 3D
     parameters:
       n: 2
-      weight2: 86400.
     coupling:
-      term1: pelagic/regen_slow
-      term2: fast_detritus/freminn
+      term1: pelagic/regen2d
+      term2: fast_detritus/freminn2d
   DETFLUX3:
     model: weighted_sum
     long_name: Total detrital flux 3D
@@ -222,7 +221,7 @@ instances:
       n: 2
       weight2: 86400.
     coupling:
-      term1: pelagic/flux_slow
+      term1: pelagic/fslownflux
       term2: fast_detritus/ffastn_loc
   IBEN_C:
     model: horizontal_weighted_sum
@@ -509,7 +508,7 @@ instances:
       source: pelagic/fcomm_resp
   N_PROD:
     model: vertical_integral
-    long_name: Nitrogen production
+    long_name: Nitrogen production (pelagic)
     coupling:
       source: pelagic/N_PROD
   N_CONS:
@@ -517,11 +516,20 @@ instances:
     long_name: Nitrogen consumption
     coupling:
       source: pelagic/N_CONS
+  C_PROD1:
+    model: weighted_sum
+    long_name: Carbon production pelagic with CaCO3 remin
+    parameters:
+      n: 2
+      weight2: 86400.
+    coupling:
+      term1: pelagic/C_PROD
+      term2: fast_detritus/freminca
   C_PROD:
     model: vertical_integral
-    long_name: Carbon production
+    long_name: Carbon production (pelagic)
     coupling:
-      source: pelagic/C_PROD
+      source: C_PROD1/result
   C_CONS:
     model: vertical_integral
     long_name: Carbon consumption
@@ -534,7 +542,7 @@ instances:
       source: pelagic/O2_PROD
   O2_CONS:
     model: vertical_integral
-    long_name: Oxygen consumption
+    long_name: Oxygen consumption (pelagic)
     coupling:
       source: pelagic/O2_CONS
   O2_ANOX:
