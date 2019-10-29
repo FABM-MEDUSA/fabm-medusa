@@ -24,7 +24,7 @@ module medusa_carbonate
    type,extends(type_base_model),public :: type_medusa_carbonate
       type (type_dependency_id)            :: id_ZALK
       type (type_state_variable_id)        :: id_ZDIC
-      type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres,id_depth,id_dz
+      type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres,id_depth
       type (type_horizontal_dependency_id) :: id_PCO2A,id_kw660,id_fr_i
       type (type_diagnostic_variable_id)   :: id_ph,id_pco2,id_CarbA,id_BiCarb,id_Carb,id_TA_diag
       type (type_diagnostic_variable_id)   :: id_Om_cal,id_Om_arg
@@ -66,7 +66,6 @@ contains
      self%id_Om_cal%link%target%prefill = prefill_previous_value
      self%id_Om_arg%link%target%prefill = prefill_previous_value
 
-     call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
      call self%register_dependency(self%id_temp, standard_variables%temperature)
      call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
      call self%register_dependency(self%id_PCO2A,standard_variables%mole_fraction_of_carbon_dioxide_in_air)
@@ -835,7 +834,7 @@ contains
    _DECLARE_ARGUMENTS_DO_SURFACE_
 
     real(rk) :: ZALK,ZDIC,temp,salt,sc,fwind,flux,kw660,fr_i
-    real(rk) :: henry, pco2a, pco2, dcf, a, b, c, ca, bc, cb, ph, TA, TCO2, dz
+    real(rk) :: henry, pco2a, pco2, dcf, a, b, c, ca, bc, cb, ph, TA, TCO2
     real(rk) :: om_cal_surf, om_arg_surf
     integer :: iters
 
