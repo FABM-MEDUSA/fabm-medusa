@@ -58,13 +58,6 @@ contains
      call self%register_diagnostic_variable(self%id_Carb,  'Carb',  'mmol/m^3','carbonate concentration')
      call self%register_diagnostic_variable(self%id_Om_cal,'OM_CAL3','-','Omega calcite 3D')
      call self%register_diagnostic_variable(self%id_Om_arg,'OM_ARG3','-','aragonite saturation')
-     self%id_ph%link%target%prefill = prefill_previous_value
-     self%id_pco2%link%target%prefill = prefill_previous_value
-     self%id_CarbA%link%target%prefill = prefill_previous_value
-     self%id_BiCarb%link%target%prefill = prefill_previous_value
-     self%id_Carb%link%target%prefill = prefill_previous_value
-     self%id_Om_cal%link%target%prefill = prefill_previous_value
-     self%id_Om_arg%link%target%prefill = prefill_previous_value
 
      call self%register_dependency(self%id_temp, standard_variables%temperature)
      call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
