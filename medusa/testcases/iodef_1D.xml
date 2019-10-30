@@ -133,7 +133,7 @@
           <field field_ref="OCN_HCO3_result" name='OCN_HCO3' operation="average" />
           <field field_ref="OCN_CO3_result" name='OCN_CO3' operation="average" />
           <field field_ref="OCN_PH_result" name='OCN_PH' operation="average" />
-          <field field_ref="SCAVENGE_result" name='SCAVENGE' operation="average" /> 
+          <field field_ref="iron_scavenging_SCAVENGE_VINT" name='SCAVENGE' operation="average" />
           <field field_ref="TPP3_result" name='TPP3' operation="average" />
           <field field_ref="REMIN3N_result" name="REMIN3N" unit="mmolN/m3/d" operation="average" />
           <field field_ref="DETFLUX3_result" name="DETFLUX3" unit="mmolN/m3/d" operation="average" />
@@ -147,91 +147,91 @@
           <field field_ref="benthic_OBEN_FE" name="OBEN_FE" operation="average" />
           <field field_ref="benthic_OBEN_SI" name="OBEN_SI" operation="average" />
           <field field_ref="benthic_OBEN_CA" name="OBEN_CA" operation="average" />
-          <field field_ref="PRN_result" name='PRN' operation="average" />
-          <field field_ref="PRD_result" name='PRD' operation="average" />
-          <field field_ref="MPN_result" name='MPN' operation="average" />
-          <field field_ref="MPD_result" name='MPD' operation="average" />
-          <field field_ref="OPAL_result" name='OPAL' operation="average" />
-          <field field_ref="OPALDISS_result" name='OPALDISS' operation="average" />
-          <field field_ref="GMIPn_result" name='GMIPn' operation="average" />
-          <field field_ref="GMID_result" name='GMID' operation="average" />
-          <field field_ref="GMEPN_result" name='GMEPN' operation="average" />
-          <field field_ref="GMEPD_result" name='GMEPD' operation="average" />
-          <field field_ref="GMEZMI_result" name='GMEZMI' operation="average" />
-          <field field_ref="GMED_result" name='GMED' operation="average" />
-          <field field_ref="MZMI_result" name='MZMI' operation="average" />
-          <field field_ref="MZME_result" name='MZME' operation="average" />
-          <field field_ref="DETN_result" name='DETN' operation="average" />
-          <field field_ref="DETC_result" name='DETC' operation="average" />
-          <field field_ref="MDET_result" name='MDET' operation="average" />
-          <field field_ref="MDETC_result" name='MDETC' operation="average" />
-          <field field_ref="GMIDC_result" name='GMIDC' operation="average" />
-          <field field_ref="GMEDC_result" name='GMEDC' operation="average" /> 
-          <field field_ref="PD_JLIM_result" name='PD_JLIM' operation="average" />
-          <field field_ref="PD_NLIM_result" name='PD_NLIM' operation="average" />
-          <field field_ref="PD_FELIM_result" name='PD_FELIM' operation="average" />
-          <field field_ref="PD_SILIM_result" name='PD_SILIM' operation="average" />
-          <field field_ref="PDSILIM2_result" name='PDSILIM2' operation="average" />
-          <field field_ref="PN_JLIM_result" name='PN_JLIM' operation="average" />
-          <field field_ref="PN_NLIM_result" name='PN_NLIM' operation="average" />
-          <field field_ref="PN_FELIM_result" name='PN_FELIM' operation="average" />
-          <field field_ref="PN_LLOSS_result"  name='PN_LLOSS' operation="average" />
-          <field field_ref="PD_LLOSS_result" name='PD_LLOSS' operation="average" />
-          <field field_ref="ZI_LLOSS_result" name='ZI_LLOSS' operation="average" />
-          <field field_ref="ZE_LLOSS_result" name='ZE_LLOSS' operation="average" />
-          <field field_ref="ZI_MES_N_result" name='ZI_MES_N' operation="average" />
-          <field field_ref="ZI_MES_D_result" name='ZI_MES_D' operation="average" />
-          <field field_ref="ZI_MES_C_result" name='ZI_MES_C' operation="average" />
-          <field field_ref="ZI_MESDC_result" name='ZI_MESDC' operation="average" />
-          <field field_ref="ZE_MES_N_result" name='ZE_MES_N' operation="average" />
-          <field field_ref="ZE_MES_D_result" name='ZE_MES_D' operation="average" />
-          <field field_ref="ZE_MES_C_result" name='ZE_MES_C' operation="average" />
-          <field field_ref="ZE_MESDC_result" name='ZE_MESDC' operation="average" />
-          <field field_ref="ZI_EXCR_result" name='ZI_EXCR' operation="average" />
-          <field field_ref="ZI_RESP_result" name='ZI_RESP' operation="average" />
-          <field field_ref="ZI_GROW_result" name='ZI_GROW' operation="average" />
-          <field field_ref="ZE_EXCR_result" name='ZE_EXCR' operation="average" />
-          <field field_ref="ZE_RESP_result" name='ZE_RESP' operation="average" />
-          <field field_ref="ZE_GROW_result" name='ZE_GROW' operation="average" />
+          <field field_ref="pelagic_PRN_VINT" name='PRN' operation="average" />
+          <field field_ref="pelagic_PRD_VINT" name='PRD' operation="average" />
+          <field field_ref="pelagic_MPN_VINT" name='MPN' operation="average" />
+          <field field_ref="pelagic_MPD_VINT" name='MPD' operation="average" />
+          <field field_ref="pelagic_OPAL_VINT" name='OPAL' operation="average" />
+          <field field_ref="pelagic_OPALDISS_VINT" name='OPALDISS' operation="average" />
+          <field field_ref="pelagic_GMIPn_VINT" name='GMIPn' operation="average" />
+          <field field_ref="pelagic_GMID_VINT" name='GMID' operation="average" />
+          <field field_ref="pelagic_GMEPN_VINT" name='GMEPN' operation="average" />
+          <field field_ref="pelagic_GMEPD_VINT" name='GMEPD' operation="average" />
+          <field field_ref="pelagic_GMEZMI_VINT" name='GMEZMI' operation="average" />
+          <field field_ref="pelagic_GMED_VINT" name='GMED' operation="average" />
+          <field field_ref="pelagic_MZMI_VINT" name='MZMI' operation="average" />
+          <field field_ref="pelagic_MZME_VINT" name='MZME' operation="average" />
+          <field field_ref="pelagic_DETN_VINT" name='DETN' operation="average" />
+          <field field_ref="pelagic_DETC_VINT" name='DETC' operation="average" />
+          <field field_ref="pelagic_MDET_VINT" name='MDET' operation="average" />
+          <field field_ref="pelagic_MDETC_VINT" name='MDETC' operation="average" />
+          <field field_ref="pelagic_GMIDC_VINT" name='GMIDC' operation="average" />
+          <field field_ref="pelagic_GMEDC_VINT" name='GMEDC' operation="average" />
+          <field field_ref="pelagic_PD_JLIM_VINT" name='PD_JLIM' operation="average" />
+          <field field_ref="pelagic_PD_NLIM_VINT" name='PD_NLIM' operation="average" />
+          <field field_ref="pelagic_PD_FELIM_VINT" name='PD_FELIM' operation="average" />
+          <field field_ref="pelagic_PD_SILIM_VINT" name='PD_SILIM' operation="average" />
+          <field field_ref="pelagic_PD_SILIM2_VINT" name='PDSILIM2' operation="average" />
+          <field field_ref="pelagic_PN_JLIM_VINT" name='PN_JLIM' operation="average" />
+          <field field_ref="pelagic_PN_NLIM_VINT" name='PN_NLIM' operation="average" />
+          <field field_ref="pelagic_PN_FELIM_VINT" name='PN_FELIM' operation="average" />
+          <field field_ref="pelagic_PN_LLOSS_VINT"  name='PN_LLOSS' operation="average" />
+          <field field_ref="pelagic_PD_LLOSS_VINT" name='PD_LLOSS' operation="average" />
+          <field field_ref="pelagic_ZI_LLOSS_VINT" name='ZI_LLOSS' operation="average" />
+          <field field_ref="pelagic_ZE_LLOSS_VINT" name='ZE_LLOSS' operation="average" />
+          <field field_ref="pelagic_ZI_MES_N_VINT" name='ZI_MES_N' operation="average" />
+          <field field_ref="pelagic_ZI_MES_D_VINT" name='ZI_MES_D' operation="average" />
+          <field field_ref="pelagic_ZI_MES_C_VINT" name='ZI_MES_C' operation="average" />
+          <field field_ref="pelagic_ZI_MESDC_VINT" name='ZI_MESDC' operation="average" />
+          <field field_ref="pelagic_ZE_MES_N_VINT" name='ZE_MES_N' operation="average" />
+          <field field_ref="pelagic_ZE_MES_D_VINT" name='ZE_MES_D' operation="average" />
+          <field field_ref="pelagic_ZE_MES_C_VINT" name='ZE_MES_C' operation="average" />
+          <field field_ref="pelagic_ZE_MESDC_VINT" name='ZE_MESDC' operation="average" />
+          <field field_ref="pelagic_ZI_EXCR_VINT" name='ZI_EXCR' operation="average" />
+          <field field_ref="pelagic_ZI_RESP_VINT" name='ZI_RESP' operation="average" />
+          <field field_ref="pelagic_ZI_GROW_VINT" name='ZI_GROW' operation="average" />
+          <field field_ref="pelagic_ZE_EXCR_VINT" name='ZE_EXCR' operation="average" />
+          <field field_ref="pelagic_ZE_RESP_VINT" name='ZE_RESP' operation="average" />
+          <field field_ref="pelagic_ZE_GROW_VINT" name='ZE_GROW' operation="average" />
           <field field_ref="fast_detritus_SEAFLRC" name='SEAFLRC' operation="average" />
           <field field_ref="fast_detritus_SEAFLRN" name='SEAFLRN' operation="average" />
           <field field_ref="fast_detritus_SEAFLRSI" name='SEAFLRSI' operation="average" />
           <field field_ref="fast_detritus_SEAFLRFE" name='SEAFLRFE' operation="average" />
           <field field_ref="fast_detritus_SEAFLRCA" name='SEAFLRCA' operation="average" />
           <field field_ref="fast_detritus_OCAL_LVL" name='OCAL_LVL' operation="average" />
-          <field field_ref="N_PROD_result" name='N_PROD' operation="average" />
-          <field field_ref="N_CONS_result" name='N_CONS' operation="average" />
-          <field field_ref="C_PROD_result" name='C_PROD' operation="average" />
-          <field field_ref="C_CONS_result" name='C_CONS' operation="average" />
-          <field field_ref="O2_PROD_result" name='O2_PROD' operation="average" />
-          <field field_ref="O2_CONS_result" name='O2_CONS' operation="average" />
-          <field field_ref="O2_ANOX_result" name='O2_ANOX' operation="average" />
+          <field field_ref="pelagic_N_PROD_VINT" name='N_PROD' operation="average" />
+          <field field_ref="pelagic_N_CONS_VINT" name='N_CONS' operation="average" />
+          <field field_ref="pelagic_C_CONS_VINT" name='C_CONS' operation="average" />
+          <field field_ref="pelagic_O2_PROD_VINT" name='O2_PROD' operation="average" />
+          <field field_ref="pelagic_O2_CONS_VINT" name='O2_CONS' operation="average" />
+          <field field_ref="pelagic_O2_ANOX_VINT" name='O2_ANOX' operation="average" />
           <field field_ref="light_MED_XZE" name='MED_XZE' operation="average" />
           <field field_ref="carbonate_ATM_PCO2" name='ATM_PCO2' operation="average" />
           <field field_ref="carbonate_TALK" name='TALK' operation="average" />
           <field field_ref="carbonate_TCO2" name='TCO2' operation="average" />
           <field field_ref="ccd_cal_CCD" name='CAL_CCD' operation="average" />
           <field field_ref="ccd_arg_CCD" name='ARG_CCD' operation="average" />
-          <field field_ref="INT_PD_result" name='INT_PD' operation="average" />
-          <field field_ref="INT_PN_result" name='INT_PN' operation="average" />
-          <field field_ref="INT_ZMI_result" name='INT_ZMI' operation="average" />
-          <field field_ref="INT_ZME_result" name='INT_ZME' operation="average" />
-          <field field_ref="INT_DET_result" name='INT_DET' operation="average" />
-          <field field_ref="INT_DTC_result" name='INT_DTC' operation="average" />
-          <field field_ref="TOTREG_N_result" name='TOTREG_N' operation="average" />
-          <field field_ref="TOTRG_SI_result" name='TOTRG_SI' operation="average" />
-          <field field_ref="FASTN_result" name='FASTN' operation="average" />
-          <field field_ref="FASTC_result" name='FASTC' operation="average" />
-          <field field_ref="FASTCA_result" name='FASTCA' operation="average" />
-          <field field_ref="FASTSI_result" name='FASTSI' operation="average" />
-          <field field_ref="FASTFE_result" name='FASTFE' operation="average" />
-          <field field_ref="REMINN_result" name='REMINN' operation="average" />
-          <field field_ref="REMINSI_result" name='REMINSI' operation="average" />
-          <field field_ref="REMINFE_result" name='REMINFE' operation="average" />
+          <field field_ref="pelagic_PHD_VINT" name='INT_PD' operation="average" />
+          <field field_ref="pelagic_PHN_VINT" name='INT_PN' operation="average" />
+          <field field_ref="pelagic_ZMI_VINT" name='INT_ZMI' operation="average" />
+          <field field_ref="pelagic_ZME_VINT" name='INT_ZME' operation="average" />
+          <field field_ref="pelagic_DET_VINT" name='INT_DET' operation="average" />
+          <field field_ref="pelagic_DTC_VINT" name='INT_DTC' operation="average" />
+          <field field_ref="pelagic_FASTN_VINT" name='FASTN' operation="average" />
+          <field field_ref="pelagic_FASTC_VINT" name='FASTC' operation="average" />
+          <field field_ref="pelagic_FASTCA_VINT" name='FASTCA' operation="average" />
+          <field field_ref="pelagic_FASTSI_VINT" name='FASTSI' operation="average" />
+          <field field_ref="pelagic_FASTFE_VINT" name='FASTFE' operation="average" />
+          <field field_ref="fast_detritus_freminn_VINT" name='REMINN' operation="average" />
+          <field field_ref="fast_detritus_freminsi_VINT" name='REMINSI' operation="average" />
+          <field field_ref="fast_detritus_freminfe_VINT" name='REMINFE' operation="average" />
           <field field_ref="SFR_OCAL_result" name='SFR_OCAL' operation="average" />
           <field field_ref="SFR_OARG_result" name='SFR_OARG' operation="average" />
-          <field field_ref="COM_RESP_result" name='COM_RESP' operation="average" />
+          <field field_ref="pelagic_fcomm_resp_VINT" name='COM_RESP' operation="average" />
           <field field_ref="benthic_LYSO_CA" name='LYSO_CA' operation="average" />
+          <field field_ref="pelagic_regen_slow_VINT" name='TOTREG_N' operation="average" />
+          <field field_ref="pelagic_regenSi_slow_VINT" name='TOTRG_SI' operation="average" />
+          <field field_ref="C_PROD1_result_VINT" name='C_PROD' operation="average" />
      </file> 
 
         <file id="file60" name_suffix="_grid_T" description="tracer variables"  sync_freq="1d">
