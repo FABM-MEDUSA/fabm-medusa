@@ -106,6 +106,10 @@ contains
 
      ffescav     = ffescav + fdeltaFe * d_per_s        ! = mmol/m3/d !assuming time scale of fdeltaFe of 1 day
 
+     if ((depth.ge.1000._rk).and.(xFeT .lt. 0.5_rk)) then
+        ffescav = 0._rk
+     endif
+
   elseif (self%jiron == 2) then
    !---------------------------------------------------------------------------------------------------------------
    ! Scheme 2: Moore et al. (2004)
