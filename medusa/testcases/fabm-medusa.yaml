@@ -301,3 +301,12 @@ instances:
     long_name: Surface ocean CO3 conc
     coupling: 
        source: carbonate/Carb
+  C_PROD1:
+    model: weighted_sum
+    long_name: Carbon production pelagic with CaCO3 remin
+    parameters:
+      n: 2
+      weight2: 86400.
+    coupling:
+      term1: pelagic/C_PROD
+      term2: fast_detritus/freminca
