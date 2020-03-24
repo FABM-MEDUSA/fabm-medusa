@@ -287,7 +287,7 @@ contains
     real(rk) :: fslowc,fslown,fregen,fregensi,fregenc,ftempn,ftempsi,ftempfe,ftempc,fq1,fcaco3,ftempca
     real(rk) :: fn_prod,fn_cons,fs_cons,fs_prod,fc_cons,fc_prod,fa_prod,fa_cons,fo2_ccons,fo2_ncons,fo2_cons,fo2_prod
     real(rk) :: rsmall, om_cal, dz
-    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
+    real(rk), parameter :: s_per_d = 86400.0_rk
 
     _LOOP_BEGIN_
 
@@ -474,8 +474,8 @@ contains
    _SET_DIAGNOSTIC_(self%id_pn_nlim, fnln * ZPHN)
    _SET_DIAGNOSTIC_(self%id_pn_felim, ffln * ZPHN)
 
-   _SET_DIAGNOSTIC_(self%id_prn, (fprn * ZPHN) / d_per_s)
-   _SET_DIAGNOSTIC_(self%id_prd, (fprd * ZPHD) / d_per_s)
+   _SET_DIAGNOSTIC_(self%id_prn, (fprn * ZPHN) * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_prd, (fprd * ZPHD) * s_per_d)
 
   ! Chlorophyll production
   frn = (self%xthetam * fchn * fnln * ffln) / (fthetan + tiny(fthetan))
@@ -498,9 +498,9 @@ contains
   fgmidc = rsmall                               ! grazing on detrital carbon
   if (ZDET .gt. rsmall) fgmidc = (ZDTC / (ZDET + tiny(ZDET))) * fgmid
 
-  _SET_DIAGNOSTIC_(self%id_GMIPn,fgmipn / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_GMID,fgmid / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_GMIDC,fgmidc / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_GMIPn,fgmipn * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_GMID,fgmid * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_GMIDC,fgmidc * s_per_d)
 
   ! which translates to these incoming N and C fluxes
   finmi = (1.0_rk - self%xphi) * (fgmipn + fgmid)
@@ -533,11 +533,11 @@ contains
   fgmedc = rsmall                              ! grazing on detrital carbon
   if (ZDET .gt. rsmall) fgmedc = (ZDTC / (ZDET + tiny(ZDET))) * fgmed
 
-  _SET_DIAGNOSTIC_(self%id_GMEPN,fgmepn / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_GMEPD,fgmepd / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_GMEZMI,fgmezmi / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_GMED,fgmed / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_GMEDC,fgmedc / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_GMEPN,fgmepn * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_GMEPD,fgmepd * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_GMEZMI,fgmezmi * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_GMED,fgmed * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_GMEDC,fgmedc * s_per_d)
   !
   ! which translates to these incoming N and C fluxes
   finme = (1.0_rk - self%xphi) * (fgmepn + fgmepd + fgmezmi + fgmed)
@@ -559,21 +559,21 @@ contains
   end if
   fmeresp = (self%xbetac * ficme) - (self%xthetazme * fmegrow)
 
-  _SET_DIAGNOSTIC_(self%id_ZI_MES_N, self%xphi * (fgmipn + fgmid) / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZI_MES_D, (1._rk - self%xbetan) * finmi / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZI_MES_C, self%xphi * ((self%xthetapn * fgmipn) + fgmidc) / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZI_MESDC, (1._rk - self%xbetac) * ficmi / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZE_MES_N, self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed) / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZE_MES_D, (1._rk - self%xbetan) * finme / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZE_MES_C, self%xphi * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc) / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZE_MESDC, (1._rk - self%xbetac) * ficme / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZI_MES_N, self%xphi * (fgmipn + fgmid) * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_ZI_MES_D, (1._rk - self%xbetan) * finmi * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_ZI_MES_C, self%xphi * ((self%xthetapn * fgmipn) + fgmidc) * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_ZI_MESDC, (1._rk - self%xbetac) * ficmi * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_ZE_MES_N, self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed) * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_ZE_MES_D, (1._rk - self%xbetan) * finme * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_ZE_MES_C, self%xphi * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc) * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_ZE_MESDC, (1._rk - self%xbetac) * ficme * s_per_d)
 
-  _SET_DIAGNOSTIC_(self%id_ZI_EXCR, fmiexcr / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZI_RESP, fmiresp / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZI_GROW, fmigrow / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZE_EXCR, fmeexcr / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZE_RESP, fmeresp / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZE_GROW, fmegrow / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_ZI_EXCR, fmiexcr * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_ZI_RESP, fmiresp * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_ZI_GROW, fmigrow * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_ZE_EXCR, fmeexcr * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_ZE_RESP, fmeresp * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_ZE_GROW, fmegrow * s_per_d)
 
   ! Plankton metabolic losses
 
@@ -584,10 +584,10 @@ contains
   fdzmi2 = self%xmetazmi * ZZMI
   fdzme2 = self%xmetazme * ZZME
 
-  _SET_DIAGNOSTIC_(self%id_PN_LLOSS, fdpn2  / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_PD_LLOSS, fdpd2 / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZI_LLOSS, fdzmi2 / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_ZE_LLOSS, fdzme2 / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_PN_LLOSS, fdpn2  * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_PD_LLOSS, fdpd2 * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_ZI_LLOSS, fdzmi2 * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_ZE_LLOSS, fdzme2 * s_per_d)
 
   ! Plankton mortality losses
 
@@ -616,8 +616,8 @@ contains
   end if
   fdpds = fdpd * fsin
 
-  _SET_DIAGNOSTIC_(self%id_mpn, fdpn / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_mpd, fdpd / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_mpn, fdpn * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_mpd, fdpd * s_per_d)
 
   ! microzooplankton
   if (self%jmzmi == 1) then
@@ -644,12 +644,12 @@ contains
                   ((ZZME * ZZME) / (self%xkzme + (ZZME * ZZME)))
   end if
 
-  _SET_DIAGNOSTIC_(self%id_MZMI, fdzmi / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_MZME, fdzme / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_MZMI, fdzmi * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_MZME, fdzme * s_per_d)
 
   ! Diatom frustule dissolution
   fsdiss = self%xsdiss * ZPDS
-  _SET_DIAGNOSTIC_(self%id_OPALDISS, fsdiss / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_OPALDISS, fsdiss * s_per_d)
 
   ! Detritus remineralisation
   if (self%jmd == 1) then
@@ -666,8 +666,8 @@ contains
     fddc = self%xmdc * ZDTC
   end if
 
-  _SET_DIAGNOSTIC_(self%id_MDET, fdd / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_MDETC, fddc / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_MDET, fdd * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_MDETC, fddc * s_per_d)
   !
   ! this variable integrates the creation of slow sinking detritus 
   !to allow the split between fast and slow detritus to be diagnosed
@@ -675,10 +675,10 @@ contains
   ! and the same for detrital carbon
   fslowc  = (self%xthetapn * fdpn) + (self%xthetazmi * fdzmi) + (self%xthetapd * (1._rk - self%xfdfrac1) * fdpd) + (self%xthetazme * (1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetac) * (ficmi + ficme))
 
-  _SET_DIAGNOSTIC_(self%id_detn, fslown / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_detc, fslowc / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_detn, fslown * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_detc, fslowc * s_per_d)
 
-  _SET_DIAGNOSTIC_(self%id_fslownflux, ZDET * self%wdep / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_fslownflux, ZDET * self%wdep * s_per_d)
 
   ! Nutrient regeneration
   ! this variable integrates total nitrogen regeneration down the watercolumn;
@@ -688,15 +688,15 @@ contains
   fmiexcr + fmeexcr + fdd +                                               &  ! excretion + D remin.
   fdpn2 + fdpd2 + fdzmi2 + fdzme2))                                          ! linear mortality
  
- _SET_DIAGNOSTIC_(self%id_fregen2d,fregen * dz / d_per_s)
- _SET_DIAGNOSTIC_(self%id_fregen,fregen / d_per_s)
+ _SET_DIAGNOSTIC_(self%id_fregen2d,fregen * dz * s_per_d)
+ _SET_DIAGNOSTIC_(self%id_fregen,fregen * s_per_d)
   !
   ! silicon
   fregensi = (( fsdiss + ((1._rk - self%xfdfrac1) * fdpds) +              &  ! dissolution + non-lin. mortality
   ((1._rk - self%xfdfrac3) * fgmepds) +                                   &  ! egestion by zooplankton
   fdpds2))                                                                   ! linear mortality
 
- _SET_DIAGNOSTIC_(self%id_fregensi,fregensi / d_per_s)
+ _SET_DIAGNOSTIC_(self%id_fregensi,fregensi * s_per_d)
 
   ! carbon
 !  fregenc  = (( (self%xphi * ((self%xthetapn * fgmipn) + fgmidc)) +       &  ! messy feeding
@@ -715,19 +715,19 @@ contains
   ! nitrogen:   diatom and mesozooplankton mortality
   ftempn = (self%xfdfrac1 * fdpd)  + (self%xfdfrac2 * fdzme)
   _SET_ODE_(self%id_tempn,ftempn)
-  _SET_DIAGNOSTIC_(self%id_FASTN,ftempn / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_FASTN,ftempn * s_per_d)
   ! silicon:    diatom mortality and grazed diatoms
   ftempsi = (self%xfdfrac1 * fdpds) + (self%xfdfrac3 * fgmepds)
   _SET_ODE_(self%id_tempsi,ftempsi)
-  _SET_DIAGNOSTIC_(self%id_FASTSI,ftempsi / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_FASTSI,ftempsi * s_per_d)
   ! iron:       diatom and mesozooplankton mortality
   ftempfe = ((self%xfdfrac1 * fdpd) + (self%xfdfrac2 * fdzme)) * self%xrfn
   _SET_ODE_(self%id_tempfe,ftempfe)
-  _SET_DIAGNOSTIC_(self%id_FASTFE,ftempfe / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_FASTFE,ftempfe * s_per_d)
   ! carbon:     diatom and mesozooplankton mortality
   ftempc = (self%xfdfrac1 * self%xthetapd * fdpd) + (self%xfdfrac2 * self%xthetazme * fdzme)
   _SET_ODE_(self%id_tempc,ftempc)
-  _SET_DIAGNOSTIC_(self%id_FASTC,ftempc / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_FASTC,ftempc * s_per_d)
 
   ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
 
@@ -744,7 +744,7 @@ contains
   ! to an export flux for which they apply conversion factors to estimate the various elemental fractions (Si, Ca)
   ftempca = ftempc * fcaco3
   _SET_ODE_(self%id_tempca,ftempca)
-  _SET_DIAGNOSTIC_(self%id_FASTCA,ftempca / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_FASTCA,ftempca * s_per_d)
 
   !LOCAL SMS TRENDS
   ! chlorophyll
@@ -756,7 +756,7 @@ contains
   _SET_ODE_(self%id_ZPHD,(fprd * ZPHD) - fgmepd - fdpd - fdpd2 )
   _SET_ODE_(self%id_ZPDS,(fprds * ZPDS) - fgmepds - fdpds - fsdiss - fdpds2 )
 
-  _SET_DIAGNOSTIC_(self%id_OPAL, (fprds * ZPDS) / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_OPAL, (fprds * ZPDS) * s_per_d)
 
   ! zooplankton
   _SET_ODE_(self%id_ZZMI, fmigrow - fgmezmi - fdzmi - fdzmi2 )
@@ -772,8 +772,8 @@ contains
              + fmiexcr + fmeexcr + fdd                            &  ! excretion and remin.
              + fdpn2 + fdpd2 + fdzmi2 + fdzme2                       ! metab. losses
 
-   _SET_DIAGNOSTIC_(self%id_N_PROD, fn_prod / d_per_s)
-   _SET_DIAGNOSTIC_(self%id_N_CONS, fn_cons / d_per_s)
+   _SET_DIAGNOSTIC_(self%id_N_PROD, fn_prod * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_N_CONS, fn_cons * s_per_d)
    _SET_ODE_(self%id_ZDIN,fn_prod + fn_cons)
 
   ! dissolved silicic acid
@@ -802,12 +802,12 @@ contains
 
    _SET_DIAGNOSTIC_(self%id_fscal_part, (self%xthetapn * ZPHN + self%xthetapd * ZPHD + self%xthetazmi * ZZMI + self%xthetazme * ZZME + self%xthetad * ZDET) * 0.002_rk)
 
-   _SET_DIAGNOSTIC_(self%id_fcomm_resp, fc_prod / dz / d_per_s) ! pelagic part of community respiration (does not include CaCO3 terms)
+   _SET_DIAGNOSTIC_(self%id_fcomm_resp, fc_prod / dz * s_per_d) ! pelagic part of community respiration (does not include CaCO3 terms)
 
    fc_prod = fc_prod - ftempca ! CaCO3
 
-   _SET_DIAGNOSTIC_(self%id_C_PROD, fc_prod / d_per_s)
-   _SET_DIAGNOSTIC_(self%id_C_CONS, fc_cons / d_per_s)
+   _SET_DIAGNOSTIC_(self%id_C_PROD, fc_prod * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_C_CONS, fc_cons * s_per_d)
    _SET_ODE_(self%id_ZDIC,fc_prod + fc_cons)
 
   ! alkalinity
@@ -852,13 +852,13 @@ contains
 
    if (ZOXY .lt. self%xo2min) then                     ! deficient O2; production fluxes only
       _SET_ODE_(self%id_ZOXY, fo2_prod )
-      _SET_DIAGNOSTIC_(self%id_foxy_anox, fo2_cons / d_per_s)
-      _SET_DIAGNOSTIC_(self%id_foxy_prod, fo2_prod / d_per_s)
+      _SET_DIAGNOSTIC_(self%id_foxy_anox, fo2_cons * s_per_d)
+      _SET_DIAGNOSTIC_(self%id_foxy_prod, fo2_prod * s_per_d)
    else                                                ! sufficient O2; production + consumption fluxes
       _SET_ODE_(self%id_ZOXY, fo2_prod + fo2_cons )
       _SET_DIAGNOSTIC_(self%id_foxy_anox, 0._rk)
-      _SET_DIAGNOSTIC_(self%id_foxy_prod, fo2_prod / d_per_s)
-      _SET_DIAGNOSTIC_(self%id_foxy_cons, fo2_cons / d_per_s)
+      _SET_DIAGNOSTIC_(self%id_foxy_prod, fo2_prod * s_per_d)
+      _SET_DIAGNOSTIC_(self%id_foxy_cons, fo2_cons * s_per_d)
    endif
 
    _LOOP_END_
@@ -878,7 +878,7 @@ contains
    !LOCAL VARIABLES
     real(rk) :: ZSEDC,ZSEDN,ZSEDFE,ZDET,ZDTC
     real(rk) :: fluxc,fluxn,fluxfe
-    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
+    real(rk), parameter :: s_per_d = 86400.0_rk
 
     _HORIZONTAL_LOOP_BEGIN_
 
@@ -898,9 +898,9 @@ contains
 
      _SET_BOTTOM_ODE_(self%id_ZSEDP, + fluxc/106._rk)
 
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_sbenin_c,  + fluxc / d_per_s)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_sbenin_n,  + fluxn / d_per_s)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_sbenin_fe, + fluxfe / d_per_s)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_sbenin_c,  + fluxc * s_per_d)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_sbenin_n,  + fluxn * s_per_d)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_sbenin_fe, + fluxfe * s_per_d)
 
     _HORIZONTAL_LOOP_END_
 

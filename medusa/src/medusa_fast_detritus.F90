@@ -175,7 +175,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    real(rk) :: freminc,freminn,freminfe,freminsi,freminca
    real(rk) :: om_cal,fdep1,cal_ccd
    integer ::  ccd_count
-   real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
+   real(rk), parameter :: s_per_d = 86400.0_rk
       !==========================================================================================
       ! BALLAST SUBMODEL
       !==========================================================================================
@@ -238,8 +238,8 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    freminn  = (fq0 - fq8) / dz                    ! N remineralisation in this box            (mol)
    ffastn = fq8
   
-  _SET_DIAGNOSTIC_(self%id_freminn2d,freminn * dz / d_per_s)
-  _SET_DIAGNOSTIC_(self%id_freminn,freminn / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_freminn2d,freminn * dz * s_per_d)
+  _SET_DIAGNOSTIC_(self%id_freminn,freminn * s_per_d)
 
    ! organic iron
    fq0      = ffastfe                             ! how much organic Fe enters this box       (mol)
@@ -250,13 +250,13 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    freminfe = (fq0 - fq8) / dz                    ! Fe remineralisation in this box           (mol)
    ffastfe = fq8
 
-  _SET_DIAGNOSTIC_(self%id_freminfe,freminfe / d_per_s)
+  _SET_DIAGNOSTIC_(self%id_freminfe,freminfe * s_per_d)
 
    ! biogenic silicon
    fq0      = ffastsi                             ! how much  opal centers this box           (mol) 
    fq1      = fq0 * exp(-(dz / xfastsi))          ! how much  opal leaves this box            (mol)
    freminsi = (fq0 - fq1) / dz                    ! Si remineralisation in this box           (mol)
-   _SET_DIAGNOSTIC_(self%id_freminsi,freminsi / d_per_s)
+   _SET_DIAGNOSTIC_(self%id_freminsi,freminsi * s_per_d)
    ffastsi = fq1
 
    ! biogenic calcium carbonate
@@ -314,11 +314,11 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastsi,ffastsi)
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ffastca,ffastca)
 
-   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRN,ffastn / d_per_s)
-   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRSI,ffastsi / d_per_s)
-   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRFE,ffastfe / d_per_s)
-   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRC,ffastc / d_per_s)
-   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRCA,ffastca / d_per_s)
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRN,ffastn * s_per_d)
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRSI,ffastsi * s_per_d)
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRFE,ffastfe * s_per_d)
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRC,ffastc * s_per_d)
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRCA,ffastca * s_per_d)
 
    end subroutine do_fast_detritus
 

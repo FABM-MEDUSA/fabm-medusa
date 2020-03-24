@@ -85,7 +85,7 @@ contains
    real(rk) :: as2 = 5.2121_rk
    real(rk) :: as3 = -0.10939_rk
    real(rk) :: as4 = 0.00093777_rk
-   real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
+   real(rk), parameter :: s_per_d = 86400.0_rk
 
    _HORIZONTAL_LOOP_BEGIN_
 
@@ -138,7 +138,7 @@ contains
 
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_O2SAT,o2sat * 1000._rk)   
    _SET_SURFACE_EXCHANGE_(self%id_ZOXY, o2flux)
-   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fairo2, o2flux / d_per_s)
+   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fairo2, o2flux * s_per_d)
 
    _HORIZONTAL_LOOP_END_
 

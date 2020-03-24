@@ -92,7 +92,7 @@ contains
 ! !LOCAL VARIABLES:
 
     real(rk) :: ZSEDC,ZSEDN,ZSEDFE,ZSEDSI,ZSEDCA,ZDET,ZDTC,ZSIL,ZALK,ZOXY
-    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
+    real(rk), parameter :: s_per_d = 86400.0_rk
     real(rk) :: f_benout_c,f_benout_n,f_benout_fe,f_benout_ca,f_benout_si,cal_ccd,depth
 
     _HORIZONTAL_LOOP_BEGIN_
@@ -132,16 +132,16 @@ contains
     _SET_BOTTOM_EXCHANGE_(self%id_ZALK, + 2._rk * f_benout_ca)
     _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, +f_benout_ca)
 
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_c, f_benout_c  / d_per_s)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_n, f_benout_n  / d_per_s)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_fe,f_benout_fe / d_per_s)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_si,f_benout_si / d_per_s)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_ca,f_benout_ca / d_per_s)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_c, f_benout_c  * s_per_d)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_n, f_benout_n  * s_per_d)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_fe,f_benout_fe * s_per_d)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_si,f_benout_si * s_per_d)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_ca,f_benout_ca * s_per_d)
 
    _GET_HORIZONTAL_(self%id_CAL_CCD,cal_ccd)
    _GET_(self%id_depth,depth)
    if (depth .le. cal_ccd) then   
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_lyso_ca,f_benout_ca / d_per_s)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_lyso_ca,f_benout_ca * s_per_d)
    else
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_lyso_ca, 0._rk)
    end if
