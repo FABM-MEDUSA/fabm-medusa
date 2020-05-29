@@ -855,13 +855,12 @@ contains
 
     sc    = 2073.1_rk-125.62_rk*temp+3.6276_rk*temp**2._rk-0.0432190_rk*temp**3._rk
     fwind = kw660 * (sc/660._rk)**(-0.5_rk)
-    fwind = fwind * 24._rk/100._rk
 
     ! Calculate air-sea flux, correct for sea-ice
     flux = fwind * henry * ( pco2a - pco2 * 1.0e6_rk) * dcf / 1000._rk
     flux = (1._rk - fr_i) * flux
-    _SET_SURFACE_EXCHANGE_(self%id_ZDIC,flux /86400._rk)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fairco2,flux)
+    _SET_SURFACE_EXCHANGE_(self%id_ZDIC,flux)
+    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fairco2,flux * 86400._rk)
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_pco2s,PCO2 * 1.0e6_rk)
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_TALK,TA * 1.0e6_rk)
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_TCO2,TCO2 * 1.0e6_rk)
