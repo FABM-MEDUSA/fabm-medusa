@@ -26,64 +26,12 @@
       <file_group id="1ts" output_freq="1ts"  output_level="10" enabled=".TRUE.">
          <!-- 1 time step files -->
   <!--  <file id="file57" name_suffix="_ptrc_T" description="tracer variables"  sync_freq="1ts"> 
-          <field field_ref="pelagic_ZCHN" operation="average" />
-          <field field_ref="pelagic_ZCHD" operation="average" />
-          <field field_ref="pelagic_ZPHN" operation="average" />
-          <field field_ref="pelagic_ZPHD" operation="average" />
-          <field field_ref="pelagic_ZPDS" operation="average" />
-          <field field_ref="pelagic_ZDIN" operation="average" />
-          <field field_ref="pelagic_ZFER" operation="average" />
-          <field field_ref="pelagic_ZSIL" operation="average" />
-          <field field_ref="pelagic_ZDET" operation="average" />
-          <field field_ref="pelagic_ZDTC" operation="average" />
-          <field field_ref="pelagic_ZZMI" operation="average" />
-          <field field_ref="pelagic_ZZME" operation="average" />
-          <field field_ref="pelagic_ZALK" operation="average" />
-          <field field_ref="pelagic_ZDIC" operation="average" />
-          <field field_ref="pelagic_ZOXY" operation="average" />
-          <field field_ref="oxygen_fairo2" operation="average" />
-          <field field_ref="benthic_ZSEDC" operation="average" />
-          <field field_ref="benthic_ZSEDN" operation="average" />
-          <field field_ref="benthic_ZSEDFE" operation="average" />
-          <field field_ref="benthic_ZSEDSI" operation="average" />
-          <field field_ref="benthic_ZSEDCA" operation="average" /> 
-          <field field_ref="pelagic_PAR" operation="average" />
-          <field field_ref="carbonate_fairco2" operation="average" />
-          <field field_ref="carbonate_Om_cal" operation="average" />
-          <field field_ref="carbonate_Om_arg" operation="average" />
-          <field field_ref="carbonate_pH" operation="average" />
         </file> -->
       </file_group>
 
       <file_group id="1h" output_freq="1h"  output_level="10" enabled=".TRUE."> <!-- 1h files -->
         <!-- hourly files -->
     <!--  <file id="file58" name_suffix="_ptrc_T" description="tracer variables"  sync_freq="1h">
-          <field field_ref="pelagic_ZCHN" operation="average" />
-          <field field_ref="pelagic_ZCHD" operation="average" />
-          <field field_ref="pelagic_ZPHN" operation="average" />
-          <field field_ref="pelagic_ZPHD" operation="average" />
-          <field field_ref="pelagic_ZPDS" operation="average" />
-          <field field_ref="pelagic_ZDIN" operation="average" />
-          <field field_ref="pelagic_ZFER" operation="average" />
-          <field field_ref="pelagic_ZSIL" operation="average" />
-          <field field_ref="pelagic_ZDET" operation="average" />
-          <field field_ref="pelagic_ZDTC" operation="average" />
-          <field field_ref="pelagic_ZZMI" operation="average" />
-          <field field_ref="pelagic_ZZME" operation="average" />
-          <field field_ref="pelagic_ZALK" operation="average" />
-          <field field_ref="pelagic_ZDIC" operation="average" />
-          <field field_ref="pelagic_ZOXY" operation="average" />
-          <field field_ref="carbonate_fairco2" operation="average" />
-          <field field_ref="carbonate_Om_cal" operation="average" />
-          <field field_ref="carbonate_Om_arg" operation="average" />
-          <field field_ref="carbonate_pH" operation="average" />
-          <field field_ref="oxygen_fairo2" operation="average" />
-          <field field_ref="benthic_ZSEDC" operation="average" />
-          <field field_ref="benthic_ZSEDN" operation="average" />
-          <field field_ref="benthic_ZSEDFE" operation="average" />
-          <field field_ref="benthic_ZSEDSI" operation="average" />
-          <field field_ref="benthic_ZSEDCA" operation="average" />
-          <field field_ref="pelagic_PAR" operation="average" />
         </file> -->
       </file_group> 
 
