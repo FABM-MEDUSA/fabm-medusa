@@ -1,4 +1,4 @@
-L4_medusa:
+L4_time_medusa:
    time_unit: day
    time_step: 1
    time_method: 2
@@ -7,16 +7,7 @@ L4_medusa:
        - source: int_change_in_total_carbon
        - source: int_change_in_total_nitrogen
        - source: int_change_in_total_silicate
-L4_medusay:
-   time_unit: year
-   time_step: 1
-   k_start: 50
-   k_stop: 50
-   k_stride: 1
-   time_method: 2
-   variables:
-       - source: *
-L4_medusas:
+L4_surface_medusa:
    time_unit: day
    time_step: 1
    k_start: 50
@@ -25,7 +16,10 @@ L4_medusas:
    time_method: 2
    variables:
        - source: *
-L4_medusab:
+       - source: int_change_in_total_carbon
+       - source: int_change_in_total_nitrogen
+       - source: int_change_in_total_silicate                     
+L4_bottom_medusa:
    time_unit: day
    time_step: 1
    k_start: 1
@@ -34,9 +28,6 @@ L4_medusab:
    time_method: 2
    variables:
        - source: *
-L4_time_monthly_mean:
-   time_unit: month
-   time_step: 1
-   variables:
-      - source: *
-        time_method: 2
+       - source: int_change_in_total_carbon
+       - source: int_change_in_total_nitrogen
+       - source: int_change_in_total_silicate                     
