@@ -181,7 +181,6 @@ instances:
       BEN_FE: 0.
       BEN_SI: 0.
       BEN_CA: 0.
-      BEN_FE: 0.
     coupling:
       DIN: pelagic/DIN
       SIL: pelagic/SIL
