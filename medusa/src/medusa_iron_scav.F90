@@ -21,6 +21,7 @@ module medusa_iron_scav
       type (type_diagnostic_variable_id)   :: id_ffescav
 
   ! Parameters
+      logical :: deep_fe_fix
       real(rk) :: xk_FeL,xLgT,xk_sc_Fe
       integer :: jiron
    contains
@@ -39,6 +40,7 @@ contains
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
    call self%register_implemented_routines((/source_do/))
+   call self%get_parameter(self%deep_fe_fix,'deep_fe_fix','stop scavenging for Fe below 0.5 umol / m3 at depths > 1000 m',default=.false.)
    call self%get_parameter(self%xk_FeL,'xk_FeL','(umol m-3)-1','dissociation constant for (Fe+ligand)',default=100._rk)
    call self%get_parameter(self%xLgT,'xLgT','umol m-3','total ligand concentration',default=1._rk)
    call self%get_parameter(self%xk_sc_Fe,'xk_sc_Fe','d-1','scavenging rate of "free" Fe',default=1.e-3_rk,scale_factor=d_per_s)
@@ -106,8 +108,12 @@ contains
 
      ffescav     = ffescav + fdeltaFe * d_per_s        ! = mmol/m3/d !assuming time scale of fdeltaFe of 1 day
 
-     if ((depth.ge.1000._rk).and.(xFeT .lt. 0.5_rk)) then
-        ffescav = 0._rk
+     if (self%deep_fe_fix) then
+
+       if ((depth.ge.1000._rk).and.(xFeT .lt. 0.5_rk)) then
+          ffescav = 0._rk
+       endif
+
      endif
 
   elseif (self%jiron == 2) then

@@ -128,6 +128,7 @@ instances:
   iron_scavenging:
     model: medusa/medusa_iron_scav
     parameters:
+      deep_fe_fix: false        # stop scavenging for Fe below 0.5 umol / m3 at depths > 1000 m
       xk_FeL: 100.              # dissociation constant for (Fe+ligand) (mmol m-3)-1, default=100.
       xLgT: 1.                  # total ligand concentration (mmol m-3), default=1.
       xk_sc_Fe: 1.e-3           # scavenging rate of "free" Fe (d-1), default=1.e-3
