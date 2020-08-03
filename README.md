@@ -1,0 +1,1 @@
+FABM-MEDUSA is a modular implementation of the Model of Ecosystem Dynamics, nutrient Utilization, Sequestration and Acidification (MEDUSA-2) within FABM (Framework for Aquatic Biogeochemical Models; http://fabm.net) (Bruggeman and Bolding, 2014).
