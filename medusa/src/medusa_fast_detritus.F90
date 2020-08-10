@@ -341,7 +341,7 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
        _SET_ODE_(self%id_ZDIC, + freminc + freminca)
        _SET_ODE_(self%id_ZDIN, + freminn * d_per_s)
        _SET_ODE_(self%id_ZSIL, + freminsi * d_per_s)
-       _SET_ODE_(self%id_ZFER, + freminfe * d_per_s)
+       _SET_ODE_(self%id_ZFER, + freminn * self%xrfn * d_per_s)
 
        if (ZOXY .ge. self%xo2min) _SET_ODE_(self%id_ZOXY, - self%xthetarem * freminc - self%xthetanit * freminn * d_per_s)
 
@@ -386,15 +386,16 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
     _SET_BOTTOM_EXCHANGE_(self%id_ZFER, + ffastn * self%xrfn)
 
      elseif (self%seafloor .eq. 2) then ! fast C -> slow C
-     ! not tested!
-     if (ZOXY .ge. self%xo2min) _SET_BOTTOM_EXCHANGE_(self%id_ZOXY, - self%xthetarem * ffastc - self%xthetanit * ffastn)
+
     _SET_BOTTOM_EXCHANGE_(self%id_ZALK, 2._rk * ffastca)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZDTC, + ffastc + ffastca)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDTC, + ffastc)
     _SET_BOTTOM_EXCHANGE_(self%id_ZDET, + ffastn)
     _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, + ffastsi)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZFER, + ffastn * self%xrfn)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, + ffastca)
+    !  Following the original implementation, this option does not include iron mineralisation.
 
-     elseif (self%seafloor .eq. 3) then ! fast C -> benthic C. Did we couple benthic module?
+     elseif (self%seafloor .eq. 3) then ! fast C -> benthic C.
+     ! Benthic module must be coupled.
 
     _SET_BOTTOM_ODE_(self%id_ZSEDC, + ffastc)
     _SET_BOTTOM_ODE_(self%id_ZSEDN, + ffastn)
