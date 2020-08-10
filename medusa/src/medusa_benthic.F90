@@ -122,7 +122,7 @@ contains
      if (ZOXY .ge. self%xo2min) _SET_BOTTOM_EXCHANGE_(self%id_ZOXY, - self%xthetanit * f_benout_n - self%xthetarem * f_benout_c)
 
     _SET_BOTTOM_ODE_(self%id_ZSEDFE,    -f_benout_fe)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZFER, +f_benout_fe)
+    _SET_BOTTOM_EXCHANGE_(self%id_ZFER, +f_benout_n * self%xrfn)
 
      ! inorganic components
     _SET_BOTTOM_ODE_(self%id_ZSEDSI,    -f_benout_si)
