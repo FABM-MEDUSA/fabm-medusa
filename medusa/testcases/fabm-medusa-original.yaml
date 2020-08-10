@@ -100,6 +100,7 @@ instances:
       xo2min: 4.0               # minimum O2 concentration (mmol O_2 m-3), default=4.0
       wg: -2.999808             # detritus sinking rate (m d-1), default = -2.999808
       wdep: 2.999808            # detritus deposition rate (m d-1), default = -wg
+      seafloor: 3
     initialization:
       CHN: 0.01
       CHD: 0.01
