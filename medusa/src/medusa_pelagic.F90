@@ -882,6 +882,8 @@ contains
 
     _HORIZONTAL_LOOP_BEGIN_
 
+    if (self%seafloor /=3) return
+
     _GET_(self%id_ZDET,ZDET)
     _GET_(self%id_ZDTC,ZDTC)
 
