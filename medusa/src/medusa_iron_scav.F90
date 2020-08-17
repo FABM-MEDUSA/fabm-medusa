@@ -151,16 +151,18 @@ contains
      _GET_(self%id_ffastsi_loc, ffastsi)
      _GET_(self%id_ffastca_loc, ffastca)
 
-     fbase_scav = 0.00384_rk
-     fscal_csink  = ffastc  * 1.e6_rk * 12.011_rk  * 1.e-4_rk * d_per_s ! xmassc = 12.011_rk
-     fscal_sisink = ffastsi * 1.e6_rk * 60.084_rk * 1.e-4_rk * d_per_s  ! xmasssi = 60.084_rk
-     fscal_casink = ffastca * 1.e6_rk * 100.086_rk * 1.e-4_rk * d_per_s ! xmassca = 100.086_rk
+     fbase_scav = 0.00384_rk * d_per_s
+     fscal_csink  = ffastc  * 1.e6_rk * 12.011_rk  * 1.e-4_rk ! xmassc = 12.011_rk
+     fscal_sisink = ffastsi * 1.e6_rk * 60.084_rk * 1.e-4_rk  ! xmasssi = 60.084_rk
+     fscal_casink = ffastca * 1.e6_rk * 100.086_rk * 1.e-4_rk ! xmassca = 100.086_rk
 
-     fscal_sink = (fscal_csink * 6._rk + fscal_sisink + fscal_casink) / (100._rk * 1.e3_rk * d_per_s)
+     fscal_sink = (fscal_csink * 6._rk + fscal_sisink + fscal_casink) / (100._rk * 1.e3_rk /86400._rk)
+
+     fscal_scav = fbase_scav * fscal_sink
 
      if (xFeT .lt. 0.5_rk) then
 
-        fscal_scav = fscal_scav * xFeT / 0.5_rk
+        fscal_scav = fscal_scav * (xFeT / 0.5_rk)
 
      elseif (xFeT .gt. 0.6_rk) then
 
@@ -182,7 +184,7 @@ contains
   !------------------------------------------------------
   !
     _GET_(self%id_ffastc_loc, ffastc)
-    xCscav1    = (ffastc * 12.011_rk) / (100._rk * d_per_s)
+    xCscav1    = ffastc * 86400._rk * 12.011_rk / 100._rk
     xCscav2    = (xCscav1 * 1.e-3_rk)**0.58_rk
     xk_org     = 0.5_rk * d_per_s ! ((g C m/3)^-1) / d
     xORGscav   = xk_org * xCscav2 * xFeF
