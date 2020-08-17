@@ -9,9 +9,9 @@ module medusa_carbonate
 !
 ! Global simulations imply calculations on the first timestep and every month subsequently;
 ! the resulting 3D field of omega calcite is used to determine the depth of the CCD
-! This is achieved by implemeting FABM capability for scheduling calls to subroutines
+! This is achieved by implemeting FABM capability for scheduling calls to subroutines.
 !
-! Air-sea exchange of carbon dioxide is also calculated in this module
+! This module also calculates the air-sea exchange of carbon dioxide
 !------------------------------------------------------------------------------------------
 !
    use fabm_types
