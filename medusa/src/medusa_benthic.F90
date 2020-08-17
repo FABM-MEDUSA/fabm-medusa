@@ -138,6 +138,7 @@ contains
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_si,f_benout_si * s_per_d)
     _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_ca,f_benout_ca * s_per_d)
 
+   ! account for CaCO3 that dissolves when it shouldn't
    _GET_HORIZONTAL_(self%id_CAL_CCD,cal_ccd)
    _GET_(self%id_depth,depth)
    if (depth .le. cal_ccd) then   
