@@ -71,6 +71,7 @@ contains
    real(rk) :: ZFER,depth,ffastc,ffastca,ffastsi
    real(rk) :: xFeT,xb_coef_tmp,xb2M4ac,xLgF,xFel,xFeF,xFree,ffescav,xmaxFeF,fdeltaFe
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
+   real(rk), parameter :: s_per_d = 86400._rk
    real(rk) :: fbase_scav,fscal_sink,fscal_part,fscal_scav,fscal_csink,fscal_sisink,fscal_casink
    real(rk) :: xCscav1,xCscav2,xk_org,xORGscav,xk_inorg,xINORGscav
 
@@ -126,7 +127,7 @@ contains
      _GET_(self%id_fscal_part, fscal_part)
 
      fbase_scav = 0.12_rk / 365.25_rk * d_per_s
-     fscal_sink = ffastc * 1.e2_rk * 86400.
+     fscal_sink = ffastc * 1.e2_rk * s_per_d
      fscal_scav = fbase_scav * min(((fscal_sink + fscal_part) / 0.0066_rk), 4._rk)
 
      if (xFeT .lt. 0.4_rk) then
@@ -156,7 +157,7 @@ contains
      fscal_sisink = ffastsi * 1.e6_rk * 60.084_rk * 1.e-4_rk  ! xmasssi = 60.084_rk
      fscal_casink = ffastca * 1.e6_rk * 100.086_rk * 1.e-4_rk ! xmassca = 100.086_rk
 
-     fscal_sink = (fscal_csink * 6._rk + fscal_sisink + fscal_casink) / (100._rk * 1.e3_rk /86400._rk)
+     fscal_sink = (fscal_csink * 6._rk + fscal_sisink + fscal_casink) / (100._rk * 1.e3_rk * d_per_s)
 
      fscal_scav = fbase_scav * fscal_sink
 
@@ -184,7 +185,7 @@ contains
   !------------------------------------------------------
   !
     _GET_(self%id_ffastc_loc, ffastc)
-    xCscav1    = ffastc * 86400._rk * 12.011_rk / 100._rk
+    xCscav1    = ffastc * s_per_d * 12.011_rk / 100._rk
     xCscav2    = (xCscav1 * 1.e-3_rk)**0.58_rk
     xk_org     = 0.5_rk * d_per_s ! ((g C m/3)^-1) / d
     xORGscav   = xk_org * xCscav2 * xFeF
@@ -199,7 +200,7 @@ contains
 
   end if
 
-  _SET_DIAGNOSTIC_(self%id_ffescav,ffescav * 86400._rk)
+  _SET_DIAGNOSTIC_(self%id_ffescav,ffescav * s_per_d)
   _SET_ODE_(self%id_ZFER, - ffescav)
    _LOOP_END_
 
