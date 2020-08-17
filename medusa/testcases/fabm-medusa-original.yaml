@@ -224,7 +224,7 @@ instances:
       weight2: 86400.
     coupling:
       term1: pelagic/fslownflux
-      term2: fast_detritus/ffastn_loc
+      term2: fast_detritus/ffastn_loc_3d
   IBEN_C:
     model: horizontal_weighted_sum
     long_name: Benthic input carbon
