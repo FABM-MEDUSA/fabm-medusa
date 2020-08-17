@@ -24,7 +24,7 @@ module medusa_fast_detritus
       type (type_dependency_id)            :: id_freminc1,id_freminn1,id_freminsi1,id_freminfe1,id_freminca1
       type (type_dependency_id)            :: id_om_cal
       type (type_diagnostic_variable_id)   :: id_freminc,id_freminn,id_freminsi,id_freminfe,id_freminca
-      type (type_diagnostic_variable_id)   :: id_ffastc_loc,id_ffastn_loc,id_ffastca_loc,id_ffastsi_loc
+      type (type_diagnostic_variable_id)   :: id_ffastc_loc,id_ffastn_loc,id_ffastca_loc,id_ffastsi_loc,id_ffastn_loc_3d
       type (type_horizontal_diagnostic_variable_id) :: id_ffastc,id_ffastn,id_ffastsi,id_ffastfe,id_ffastca
       type (type_horizontal_diagnostic_variable_id) :: id_SEAFLRN,id_SEAFLRSI,id_SEAFLRFE,id_SEAFLRC,id_SEAFLRCA
       type (type_horizontal_dependency_id) :: id_ffastc1,id_ffastn1,id_ffastfe1,id_ffastsi1,id_ffastca1,id_CAL_CCD
@@ -105,8 +105,10 @@ contains
 
    call self%register_diagnostic_variable(self%id_ffastc_loc,'ffastc_loc','mmol C m-2 s-1','local remineralisation of detritus (C)',missing_value=0.0_rk,source=source_do_column)
    call self%register_diagnostic_variable(self%id_ffastn_loc,'ffastn_loc','mmol C m-2 s-1','local remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column)
-call self%register_diagnostic_variable(self%id_ffastca_loc,'ffastca_loc','mmol Ca m-2 s-1','local remineralisation of detritus (Ca)',missing_value=0.0_rk,source=source_do_column)
-call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1','local remineralisation of detritus (Si)',missing_value=0.0_rk,source=source_do_column)
+   call self%register_diagnostic_variable(self%id_ffastca_loc,'ffastca_loc','mmol Ca m-2 s-1','local remineralisation of detritus (Ca)',missing_value=0.0_rk,source=source_do_column)
+   call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1','local remineralisation of detritus (Si)',missing_value=0.0_rk,source=source_do_column)
+
+  call self%register_diagnostic_variable(self%id_ffastn_loc_3d,'ffastn_loc_3d','mmol Si m-2 s-1','local remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column)
 
    call self%register_diagnostic_variable(self%id_ffastc,'ffastc','mmol C m-2 s-1','remineralisation of detritus (C)',missing_value=0.0_rk,source=source_do_column)
    call self%register_diagnostic_variable(self%id_ffastn,'ffastn','mmol N m-2 s-1','remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column)
@@ -204,6 +206,11 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
 
    _VERTICAL_LOOP_BEGIN_
 
+   _SET_DIAGNOSTIC_(self%id_ffastc_loc,ffastc)
+   _SET_DIAGNOSTIC_(self%id_ffastn_loc,ffastn)
+   _SET_DIAGNOSTIC_(self%id_ffastsi_loc,ffastsi)
+   _SET_DIAGNOSTIC_(self%id_ffastca_loc,ffastca)
+
     _GET_(self%id_dz,dz)
    ! oranic carbon
    fq0      = ffastc                              ! how much organic C enters this box        (mol)
@@ -295,16 +302,14 @@ call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol S
     _GET_(self%id_ftempfe,ftempfe)                 ! === organic iron ===
     _GET_(self%id_ftempsi,ftempsi)                 ! === biogenic silicon ===
     _GET_(self%id_ftempca,ftempca)                 ! === biogenic calcium carbonate ===
+
     ffastc  = ffastc + ftempc * dz                 ! diatom and mesozooplankton mortality
     ffastn  = ffastn  + ftempn * dz                ! diatom and mesozooplankton mortality
     ffastfe = ffastfe + ftempfe * dz               ! diatom and mesozooplankton mortality
     ffastsi = ffastsi + ftempsi * dz               ! diatom mortality and grazed diatoms
     ffastca = ffastca + ftempca * dz               ! latitudinally-based fraction of total primary production
 
-   _SET_DIAGNOSTIC_(self%id_ffastc_loc,ffastc)
-   _SET_DIAGNOSTIC_(self%id_ffastn_loc,ffastn)
-   _SET_DIAGNOSTIC_(self%id_ffastsi_loc,ffastsi)
-   _SET_DIAGNOSTIC_(self%id_ffastca_loc,ffastca)
+   _SET_DIAGNOSTIC_(self%id_ffastn_loc_3d,ffastn)  ! For total 3D detrital flux diagnostic
 
    _VERTICAL_LOOP_END_
 
