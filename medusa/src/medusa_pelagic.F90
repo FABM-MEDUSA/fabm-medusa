@@ -353,16 +353,16 @@ contains
 
   ! Phytoplankton light limitation
 
-  ! It is assumed par is the depth-averaged (vertical layer) PAR 
+  ! It is assumed par is the depth-averaged (vertical layer) PAR
   ! Light limitation in W/m2
   !
   ! Note that there is no temperature dependence in phytoplankton
-  ! growth rate or any other function. 
-  ! In calculation of Chl/Phy ratio tiny(phyto) is introduced to 
-  ! avoid NaNs in case of Phy==0.  
+  ! growth rate or any other function.
+  ! In calculation of Chl/Phy ratio tiny(phyto) is introduced to
+  ! avoid NaNs in case of Phy==0.
   !
-  ! fthetad and fthetan are Chl:C ratio (gChl/gC) in diat and 
-  ! non-diat: 
+  ! fthetad and fthetan are Chl:C ratio (gChl/gC) in diat and
+  ! non-diat:
   ! for 1:1 Chl:Phy ratio (mgChl/mmolN) theta=0.012
   !
 
@@ -411,9 +411,9 @@ contains
    ! Primary production (diatoms)
    ! (note: still needs multiplying by phytoplankton concentration)
    !
-   ! Production here is split between nitrogen production and that of silicon; 
-   ! depending upon the "intracellular" ratio of Si:N, 
-   ! model diatoms will uptake nitrogen/silicon differentially; 
+   ! Production here is split between nitrogen production and that of silicon;
+   ! depending upon the "intracellular" ratio of Si:N,
+   ! model diatoms will uptake nitrogen/silicon differentially;
    ! this borrows from the diatom model of Mongin et al. (2006)
 
    if (self%jliebig.eqv..false.) then
@@ -482,11 +482,11 @@ contains
   frd = (self%xthetamd * fchd * fnld * ffld * fsld2) / (fthetad + tiny(fthetad))  
 
   ! ZOOPLANKTON GRAZING
-  ! this code supplements the base grazing model with one that considers the C:N ratio 
+  ! this code supplements the base grazing model with one that considers the C:N ratio
   ! of grazed food and balances this against the requirements of zooplankton growth;
   ! this model is derived from that of Anderson & Pondaven (2003)
   !
-  ! The current version of the code assumes a fixed C:N ratio for detritus (in contrast to Anderson & Pondaven, 2003), 
+  ! The current version of the code assumes a fixed C:N ratio for detritus (in contrast to Anderson & Pondaven, 2003),
   ! though the full equations are retained for future extension
   !--------------------------------------------------------------------
 
@@ -669,7 +669,7 @@ contains
   _SET_DIAGNOSTIC_(self%id_MDET, fdd * s_per_d)
   _SET_DIAGNOSTIC_(self%id_MDETC, fddc * s_per_d)
   !
-  ! this variable integrates the creation of slow sinking detritus 
+  ! this variable integrates the creation of slow sinking detritus
   !to allow the split between fast and slow detritus to be diagnosed
   fslown  = fdpn + fdzmi + ((1._rk - self%xfdfrac1) * fdpd) + ((1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetan) * (finmi + finme))
   ! and the same for detrital carbon
@@ -681,8 +681,9 @@ contains
   _SET_DIAGNOSTIC_(self%id_fslownflux, ZDET * self%wdep * s_per_d)
 
   ! Nutrient regeneration
-  ! this variable integrates total nitrogen regeneration down the watercolumn;
-  ! the corresponding dissolution flux of silicon (from sources other than fast detritus) is also integrated
+  ! this variable integrates total nitrogen regeneration;
+  ! the corresponding dissolution flux of silicon (from sources
+  ! other than fast detritus) is also integrated
   fregen = (( (self%xphi * (fgmipn + fgmid)) +                            &  ! messy feeding
   (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed)) +                     &  ! messy feeding
   fmiexcr + fmeexcr + fdd +                                               &  ! excretion + D remin.
@@ -730,6 +731,7 @@ contains
   _SET_DIAGNOSTIC_(self%id_FASTC,ftempc * s_per_d)
 
   ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
+  ! This corresponds to jrratio.eq.2 in the original code.
 
   _GET_(self%id_om_cal,om_cal)
   if (om_cal .ge. 1._rk) then
@@ -739,14 +741,17 @@ contains
   endif
   fcaco3 = self%xridg_r0 * fq1
 
-  ! Convert CaCO3 production from function of primary production into a function of fast-sinking material; technically, 
-  ! this is what Dunne et al. (2007) do anyway; they convert total primary production estimated from surface chlorophyll
-  ! to an export flux for which they apply conversion factors to estimate the various elemental fractions (Si, Ca)
+  ! Convert CaCO3 production from function of primary production into a function
+  ! of fast-sinking material; technically, this is what Dunne et al. (2007) do anyway;
+  ! they convert total primary production estimated from surface chlorophyll
+  ! to an export flux for which they apply conversion factors to estimate
+  ! the various elemental fractions (Si, Ca)
   ftempca = ftempc * fcaco3
   _SET_ODE_(self%id_tempca,ftempca)
   _SET_DIAGNOSTIC_(self%id_FASTCA,ftempca * s_per_d)
 
-  !LOCAL SMS TRENDS
+  !LOCAL TRENDS
+
   ! chlorophyll
   _SET_ODE_(self%id_ZCHN,((frn * fprn * ZPHN) - fgmipn - fgmepn - fdpn - fdpn2) * (fthetan / self%xxi))
   _SET_ODE_(self%id_ZCHD,((frd * fprd * ZPHD) - fgmepd - fdpd - fdpd2) * (fthetad / self%xxi))
@@ -767,10 +772,10 @@ contains
 
   ! dissolved inorganic nitrogen
    fn_cons = - (fprn * ZPHN) - (fprd * ZPHD)                         ! primary production
-   fn_prod = + (self%xphi * (fgmipn + fgmid))                     &  ! messy feeding remin.
-             + (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed))  &  ! messy feeding remin.
-             + fmiexcr + fmeexcr + fdd                            &  ! excretion and remin.
-             + fdpn2 + fdpd2 + fdzmi2 + fdzme2                       ! metab. losses
+   fn_prod = + (self%xphi * (fgmipn + fgmid))                     &  ! messy feeding
+             + (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed))  &  ! messy feeding
+             + fmiexcr + fmeexcr + fdd                            &  ! excretion and remineralisation
+             + fdpn2 + fdpd2 + fdzmi2 + fdzme2                       ! metabolic losses
 
    _SET_DIAGNOSTIC_(self%id_N_PROD, fn_prod * s_per_d)
    _SET_DIAGNOSTIC_(self%id_N_CONS, fn_cons * s_per_d)
@@ -779,9 +784,9 @@ contains
   ! dissolved silicic acid
    fs_cons = - (fprds * ZPDS)                                        ! opal production
    fs_prod = + fsdiss                                             &  ! opal dissolution
-             + ((1.0_rk - self%xfdfrac1) * fdpds)                 &  ! mort. loss
+             + ((1.0_rk - self%xfdfrac1) * fdpds)                 &  ! mortality loss
              + ((1.0_rk - self%xfdfrac3) * fgmepds)               &  ! egestion of grazed Si
-             + fdpds2                                                ! metab. losses
+             + fdpds2                                                ! metabolic losses
    _SET_ODE_(self%id_ZSIL,fs_prod + fs_cons)
 
   ! dissolved iron
@@ -792,17 +797,17 @@ contains
                  
   ! dissolved inorganic carbon
    fc_cons = - (self%xthetapn * fprn * ZPHN) - (self%xthetapd * fprd * ZPHD)                      ! primary production
-   fc_prod = + (self%xthetapn * self%xphi * fgmipn) + (self%xphi * fgmidc)                     &  ! messy feeding remin
-             + (self%xthetapn * self%xphi * fgmepn) + (self%xthetapd * self%xphi * fgmepd)     &  ! messy feeding remin
-             + (self%xthetazmi * self%xphi * fgmezmi) + (self%xphi * fgmedc)                   &  ! messy feeding remin
+   fc_prod = + (self%xthetapn * self%xphi * fgmipn) + (self%xphi * fgmidc)                     &  ! messy feeding
+             + (self%xthetapn * self%xphi * fgmepn) + (self%xthetapd * self%xphi * fgmepd)     &  ! messy feeding
+             + (self%xthetazmi * self%xphi * fgmezmi) + (self%xphi * fgmedc)                   &  ! messy feeding
              + fmiresp + fmeresp + fddc                                                        &
-             + (self%xthetapn * fdpn2)                                                         &  ! resp., remin., losses
+             + (self%xthetapn * fdpn2)                                                         &  ! respiration, remineralisation
              + (self%xthetapd * fdpd2) + (self%xthetazmi * fdzmi2)                             &  ! losses
              + (self%xthetazme * fdzme2)                                                          ! losses
 
    _SET_DIAGNOSTIC_(self%id_fscal_part, (self%xthetapn * ZPHN + self%xthetapd * ZPHD + self%xthetazmi * ZZMI + self%xthetazme * ZZME + self%xthetad * ZDET) * 0.002_rk)
 
-   _SET_DIAGNOSTIC_(self%id_fcomm_resp, fc_prod / dz * s_per_d) ! pelagic part of community respiration (does not include CaCO3 terms)
+   _SET_DIAGNOSTIC_(self%id_fcomm_resp, fc_prod / dz * s_per_d) ! pelagic community respiration (does not include CaCO3 terms)
 
    fc_prod = fc_prod - ftempca ! CaCO3
 
@@ -811,46 +816,46 @@ contains
    _SET_ODE_(self%id_ZDIC,fc_prod + fc_cons)
 
   ! alkalinity
-   fa_cons = -2._rk * ftempca                                                    ! CaCO3 production
+   fa_cons = -2._rk * ftempca      ! CaCO3 production
 
   _SET_ODE_(self%id_ZALK, fa_cons)
 
-  ! oxygen
-   fo2_prod = + (self%xthetanit * fprn * ZPHN)                                            & ! Pn primary production, N
-              + (self%xthetanit * fprd * ZPHD)                                            & ! Pd primary production, N
-              + (self%xthetarem * self%xthetapn * fprn * ZPHN)                            & ! Pn primary production, C
-              + (self%xthetarem * self%xthetapd * fprd * ZPHD)                              ! Pd primary production, C
-   fo2_ncons = - (self%xthetanit * self%xphi * fgmipn)                                    & ! Pn messy feeding remin., N
-               - (self%xthetanit * self%xphi * fgmid)                                     & ! D  messy feeding remin., N
-               - (self%xthetanit * self%xphi * fgmepn)                                    & ! Pn messy feeding remin., N
-               - (self%xthetanit * self%xphi * fgmepd)                                    & ! Pd messy feeding remin., N
-               - (self%xthetanit * self%xphi * fgmezmi)                                   & ! Zi messy feeding remin., N
-               - (self%xthetanit * self%xphi * fgmed)                                     & ! D  messy feeding remin., N
-               - (self%xthetanit * fmiexcr)                                               & ! microzoo excretion, N
-               - (self%xthetanit * fmeexcr)                                               & ! mesozoo  excretion, N
-               - (self%xthetanit * fdd)                                                   & ! slow detritus remin., N
-               - (self%xthetanit * fdpn2)                                                 & ! Pn  losses, N
-               - (self%xthetanit * fdpd2)                                                 & ! Pd  losses, N
-               - (self%xthetanit * fdzmi2)                                                & ! Zmi losses, N
-               - (self%xthetanit * fdzme2)                                                  ! Zme losses, N
+  ! oxygen (has protection at low O2 concentrations)
+   fo2_prod = + (self%xthetanit * fprn * ZPHN)                               & ! Pn primary production, N
+              + (self%xthetanit * fprd * ZPHD)                               & ! Pd primary production, N
+              + (self%xthetarem * self%xthetapn * fprn * ZPHN)               & ! Pn primary production, C
+              + (self%xthetarem * self%xthetapd * fprd * ZPHD)                 ! Pd primary production, C
+   fo2_ncons = - (self%xthetanit * self%xphi * fgmipn)                       & ! Pn messy feeding, N
+               - (self%xthetanit * self%xphi * fgmid)                        & ! D  messy feeding, N
+               - (self%xthetanit * self%xphi * fgmepn)                       & ! Pn messy feeding, N
+               - (self%xthetanit * self%xphi * fgmepd)                       & ! Pd messy feeding, N
+               - (self%xthetanit * self%xphi * fgmezmi)                      & ! Zi messy feeding, N
+               - (self%xthetanit * self%xphi * fgmed)                        & ! D  messy feeding, N
+               - (self%xthetanit * fmiexcr)                                  & ! microzoo excretion, N
+               - (self%xthetanit * fmeexcr)                                  & ! mesozoo  excretion, N
+               - (self%xthetanit * fdd)                                      & ! slow detritus remin., N
+               - (self%xthetanit * fdpn2)                                    & ! Pn  losses, N
+               - (self%xthetanit * fdpd2)                                    & ! Pd  losses, N
+               - (self%xthetanit * fdzmi2)                                   & ! Zmi losses, N
+               - (self%xthetanit * fdzme2)                                     ! Zme losses, N
 
-   fo2_ccons = - (self%xthetarem * self%xthetapn * self%xphi * fgmipn)                    & ! Pn messy feeding remin., C
-               - (self%xthetarem * self%xphi * fgmidc)                                    & ! D  messy feeding remin., C
-               - (self%xthetarem * self%xthetapn * self%xphi * fgmepn)                    & ! Pn messy feeding remin., C
-               - (self%xthetarem * self%xthetapd * self%xphi * fgmepd)                    & ! Pd messy feeding remin., C
-               - (self%xthetarem * self%xthetazmi * self%xphi * fgmezmi)                  & ! Zi messy feeding remin., C
-               - (self%xthetarem * self%xphi * fgmedc)                                    & ! D  messy feeding remin., C
-               - (self%xthetarem * fmiresp)                                               & ! microzoo respiration, C
-               - (self%xthetarem * fmeresp)                                               & ! mesozoo  respiration, C
-               - (self%xthetarem * fddc)                                                  & ! slow detritus remin., C
-               - (self%xthetarem * self%xthetapn * fdpn2)                                 & ! Pn  losses, C
-               - (self%xthetarem * self%xthetapd * fdpd2)                                 & ! Pd  losses, C
-               - (self%xthetarem * self%xthetazmi * fdzmi2)                               & ! Zmi losses, C
-               - (self%xthetarem * self%xthetazme * fdzme2)                                 ! Zme losses, C
+   fo2_ccons = - (self%xthetarem * self%xthetapn * self%xphi * fgmipn)       & ! Pn messy feeding, C
+               - (self%xthetarem * self%xphi * fgmidc)                       & ! D  messy feeding, C
+               - (self%xthetarem * self%xthetapn * self%xphi * fgmepn)       & ! Pn messy feeding, C
+               - (self%xthetarem * self%xthetapd * self%xphi * fgmepd)       & ! Pd messy feeding, C
+               - (self%xthetarem * self%xthetazmi * self%xphi * fgmezmi)     & ! Zi messy feeding, C
+               - (self%xthetarem * self%xphi * fgmedc)                       & ! D  messy feeding, C
+               - (self%xthetarem * fmiresp)                                  & ! microzoo respiration, C
+               - (self%xthetarem * fmeresp)                                  & ! mesozoo  respiration, C
+               - (self%xthetarem * fddc)                                     & ! slow detritus remin., C
+               - (self%xthetarem * self%xthetapn * fdpn2)                    & ! Pn  losses, C
+               - (self%xthetarem * self%xthetapd * fdpd2)                    & ! Pd  losses, C
+               - (self%xthetarem * self%xthetazmi * fdzmi2)                  & ! Zmi losses, C
+               - (self%xthetarem * self%xthetazme * fdzme2)                    ! Zme losses, C
 
    fo2_cons = fo2_ncons + fo2_ccons
 
-   if (ZOXY .lt. self%xo2min) then                     ! deficient O2; production fluxes only
+   if (ZOXY .lt. self%xo2min) then                     ! suoxic zone, deficient O2; production fluxes only
       _SET_ODE_(self%id_ZOXY, fo2_prod )
       _SET_DIAGNOSTIC_(self%id_foxy_anox, fo2_cons * s_per_d)
       _SET_DIAGNOSTIC_(self%id_foxy_prod, fo2_prod * s_per_d)
