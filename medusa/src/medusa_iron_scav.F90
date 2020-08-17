@@ -125,9 +125,10 @@ contains
      _GET_(self%id_ffastc_loc, ffastc)
      _GET_(self%id_fscal_part, fscal_part)
 
-     fbase_scav = 0.12_rk / 365.5_rk * d_per_s
-     fscal_sink = ffastc * 1.e2_rk
+     fbase_scav = 0.12_rk / 365.25_rk * d_per_s
+     fscal_sink = ffastc * 1.e2_rk * 86400.
      fscal_scav = fbase_scav * min(((fscal_sink + fscal_part) / 0.0066_rk), 4._rk)
+
      if (xFeT .lt. 0.4_rk) then
 
         fscal_scav = fscal_scav * (xFeT / 0.4_rk)
