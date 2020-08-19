@@ -84,11 +84,12 @@ contains
     check = 0
 
    _VERTICAL_LOOP_BEGIN_
-    
+
+   ! determination of xpar
     _GET_(self%id_dz,dz)
     _GET_(self%id_ZCHN,ZCHN)
     _GET_(self%id_ZCHD,ZCHD)
-   
+
     totchl = ZCHN + ZCHD
     zpig = MAX( TINY(0._rk), totchl/self%rpig) ! total pigment
     zkr  = self%xkr0 + self%xkrp * EXP( self%xlr * LOG( zpig ) ) ! total absorption coefficient in red
@@ -97,7 +98,10 @@ contains
     zparg1    = zparg / zkg / dz * ( 1._rk - EXP( -zkg*dz ) ) ! green compound of par
     xpar = MAX( zparr1 + zparg1, 1.e-15_rk )
     _SET_DIAGNOSTIC_(self%id_xpar,xpar)
+
+    ! Determination of euphotic layer depth
     if ((xpar .lt. zpar100).and.(check==0)) then
+    ! Euphotic layer bottom level
         check = 1
         _SET_HORIZONTAL_DIAGNOSTIC_(self%id_MED_XZE, depth)
     end if
