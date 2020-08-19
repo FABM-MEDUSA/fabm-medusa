@@ -55,9 +55,11 @@ contains
   ! Calculates O2 saturation at 1 atm pressure
   ! Original author : Andrew Yool (14/10/04, revised 08/07/11)
   ! 
-  ! This subroutine calculates the oxygen saturation concentration at 1 atmosphere pressure in mol/m3 
-  ! given ambient temperature and salinity.  This formulation is (ostensibly) taken from 
-  ! Garcia & Gordon (1992, L&O, 1307-1312).  The function works in the range -1.9 <= T <= 40, 0 <= S <= 42.  
+  ! This subroutine calculates the oxygen saturation concentration
+  ! at 1 atmosphere pressure in mol/m3 given ambient temperature
+  ! and salinity.  This formulation is (ostensibly) taken from
+  ! Garcia & Gordon (1992, L&O, 1307-1312). The function works
+  ! in the range -1.9 <= T <= 40, 0 <= S <= 42.
   !
   ! Check value : T = 10, S = 35, oxy_sato = 0.282015 mol/m3
   !
@@ -116,10 +118,7 @@ contains
    ! Convert from ml/l to mol/m3
    o2_sato = (ans2 / 22391.6_rk) * 1000.0_rk
 
-   ! Calculate Schmidt number for ocean uptake of O2
-   ! Original author : Andrew Yool (14/10/04, revised 08/07/11)
-   ! 
-   ! This subroutine calculates the Schmidt number for O2 using sea surface temperature.
+   ! Calculate Schmidt number for ocean uptake of O2 using sea surface temperature.
    ! The code is based upon that developed as part of the OCMIP-2 project (1998-2000).
    ! The coefficients used are taken from Wanninkhof (2014) 
    ! Winninkhof, R. (2014). Relationship between wind speed and gas
@@ -127,14 +126,18 @@ contains
    ! 12, 351-362, doi:10.4319/lom.2014.12.351
    !
    o2_schmidt = as0 + pt*(as1 + pt*(as2 + pt*(as3 + pt*as4)))
-   kwo2 = kw660 * (660._rk / o2_schmidt)**0.5_rk  ! Calculate the transfer velocity for O2 (m/s)
 
-   o2sat = o2_sato * 1._rk ! Calculate the saturation concentration for oxygen (mol/m3)
+   ! Calculate the transfer velocity for O2 (m/s)
+   kwo2 = kw660 * (660._rk / o2_schmidt)**0.5_rk
+
+   ! Calculate the saturation concentration for oxygen (mol/m3)
+   o2sat = o2_sato * 1._rk
 
   ! Calculate time rate of change of O2 due to gas exchange (mol/m3/s), correct for sea-ice
    o2flux = (1._rk - fr_i) * kwo2 * (o2sat - o2)
 
-   o2flux = o2flux *1000._rk      ! Convert oxygen flux and saturation to mmol / m3
+  ! Convert oxygen flux and saturation to mmol / m3
+   o2flux = o2flux *1000._rk
 
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_O2SAT,o2sat * 1000._rk)   
    _SET_SURFACE_EXCHANGE_(self%id_ZOXY, o2flux)
