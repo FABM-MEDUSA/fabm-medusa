@@ -14,6 +14,18 @@ module medusa_carbonate
 ! This module also calculates the air-sea exchange of carbon dioxide
 !------------------------------------------------------------------------------------------
 !
+! This file contains a set of subroutines that calculate the carbonate system
+! at any given point in marine space time, given values for
+! temperature, salinity, DIC, depth (pressure).
+! This is essentially an implimentation of the Haltafall speciation code
+! (Ingri et al 1967, Talanta 14, 1261)
+! Another routine calulates the air sea exchange of CO2 given wind speed and atmospheric pCO2.
+! Code developed by Jerry Blackford and others at PML, based on pre-existing code.
+! See Zeebe & Wolf-Gladrow, 2001. CO2 in seawater: equilibrium, kinetics and isotopes.
+! Elsevier Oceanography Series 65, 346. for a reasonable overview.
+! reference for prior usage of this code: Blackford & Gilbert, 2007. J Mar Sys 64, 229-241.
+! See also Butenschön et al, 2016. Geosci. Model Dev., 9, 1293–1339, https://doi.org/10.5194/gmd-9-1293-2016
+
    use fabm_types
    use fabm_standard_variables
 
