@@ -482,11 +482,13 @@ contains
   frd = (self%xthetamd * fchd * fnld * ffld * fsld2) / (fthetad + tiny(fthetad))  
 
   ! ZOOPLANKTON GRAZING
-  ! this code supplements the base grazing model with one that considers the C:N ratio
-  ! of grazed food and balances this against the requirements of zooplankton growth;
-  ! this model is derived from that of Anderson & Pondaven (2003)
+  ! this code supplements the base grazing model with one that
+  ! considers the C:N ratio of grazed food and balances this
+  ! against the requirements of zooplankton growth; this model
+  ! is derived from that of Anderson & Pondaven (2003)
   !
-  ! The current version of the code assumes a fixed C:N ratio for detritus (in contrast to Anderson & Pondaven, 2003),
+  ! The current version of the code assumes a fixed C:N ratio
+  ! for detritus (in contrast to Anderson & Pondaven, 2003),
   ! though the full equations are retained for future extension
   !--------------------------------------------------------------------
 
