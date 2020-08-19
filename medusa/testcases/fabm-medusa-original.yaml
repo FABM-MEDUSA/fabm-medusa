@@ -131,9 +131,9 @@ instances:
     parameters:
       deep_fe_fix: false        # stop scavenging for Fe below 0.5 umol / m3 at depths > 1000 m
       xk_FeL: 100.              # dissociation constant for (Fe+ligand) (mmol m-3)-1, default=100.
-      xLgT: 1.                  # total ligand concentration (mmol m-3), default=1.
+      xLgT: 1.                  # total ligand concentration (mmol m-3), default=1
       xk_sc_Fe: 1.e-3           # scavenging rate of "free" Fe (d-1), default=1.e-3
-      jiron: 1                  # iron scavenging scheme, 1-Dutkiewicz et al(2005),2-Moore et al(2004),3-Moore et al(2008),4-Galbraith et al. (2010)',default and tested=1
+      jiron: 1                  # iron scavenging scheme, 1-Dutkiewicz et al(2005),2-Moore et al(2004),3-Moore et al(2008),4-Galbraith et al. (2010)', default=1
     coupling:
       FER: pelagic/FER
       ffastc_loc: fast_detritus/ffastc_loc
@@ -199,7 +199,7 @@ instances:
       value: 400.
       standard_name: mole_fraction_of_carbon_dioxide_in_air
 # ADDITIONAL DIAGNOSTIC OUTPUT - comment out as appropriate
-# original variable naming retained
+# original naming retained
   TPP3:
     model: weighted_sum
     long_name: Total primary production 3D
