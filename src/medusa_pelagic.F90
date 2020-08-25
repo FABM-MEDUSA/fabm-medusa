@@ -22,22 +22,22 @@ module medusa_pelagic
 
    private
 
-  type,extends(type_particle_model),public :: type_medusa_pelagic
+   type, extends(type_particle_model), public :: type_medusa_pelagic
       ! Variable identifiers
-      type (type_state_variable_id)        :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
-      type (type_dependency_id)            :: id_temp,id_salt, id_om_cal, id_xpar, id_dz
-      type (type_state_variable_id)   :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
-      type (type_diagnostic_variable_id) :: id_prn,id_prd,id_mpn,id_mpd,id_OPAL,id_OPALDISS,id_detn,id_detc,id_MDET,id_MDETC
-      type (type_diagnostic_variable_id) :: id_GMIPn,id_GMID,id_MZMI,id_MZME,id_GMEPN,id_GMEPD,id_GMEZMI,id_GMED
-      type (type_diagnostic_variable_id) :: id_GMIDC,id_GMEDC,id_PN_LLOSS,id_PD_LLOSS,id_ZI_LLOSS,id_ZE_LLOSS,id_fcomm_resp
-      type (type_diagnostic_variable_id) :: id_pd_jlim,id_pd_nlim,id_pd_felim,id_pd_silim,id_pd_silim2,id_pn_jlim,id_pn_nlim,id_pn_felim
-      type (type_diagnostic_variable_id) :: id_fregen,id_fregensi,id_slowdetflux,id_fscal_part,id_fregen2d
-      type (type_diagnostic_variable_id) :: id_ZI_MES_N,id_ZI_MES_D,id_ZI_MES_C,id_ZI_MESDC,id_ZE_MES_N,id_ZE_MES_D,id_ZE_MES_C,id_ZE_MESDC
-      type (type_diagnostic_variable_id) :: id_ZI_EXCR,id_ZI_RESP,id_ZI_GROW,id_ZE_EXCR,id_ZE_RESP,id_ZE_GROW
-      type (type_diagnostic_variable_id) :: id_C_PROD,id_C_CONS,id_N_PROD,id_N_CONS,id_foxy_prod,id_foxy_cons,id_foxy_anox
-      type (type_horizontal_diagnostic_variable_id) :: id_f_sbenin_c,id_f_sbenin_n,id_f_sbenin_fe
-      type (type_bottom_state_variable_id) :: id_ZSEDC,id_ZSEDN,id_ZSEDP,id_ZSEDFE
-      type (type_diagnostic_variable_id) :: id_FASTN,id_FASTC,id_FASTCA,id_FASTFE,id_FASTSI,id_fslownflux
+      type (type_state_variable_id)             :: id_ZCHN,id_ZCHD,id_ZPHN,id_ZPHD,id_ZPDS,id_ZDIN,id_ZFER,id_ZSIL,id_ZDET,id_ZDTC,id_ZZMI,id_ZZME,id_ZDIC,id_ZALK,id_ZOXY
+      type (type_dependency_id)                 :: id_temp,id_salt, id_om_cal, id_xpar, id_dz
+      type (type_state_variable_id)             :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca
+      type (type_diagnostic_variable_id)        :: id_prn,id_prd,id_mpn,id_mpd,id_OPAL,id_OPALDISS,id_detn,id_detc,id_MDET,id_MDETC
+      type (type_diagnostic_variable_id)        :: id_GMIPn,id_GMID,id_MZMI,id_MZME,id_GMEPN,id_GMEPD,id_GMEZMI,id_GMED
+      type (type_diagnostic_variable_id)        :: id_GMIDC,id_GMEDC,id_PN_LLOSS,id_PD_LLOSS,id_ZI_LLOSS,id_ZE_LLOSS,id_fcomm_resp
+      type (type_diagnostic_variable_id)        :: id_pd_jlim,id_pd_nlim,id_pd_felim,id_pd_silim,id_pd_silim2,id_pn_jlim,id_pn_nlim,id_pn_felim
+      type (type_diagnostic_variable_id)        :: id_fregen,id_fregensi,id_slowdetflux,id_fscal_part,id_fregen2d
+      type (type_diagnostic_variable_id)        :: id_ZI_MES_N,id_ZI_MES_D,id_ZI_MES_C,id_ZI_MESDC,id_ZE_MES_N,id_ZE_MES_D,id_ZE_MES_C,id_ZE_MESDC
+      type (type_diagnostic_variable_id)        :: id_ZI_EXCR,id_ZI_RESP,id_ZI_GROW,id_ZE_EXCR,id_ZE_RESP,id_ZE_GROW
+      type (type_diagnostic_variable_id)        :: id_C_PROD,id_C_CONS,id_N_PROD,id_N_CONS,id_foxy_prod,id_foxy_cons,id_foxy_anox
+      type (type_bottom_diagnostic_variable_id) :: id_f_sbenin_c,id_f_sbenin_n,id_f_sbenin_fe
+      type (type_bottom_state_variable_id)      :: id_ZSEDC,id_ZSEDN,id_ZSEDP,id_ZSEDFE
+      type (type_diagnostic_variable_id)        :: id_FASTN,id_FASTC,id_FASTCA,id_FASTFE,id_FASTSI,id_fslownflux
 
       ! Parameters
       logical :: jliebig
@@ -51,24 +51,22 @@ module medusa_pelagic
       real(rk) :: xthetanit,xthetarem,xo2min
       real(rk) :: wg,wdep
       integer  :: seafloor
-
    contains
-
       procedure :: initialize
       procedure :: do
       procedure :: do_bottom
-
-  end type type_medusa_pelagic
+   end type type_medusa_pelagic
 
 contains
 
-   subroutine initialize(self,configunit)
+   subroutine initialize(self, configunit)
 
-   class(type_medusa_pelagic),intent(inout),target :: self
-   integer,               intent(in)           :: configunit
+   class(type_medusa_pelagic), intent(inout), target :: self
+   integer,                    intent(in)            :: configunit
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
    call self%register_implemented_routines((/source_do, source_do_bottom/))
+
    ! Register parameters
    call self%get_parameter(self%xxi, 'xxi', 'mol N g C-1','C : N conversion factor', default=0.01257_rk)
    call self%get_parameter(self%xaln, 'xaln', 'g C(g chl)-1 (W m-2)-1 d-1','chl-specific initial slope of P-I curve (non-diatoms)', default=15.0_rk,scale_factor=d_per_s)
@@ -178,7 +176,7 @@ contains
    call self%register_state_dependency(self%id_tempfe,'tempfe','mmol Fe/m**3', 'fast-sinking detritus (Fe)')
    call self%register_state_dependency(self%id_tempca,'tempca','mmol CaCO3/m**3', 'fast-sinking detritus (CaCO3)')
 
-   call self%get_parameter(self%seafloor,'seafloor','-','seafloor parameterisation: 1-inorganic returns, 2-organic returns, 3-coupled benthic model', default = 3)
+   call self%get_parameter(self%seafloor,'seafloor','-','seafloor parameterisation: 1-inorganic returns, 2-organic returns, 3-coupled benthic model', default=3, minimum=1, maximum=3)
    if (self%seafloor .eq. 3) then
          call self%register_state_dependency(self%id_ZSEDC,'BEN_C','mmol C m-2', 'sediment (C)')
          call self%register_state_dependency(self%id_ZSEDN,'BEN_N','mmol N m-2', 'sediment (N)')
@@ -188,6 +186,7 @@ contains
          call self%request_coupling_to_model(self%id_ZSEDN, 'BEN', standard_variables%total_nitrogen)
          call self%request_coupling_to_model(self%id_ZSEDP, 'BEN', standard_variables%total_phosphorus)
    end if
+
    ! Register environmental dependencies
    call self%register_dependency(self%id_temp, standard_variables%temperature)
    call self%register_dependency(self%id_salt, standard_variables%practical_salinity)
@@ -254,9 +253,9 @@ contains
    call self%register_diagnostic_variable(self%id_ZE_RESP,'ZE_RESP','mmolN/m3/d','Mesozoo respiration')
    call self%register_diagnostic_variable(self%id_ZE_GROW,'ZE_GROW','mmolN/m3/d','Mesozoo growth')
    call self%register_diagnostic_variable(self%id_fcomm_resp,'fcomm_resp','mmolC/m3/d','Community respiration')
-   call self%register_diagnostic_variable(self%id_f_sbenin_c,'sbenin_c','mmolC/m2/d','Benthic input slow carbon',source=source_do_bottom)
-   call self%register_diagnostic_variable(self%id_f_sbenin_n,'sbenin_n','mmolN/m2/d','Benthic input slow nitrogen',source=source_do_bottom)
-   call self%register_diagnostic_variable(self%id_f_sbenin_fe,'sbenin_fe','mmolFe/m2/d','Benthic input slow iron',source=source_do_bottom)
+   call self%register_diagnostic_variable(self%id_f_sbenin_c,'sbenin_c','mmolC/m2/d','Benthic input slow carbon')
+   call self%register_diagnostic_variable(self%id_f_sbenin_n,'sbenin_n','mmolN/m2/d','Benthic input slow nitrogen')
+   call self%register_diagnostic_variable(self%id_f_sbenin_fe,'sbenin_fe','mmolFe/m2/d','Benthic input slow iron')
    call self%register_diagnostic_variable(self%id_FASTN,'FASTN','mmol N/m**3', 'fast-sinking detritus (N)')
    call self%register_diagnostic_variable(self%id_FASTC,'FASTC','mmol C/m**3', 'fast-sinking detritus (C)')
    call self%register_diagnostic_variable(self%id_FASTSI,'FASTSI','mmol Si/m**3', 'fast-sinking detritus (Si)')
@@ -267,49 +266,49 @@ contains
 
    end subroutine initialize
 
-   subroutine do(self,_ARGUMENTS_DO_)
+   subroutine do(self, _ARGUMENTS_DO_)
 
-   class(type_medusa_pelagic), INTENT(IN) :: self
+   class(type_medusa_pelagic), intent(in) :: self
   _DECLARE_ARGUMENTS_DO_
 
    !LOCAL VARIABLES:
-    real(rk) :: ZCHN,ZCHD,ZPHN,ZPHD,ZPDS,ZDIN,ZFER,ZSIL,ZDET,ZDTC,ZZMI,ZZME,ZALK,ZDIC,ZOXY,loc_T,par
-    real(rk) :: fthetan,fthetad,faln,fald
-    real(rk) :: fnln,ffln
-    real(rk) :: fnld,fsld,ffld
-    real(rk) :: fun_T,fun_q10,xvpnT,xvpdT,fchn1,fchn,fjln,fchd1,fchd,fjld
-    real(rk) :: fsin,fnsi,fsin1,fnsi1,fnsi2,fprn,fprd,fsld2,frn,frd,fprds
-    real(rk) :: fpnlim,fpdlim
-    real(rk) :: fmi1,fmi,fgmipn,fgmid,fgmidc,finmi,ficmi,fstarmi,fmith,fmigrow,fmiexcr,fmiresp
-    real(rk) :: fme1,fme,fgmepn,fgmepd,fgmepds,fgmezmi,fgmed,fgmedc,finme,ficme,fstarme,fmeth,fmegrow,fmeexcr,fmeresp
-    real(rk) :: fdpn2,fdpd2,fdpds2,fdzmi2,fdzme2,fdpn,fdpd,fdpds,fdzmi,fdzme
-    real(rk) :: fdd,fddc,fsdiss,fjlim_pn,fjlim_pd
-    real(rk) :: fslowc,fslown,fregen,fregensi,fregenc,ftempn,ftempsi,ftempfe,ftempc,fq1,fcaco3,ftempca
-    real(rk) :: fn_prod,fn_cons,fs_cons,fs_prod,fc_cons,fc_prod,fa_prod,fa_cons,fo2_ccons,fo2_ncons,fo2_cons,fo2_prod
-    real(rk) :: rsmall, om_cal, dz
-    real(rk), parameter :: s_per_d = 86400.0_rk
+   real(rk) :: ZCHN,ZCHD,ZPHN,ZPHD,ZPDS,ZDIN,ZFER,ZSIL,ZDET,ZDTC,ZZMI,ZZME,ZALK,ZDIC,ZOXY,loc_T,par
+   real(rk) :: fthetan,fthetad,faln,fald
+   real(rk) :: fnln,ffln
+   real(rk) :: fnld,fsld,ffld
+   real(rk) :: fun_T,fun_q10,xvpnT,xvpdT,fchn1,fchn,fjln,fchd1,fchd,fjld
+   real(rk) :: fsin,fnsi,fsin1,fnsi1,fnsi2,fprn,fprd,fsld2,frn,frd,fprds
+   real(rk) :: fpnlim,fpdlim
+   real(rk) :: fmi1,fmi,fgmipn,fgmid,fgmidc,finmi,ficmi,fstarmi,fmith,fmigrow,fmiexcr,fmiresp
+   real(rk) :: fme1,fme,fgmepn,fgmepd,fgmepds,fgmezmi,fgmed,fgmedc,finme,ficme,fstarme,fmeth,fmegrow,fmeexcr,fmeresp
+   real(rk) :: fdpn2,fdpd2,fdpds2,fdzmi2,fdzme2,fdpn,fdpd,fdpds,fdzmi,fdzme
+   real(rk) :: fdd,fddc,fsdiss,fjlim_pn,fjlim_pd
+   real(rk) :: fslowc,fslown,fregen,fregensi,fregenc,ftempn,ftempsi,ftempfe,ftempc,fq1,fcaco3,ftempca
+   real(rk) :: fn_prod,fn_cons,fs_cons,fs_prod,fc_cons,fc_prod,fa_prod,fa_cons,fo2_ccons,fo2_ncons,fo2_cons,fo2_prod
+   real(rk) :: rsmall, om_cal, dz
+   real(rk), parameter :: s_per_d = 86400.0_rk
 
-    _LOOP_BEGIN_
+   _LOOP_BEGIN_
 
-    ! Retrieve current (local) state variable values
-    _GET_(self%id_ZCHN,ZCHN)
-    _GET_(self%id_ZCHD,ZCHD)
-    _GET_(self%id_ZPHN,ZPHN)
-    _GET_(self%id_ZPHD,ZPHD)
-    _GET_(self%id_ZPDS,ZPDS)
-    _GET_(self%id_ZDIN,ZDIN)
-    _GET_(self%id_ZFER,ZFER)
-    _GET_(self%id_ZSIL,ZSIL)
-    _GET_(self%id_ZDET,ZDET)
-    _GET_(self%id_ZDTC,ZDTC)
-    _GET_(self%id_ZZMI,ZZMI)
-    _GET_(self%id_ZZME,ZZME)
-    _GET_(self%id_ZALK,ZALK)
-    _GET_(self%id_ZDIC,ZDIC)
-    _GET_(self%id_ZOXY,ZOXY)
-    _GET_(self%id_temp,loc_T)
-    _GET_(self%id_xpar,par)
-    _GET_(self%id_dz,dz)
+   ! Retrieve current (local) state variable values
+   _GET_(self%id_ZCHN,ZCHN)
+   _GET_(self%id_ZCHD,ZCHD)
+   _GET_(self%id_ZPHN,ZPHN)
+   _GET_(self%id_ZPHD,ZPHD)
+   _GET_(self%id_ZPDS,ZPDS)
+   _GET_(self%id_ZDIN,ZDIN)
+   _GET_(self%id_ZFER,ZFER)
+   _GET_(self%id_ZSIL,ZSIL)
+   _GET_(self%id_ZDET,ZDET)
+   _GET_(self%id_ZDTC,ZDTC)
+   _GET_(self%id_ZZMI,ZZMI)
+   _GET_(self%id_ZZME,ZZME)
+   _GET_(self%id_ZALK,ZALK)
+   _GET_(self%id_ZDIC,ZDIC)
+   _GET_(self%id_ZOXY,ZOXY)
+   _GET_(self%id_temp,loc_T)
+   _GET_(self%id_xpar,par)
+   _GET_(self%id_dz,dz)
 
    _SET_DIAGNOSTIC_(self%id_slowdetflux,-self%wg * ZDET)
 
@@ -318,60 +317,60 @@ contains
    ! PHYTOPLANKTON GROWTH
 
    ! Chlorophyll calculations
- 
+
    ! non-diatoms
    if (ZPHN .gt. rsmall) then
-    fthetan = max(tiny(ZCHN),(ZCHN * self%xxi) / (ZPHN + tiny(ZPHN)))
-    faln = self%xaln * fthetan
+      fthetan = max(tiny(ZCHN),(ZCHN * self%xxi) / (ZPHN + tiny(ZPHN)))
+      faln = self%xaln * fthetan
    else
-    fthetan = 0._rk
-    faln    = 0._rk
+      fthetan = 0._rk
+      faln    = 0._rk
    end if
 
    ! diatoms
    if (ZPHD .gt. rsmall) then
-    fthetad = max(tiny(ZCHD),(ZCHD * self%xxi) / (ZPHD + tiny(ZPHD)))
-    fald = self%xald * fthetad
+      fthetad = max(tiny(ZCHD),(ZCHD * self%xxi) / (ZPHD + tiny(ZPHD)))
+      fald = self%xald * fthetad
    else
-    fthetad = 0._rk
-    fald    = 0._rk
+      fthetad = 0._rk
+      fald    = 0._rk
    end if
 
    ! Temperature limitation
    fun_T = 1.066_rk**loc_T        ! temperature for Eppley-style phytoplankton growth
    fun_q10 = self%jq10**((loc_T - 0._rk) / 10._rk)
    if (self%jphy .eq. 1) then
-     xvpnT = self%xvpn * fun_T
-     xvpdT = self%xvpd * fun_T
+      xvpnT = self%xvpn * fun_T
+      xvpdT = self%xvpd * fun_T
    elseif (self%jphy .eq. 2) then
-     xvpnT = self%xvpn * fun_Q10
-     xvpdT = self%xvpd * fun_Q10
+      xvpnT = self%xvpn * fun_Q10
+      xvpdT = self%xvpd * fun_Q10
    else
-     xvpnT = self%xvpn
-     xvpdT = self%xvpd
+      xvpnT = self%xvpn
+      xvpdT = self%xvpd
    endif
 
-  ! Phytoplankton light limitation
+   ! Phytoplankton light limitation
 
-  ! It is assumed par is the depth-averaged (vertical layer) PAR
-  ! Light limitation in W/m2
-  !
-  ! Note that there is no temperature dependence in phytoplankton
-  ! growth rate or any other function.
-  ! In calculation of Chl/Phy ratio tiny(phyto) is introduced to
-  ! avoid NaNs in case of Phy==0.
-  !
-  ! fthetad and fthetan are Chl:C ratio (gChl/gC) in diat and
-  ! non-diat:
-  ! for 1:1 Chl:Phy ratio (mgChl/mmolN) theta=0.012
-  !
+   ! It is assumed par is the depth-averaged (vertical layer) PAR
+   ! Light limitation in W/m2
+   !
+   ! Note that there is no temperature dependence in phytoplankton
+   ! growth rate or any other function.
+   ! In calculation of Chl/Phy ratio tiny(phyto) is introduced to
+   ! avoid NaNs in case of Phy==0.
+   !
+   ! fthetad and fthetan are Chl:C ratio (gChl/gC) in diat and
+   ! non-diat:
+   ! for 1:1 Chl:Phy ratio (mgChl/mmolN) theta=0.012
+   !
 
    ! non-diatoms
    fchn1 = (xvpnT * xvpnT) + (faln * faln * par * par)
    if (fchn1 .gt. rsmall) then
-    fchn = xvpnT / (sqrt(fchn1) + tiny(fchn1))
+      fchn = xvpnT / (sqrt(fchn1) + tiny(fchn1))
    else
-    fchn = 0._rk
+      fchn = 0._rk
    endif
    fjln = fchn * faln * par ! non-diatom J term
    fjlim_pn = fjln / xvpnT
@@ -379,9 +378,9 @@ contains
    ! diatoms
    fchd1 = (xvpdT * xvpdT) + (fald * fald * par * par)
    if (fchd1 .gt. rsmall) then
-    fchd = xvpdT / (sqrt(fchd1) + tiny(fchd1))
+      fchd = xvpdT / (sqrt(fchd1) + tiny(fchd1))
    else
-    fchd = 0._rk
+      fchd = 0._rk
    end if
    fjld = fchd * fald * par ! diatom J term
    fjlim_pd = fjld / xvpdT
@@ -398,12 +397,12 @@ contains
    ! Primary production (non-diatoms)
    ! (note: still needs multiplying by phytoplankton concentration)
 
-   if (self%jliebig.eqv..false.) then
-     ! multiplicative nutrient limitation
-     fpnlim = fnln * ffln
+   if (.not. self%jliebig) then
+      ! multiplicative nutrient limitation
+      fpnlim = fnln * ffln
    else
-     ! Liebig Law (= most limiting) nutrient limitation
-     fpnlim = min(fnln,ffln)
+      ! Liebig Law (= most limiting) nutrient limitation
+      fpnlim = min(fnln,ffln)
    end if
 
    fprn = fjln * fpnlim
@@ -416,53 +415,52 @@ contains
    ! model diatoms will uptake nitrogen/silicon differentially;
    ! this borrows from the diatom model of Mongin et al. (2006)
 
-   if (self%jliebig.eqv..false.) then
-     ! multiplicative nutrient limitation
-     fpdlim = fnld * ffld
+   if (.not. self%jliebig) then
+      ! multiplicative nutrient limitation
+      fpdlim = fnld * ffld
    else
-     ! Liebig Law (= most limiting) nutrient limitation
-     fpdlim = min(fnld,ffld)
+      ! Liebig Law (= most limiting) nutrient limitation
+      fpdlim = min(fnld,ffld)
    end if
 
-  if (ZPHD .gt. rsmall .and. ZPDS .gt. rsmall) then
-
-   fsin = 0._rk
-   if ( zphd .gt. rsmall) fsin = ZPDS / ZPHD
-   fnsi = 0._rk
-   if ( zpds .gt. rsmall) fnsi = ZPHD / ZPDS
-   !these three next variables derive from Mongin et al. (2003)
-   fsin1 = 3.0_rk * self%xsin0      ! = 0.6
-   fnsi1 = 1.0_rk / fsin1           ! = 1.667
-   fnsi2 = 1.0_rk / self%xsin0      ! = 5.0
-   !
-   ! conditionalities based on ratios
-   ! nitrogen (and iron and carbon)
-   if (fsin .le. self%xsin0) then
+   if (ZPHD .gt. rsmall .and. ZPDS .gt. rsmall) then
+      fsin = 0._rk
+      if ( zphd .gt. rsmall) fsin = ZPDS / ZPHD
+      fnsi = 0._rk
+      if ( zpds .gt. rsmall) fnsi = ZPHD / ZPDS
+      !these three next variables derive from Mongin et al. (2003)
+      fsin1 = 3.0_rk * self%xsin0      ! = 0.6
+      fnsi1 = 1.0_rk / fsin1           ! = 1.667
+      fnsi2 = 1.0_rk / self%xsin0      ! = 5.0
+      !
+      ! conditionalities based on ratios
+      ! nitrogen (and iron and carbon)
+      if (fsin .le. self%xsin0) then
+         fprd = 0._rk
+         fsld2 = 0._rk
+      elseif (fsin .lt. fsin1) then
+         fprd = self%xuif * ((fsin - self%xsin0) / (fsin + tiny(fsin))) * (fjld * fpdlim)
+         fsld2 = self%xuif * ((fsin - self%xsin0) / (fsin + tiny(fsin)))
+      elseif (fsin .ge. fsin1) then
+         fprd = fjld * fpdlim
+         fsld2 = 1.0_rk
+      end if
+      !
+      ! silicon
+      if (fsin.lt.fnsi1) then
+         fprds = (fjld * fsld)
+      elseif (fsin.lt.fnsi2) then
+         fprds = self%xuif * ((fnsi - self%xnsi0) / (fnsi + tiny(fnsi))) * (fjld * fsld)
+      else
+         fprds = 0._rk
+      end if
+   else
+      fsin = 0._rk
+      fnsi = 0._rk
       fprd = 0._rk
       fsld2 = 0._rk
-   elseif (fsin .lt. fsin1) then
-      fprd = self%xuif * ((fsin - self%xsin0) / (fsin + tiny(fsin))) * (fjld * fpdlim)
-      fsld2 = self%xuif * ((fsin - self%xsin0) / (fsin + tiny(fsin)))
-   elseif (fsin .ge. fsin1) then
-      fprd = fjld * fpdlim
-      fsld2 = 1.0_rk
+      fprds = 0._rk
    end if
-  !
-  ! silicon
-   if (fsin.lt.fnsi1) then
-     fprds = (fjld * fsld)
-   elseif (fsin.lt.fnsi2) then
-     fprds = self%xuif * ((fnsi - self%xnsi0) / (fnsi + tiny(fnsi))) * (fjld * fsld)
-   else
-     fprds = 0._rk
-   end if
- else
-   fsin = 0._rk
-   fnsi = 0._rk
-   fprd = 0._rk
-   fsld2 = 0._rk
-   fprds = 0._rk
- end if
 
    _SET_DIAGNOSTIC_(self%id_pd_jlim, fjlim_pd * ZPHD)
    _SET_DIAGNOSTIC_(self%id_pd_nlim, fnld * ZPHD)
@@ -477,302 +475,302 @@ contains
    _SET_DIAGNOSTIC_(self%id_prn, (fprn * ZPHN) * s_per_d)
    _SET_DIAGNOSTIC_(self%id_prd, (fprd * ZPHD) * s_per_d)
 
-  ! Chlorophyll production
-  frn = (self%xthetam * fchn * fnln * ffln) / (fthetan + tiny(fthetan))
-  frd = (self%xthetamd * fchd * fnld * ffld * fsld2) / (fthetad + tiny(fthetad))  
+   ! Chlorophyll production
+   frn = (self%xthetam * fchn * fnln * ffln) / (fthetan + tiny(fthetan))
+   frd = (self%xthetamd * fchd * fnld * ffld * fsld2) / (fthetad + tiny(fthetad))
 
-  ! ZOOPLANKTON GRAZING
-  ! this code supplements the base grazing model with one that
-  ! considers the C:N ratio of grazed food and balances this
-  ! against the requirements of zooplankton growth; this model
-  ! is derived from that of Anderson & Pondaven (2003)
-  !
-  ! The current version of the code assumes a fixed C:N ratio
-  ! for detritus (in contrast to Anderson & Pondaven, 2003),
-  ! though the full equations are retained for future extension
-  !--------------------------------------------------------------------
+   ! ZOOPLANKTON GRAZING
+   ! this code supplements the base grazing model with one that
+   ! considers the C:N ratio of grazed food and balances this
+   ! against the requirements of zooplankton growth; this model
+   ! is derived from that of Anderson & Pondaven (2003)
+   !
+   ! The current version of the code assumes a fixed C:N ratio
+   ! for detritus (in contrast to Anderson & Pondaven, 2003),
+   ! though the full equations are retained for future extension
+   !--------------------------------------------------------------------
 
-  ! Microzooplankton
-  fmi1 = (self%xkmi * self%xkmi) + (self%xpmipn * ZPHN * ZPHN) + (self%xpmid * ZDET * ZDET)
-  fmi = self%xgmi * ZZMI / fmi1
-  fgmipn = fmi * self%xpmipn * ZPHN * ZPHN      ! grazing on non-diatoms
-  fgmid = fmi * self%xpmid * ZDET * ZDET        ! grazing on detrital nitrogen
-  fgmidc = rsmall                               ! grazing on detrital carbon
-  if (ZDET .gt. rsmall) fgmidc = (ZDTC / (ZDET + tiny(ZDET))) * fgmid
+   ! Microzooplankton
+   fmi1 = (self%xkmi * self%xkmi) + (self%xpmipn * ZPHN * ZPHN) + (self%xpmid * ZDET * ZDET)
+   fmi = self%xgmi * ZZMI / fmi1
+   fgmipn = fmi * self%xpmipn * ZPHN * ZPHN      ! grazing on non-diatoms
+   fgmid = fmi * self%xpmid * ZDET * ZDET        ! grazing on detrital nitrogen
+   fgmidc = rsmall                               ! grazing on detrital carbon
+   if (ZDET .gt. rsmall) fgmidc = (ZDTC / (ZDET + tiny(ZDET))) * fgmid
 
-  _SET_DIAGNOSTIC_(self%id_GMIPn,fgmipn * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_GMID,fgmid * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_GMIDC,fgmidc * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_GMIPn,fgmipn * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_GMID,fgmid * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_GMIDC,fgmidc * s_per_d)
 
-  ! which translates to these incoming N and C fluxes
-  finmi = (1.0_rk - self%xphi) * (fgmipn + fgmid)
-  ficmi = (1.0_rk - self%xphi) * ((self%xthetapn * fgmipn) + fgmidc)
-  ! the ideal food C : N ratio for microzooplankton
-  ! xbetan = 0.77; xthetaz = 5.625; xbetac = 0.64; xkc = 0.80
-  fstarmi = (self%xbetan * self%xthetazmi) / (self%xbetac * self%xkc)
-  !
-  ! process these to determine proportioning of grazed N and C
-  ! (since there is no explicit consideration of respiration,
-  ! only growth and excretion are calculated here)
-  fmith = (ficmi / (finmi + tiny(finmi)))
-  if (fmith .ge. fstarmi) then
-     fmigrow = self%xbetan * finmi
-     fmiexcr = 0.0_rk
-  else
-     fmigrow = (self%xbetac * self%xkc * ficmi) / self%xthetazmi
-     fmiexcr = ficmi * ((self%xbetan / (fmith + tiny(fmith))) - ((self%xbetac * self%xkc) / self%xthetazmi))
-  end if
-  fmiresp = (self%xbetac * ficmi) - (self%xthetazmi * fmigrow)
+   ! which translates to these incoming N and C fluxes
+   finmi = (1.0_rk - self%xphi) * (fgmipn + fgmid)
+   ficmi = (1.0_rk - self%xphi) * ((self%xthetapn * fgmipn) + fgmidc)
+   ! the ideal food C : N ratio for microzooplankton
+   ! xbetan = 0.77; xthetaz = 5.625; xbetac = 0.64; xkc = 0.80
+   fstarmi = (self%xbetan * self%xthetazmi) / (self%xbetac * self%xkc)
+   !
+   ! process these to determine proportioning of grazed N and C
+   ! (since there is no explicit consideration of respiration,
+   ! only growth and excretion are calculated here)
+   fmith = (ficmi / (finmi + tiny(finmi)))
+   if (fmith .ge. fstarmi) then
+      fmigrow = self%xbetan * finmi
+      fmiexcr = 0.0_rk
+   else
+      fmigrow = (self%xbetac * self%xkc * ficmi) / self%xthetazmi
+      fmiexcr = ficmi * ((self%xbetan / (fmith + tiny(fmith))) - ((self%xbetac * self%xkc) / self%xthetazmi))
+   end if
+   fmiresp = (self%xbetac * ficmi) - (self%xthetazmi * fmigrow)
 
-  ! Mesozooplankton
-  fme1 = (self%xkme * self%xkme) + (self%xpmepn * ZPHN * ZPHN) + (self%xpmepd * ZPHD * ZPHD) + (self%xpmezmi * ZZMI * ZZMI) + (self%xpmed * ZDET * ZDET)
-  fme = self%xgme * ZZME / fme1
-  fgmepn = fme * self%xpmepn * ZPHN * ZPHN     ! grazing on non-diatoms
-  fgmepd = fme * self%xpmepd * ZPHD * ZPHD     ! grazing on diatoms
-  fgmepds = fsin * fgmepd                      ! grazing on diatom silicon
-  fgmezmi = fme * self%xpmezmi * ZZMI * ZZMI   ! grazing on microzooplankton
-  fgmed = fme * self%xpmed * ZDET * ZDET       ! grazing on detrital nitrogen
-  fgmedc = rsmall                              ! grazing on detrital carbon
-  if (ZDET .gt. rsmall) fgmedc = (ZDTC / (ZDET + tiny(ZDET))) * fgmed
+   ! Mesozooplankton
+   fme1 = (self%xkme * self%xkme) + (self%xpmepn * ZPHN * ZPHN) + (self%xpmepd * ZPHD * ZPHD) + (self%xpmezmi * ZZMI * ZZMI) + (self%xpmed * ZDET * ZDET)
+   fme = self%xgme * ZZME / fme1
+   fgmepn = fme * self%xpmepn * ZPHN * ZPHN     ! grazing on non-diatoms
+   fgmepd = fme * self%xpmepd * ZPHD * ZPHD     ! grazing on diatoms
+   fgmepds = fsin * fgmepd                      ! grazing on diatom silicon
+   fgmezmi = fme * self%xpmezmi * ZZMI * ZZMI   ! grazing on microzooplankton
+   fgmed = fme * self%xpmed * ZDET * ZDET       ! grazing on detrital nitrogen
+   fgmedc = rsmall                              ! grazing on detrital carbon
+   if (ZDET .gt. rsmall) fgmedc = (ZDTC / (ZDET + tiny(ZDET))) * fgmed
 
-  _SET_DIAGNOSTIC_(self%id_GMEPN,fgmepn * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_GMEPD,fgmepd * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_GMEZMI,fgmezmi * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_GMED,fgmed * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_GMEDC,fgmedc * s_per_d)
-  !
-  ! which translates to these incoming N and C fluxes
-  finme = (1.0_rk - self%xphi) * (fgmepn + fgmepd + fgmezmi + fgmed)
-  ficme = (1.0_rk - self%xphi) * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc)
-  ! the ideal food C:N ratio for mesozooplankton
-  ! xbetan = 0.77; xthetaz = 5.625; xbetac = 0.64; xkc = 0.80
-  fstarme = (self%xbetan * self%xthetazme) / (self%xbetac * self%xkc)
-  !
-  ! process these to determine proportioning of grazed N and C
-  ! (since there is no explicit consideration of respiration,
-  ! only growth and excretion are calculated here)
-  fmeth = (ficme / (finme + tiny(finme)))
-  if (fmeth .ge. fstarme) then
-     fmegrow = self%xbetan * finme
-     fmeexcr = 0.0_rk
-  else
-     fmegrow = (self%xbetac * self%xkc * ficme) / self%xthetazme
-     fmeexcr = ficme * ((self%xbetan / (fmeth + tiny(fmeth))) - ((self%xbetac * self%xkc) / self%xthetazme))
-  end if
-  fmeresp = (self%xbetac * ficme) - (self%xthetazme * fmegrow)
+   _SET_DIAGNOSTIC_(self%id_GMEPN,fgmepn * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_GMEPD,fgmepd * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_GMEZMI,fgmezmi * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_GMED,fgmed * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_GMEDC,fgmedc * s_per_d)
+   !
+   ! which translates to these incoming N and C fluxes
+   finme = (1.0_rk - self%xphi) * (fgmepn + fgmepd + fgmezmi + fgmed)
+   ficme = (1.0_rk - self%xphi) * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc)
+   ! the ideal food C:N ratio for mesozooplankton
+   ! xbetan = 0.77; xthetaz = 5.625; xbetac = 0.64; xkc = 0.80
+   fstarme = (self%xbetan * self%xthetazme) / (self%xbetac * self%xkc)
+   !
+   ! process these to determine proportioning of grazed N and C
+   ! (since there is no explicit consideration of respiration,
+   ! only growth and excretion are calculated here)
+   fmeth = (ficme / (finme + tiny(finme)))
+   if (fmeth .ge. fstarme) then
+      fmegrow = self%xbetan * finme
+      fmeexcr = 0.0_rk
+   else
+      fmegrow = (self%xbetac * self%xkc * ficme) / self%xthetazme
+      fmeexcr = ficme * ((self%xbetan / (fmeth + tiny(fmeth))) - ((self%xbetac * self%xkc) / self%xthetazme))
+   end if
+   fmeresp = (self%xbetac * ficme) - (self%xthetazme * fmegrow)
 
-  _SET_DIAGNOSTIC_(self%id_ZI_MES_N, self%xphi * (fgmipn + fgmid) * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_ZI_MES_D, (1._rk - self%xbetan) * finmi * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_ZI_MES_C, self%xphi * ((self%xthetapn * fgmipn) + fgmidc) * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_ZI_MESDC, (1._rk - self%xbetac) * ficmi * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_ZE_MES_N, self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed) * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_ZE_MES_D, (1._rk - self%xbetan) * finme * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_ZE_MES_C, self%xphi * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc) * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_ZE_MESDC, (1._rk - self%xbetac) * ficme * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_ZI_MES_N, self%xphi * (fgmipn + fgmid) * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_ZI_MES_D, (1._rk - self%xbetan) * finmi * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_ZI_MES_C, self%xphi * ((self%xthetapn * fgmipn) + fgmidc) * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_ZI_MESDC, (1._rk - self%xbetac) * ficmi * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_ZE_MES_N, self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed) * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_ZE_MES_D, (1._rk - self%xbetan) * finme * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_ZE_MES_C, self%xphi * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) + (self%xthetazmi * fgmezmi) + fgmedc) * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_ZE_MESDC, (1._rk - self%xbetac) * ficme * s_per_d)
 
-  _SET_DIAGNOSTIC_(self%id_ZI_EXCR, fmiexcr * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_ZI_RESP, fmiresp * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_ZI_GROW, fmigrow * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_ZE_EXCR, fmeexcr * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_ZE_RESP, fmeresp * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_ZE_GROW, fmegrow * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_ZI_EXCR, fmiexcr * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_ZI_RESP, fmiresp * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_ZI_GROW, fmigrow * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_ZE_EXCR, fmeexcr * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_ZE_RESP, fmeresp * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_ZE_GROW, fmegrow * s_per_d)
 
-  ! Plankton metabolic losses
+   ! Plankton metabolic losses
 
-  ! Linear loss processes assumed to be metabolic in origin
-  fdpn2 = self%xmetapn * ZPHN
-  fdpd2 = self%xmetapd * ZPHD
-  fdpds2 = self%xmetapd * ZPDS
-  fdzmi2 = self%xmetazmi * ZZMI
-  fdzme2 = self%xmetazme * ZZME
+   ! Linear loss processes assumed to be metabolic in origin
+   fdpn2 = self%xmetapn * ZPHN
+   fdpd2 = self%xmetapd * ZPHD
+   fdpds2 = self%xmetapd * ZPDS
+   fdzmi2 = self%xmetazmi * ZZMI
+   fdzme2 = self%xmetazme * ZZME
 
-  _SET_DIAGNOSTIC_(self%id_PN_LLOSS, fdpn2  * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_PD_LLOSS, fdpd2 * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_ZI_LLOSS, fdzmi2 * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_ZE_LLOSS, fdzme2 * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_PN_LLOSS, fdpn2  * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_PD_LLOSS, fdpd2 * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_ZI_LLOSS, fdzmi2 * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_ZE_LLOSS, fdzme2 * s_per_d)
 
-  ! Plankton mortality losses
+   ! Plankton mortality losses
 
-  ! non-diatom phytoplankton
-  if (self%jmpn == 1) then
+   ! non-diatom phytoplankton
+   if (self%jmpn == 1) then
       fdpn = self%xmpn * ZPHN                                     !! linear
-  elseif (self%jmpn == 2) then
+   elseif (self%jmpn == 2) then
       fdpn = self%xmpn * ZPHN * ZPHN                              !! quadratic
-  elseif (self%jmpn == 3) then
+   elseif (self%jmpn == 3) then
       fdpn = self%xmpn * ZPHN * (ZPHN / (self%xkphn + ZPHN))      !! hyperbolic
-  elseif (self%jmpn == 4) then
+   elseif (self%jmpn == 4) then
       fdpn = self%xmpn * ZPHN * &                                 !! sigmoid
-                 ((ZPHN * ZPHN) / (self%xkphn + (ZPHN * ZPHN)))
-  end if
-  ! diatom phytoplankton
-  if (self%jmpd == 1) then
+                  ((ZPHN * ZPHN) / (self%xkphn + (ZPHN * ZPHN)))
+   end if
+   ! diatom phytoplankton
+   if (self%jmpd == 1) then
       fdpd = self%xmpd * ZPHD                                     !! linear
-  elseif (self%jmpd == 2) then
+   elseif (self%jmpd == 2) then
       fdpd = self%xmpd * ZPHD * ZPHD                              !! quadratic
-  elseif (self%jmpd == 3) then
+   elseif (self%jmpd == 3) then
       fdpd = self%xmpd * ZPHD * &                                 !! hyperbolic
                   (ZPHD / (self%xkphd + ZPHD))
-  elseif (self%jmpd == 4) then
+   elseif (self%jmpd == 4) then
       fdpd = self%xmpd * ZPHD * &                                 !! sigmoid
                   ((ZPHD * ZPHD) / (self%xkphd + (ZPHD * ZPHD)))
-  end if
-  fdpds = fdpd * fsin
+   end if
+   fdpds = fdpd * fsin
 
-  _SET_DIAGNOSTIC_(self%id_mpn, fdpn * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_mpd, fdpd * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_mpn, fdpn * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_mpd, fdpd * s_per_d)
 
-  ! microzooplankton
-  if (self%jmzmi == 1) then
-     fdzmi = self%xmzmi * ZZMI                                    !! linear
-  elseif (self%jmzmi == 2) then
-     fdzmi = self%xmzmi * ZZMI * ZZMI                             !! quadratic
-  elseif (self%jmzmi == 3) then
-     fdzmi = self%xmzmi * ZZMI * &                                !! hyperbolic
+   ! microzooplankton
+   if (self%jmzmi == 1) then
+      fdzmi = self%xmzmi * ZZMI                                    !! linear
+   elseif (self%jmzmi == 2) then
+      fdzmi = self%xmzmi * ZZMI * ZZMI                             !! quadratic
+   elseif (self%jmzmi == 3) then
+      fdzmi = self%xmzmi * ZZMI * &                                !! hyperbolic
                   (ZZMI / (self%xkzmi + ZZMI))
-  elseif (self%jmzmi == 4) then
-     fdzmi = self%xmzmi * ZZMI * &                                !! sigmoid
+   elseif (self%jmzmi == 4) then
+      fdzmi = self%xmzmi * ZZMI * &                                !! sigmoid
                   ((ZZMI * ZZMI) / (self%xkzmi + (ZZMI * ZZMI)))
-  end if
-  ! mesozooplankton
-  if (self%jmzme == 1) then
-     fdzme = self%xmzme * ZZME                                    !! linear
-  elseif (self%jmzme == 2) then
-     fdzme = self%xmzme * ZZME * ZZME                             !! quadratic
-  elseif (self%jmzme == 3) then
-     fdzme = self%xmzme * ZZME * &                                !! hyperbolic
+   end if
+   ! mesozooplankton
+   if (self%jmzme == 1) then
+      fdzme = self%xmzme * ZZME                                    !! linear
+   elseif (self%jmzme == 2) then
+      fdzme = self%xmzme * ZZME * ZZME                             !! quadratic
+   elseif (self%jmzme == 3) then
+      fdzme = self%xmzme * ZZME * &                                !! hyperbolic
                   (ZZME / (self%xkzme + ZZME))
-  elseif (self%jmzme == 4) then
-     fdzme = self%xmzme * ZZME * &                                !! sigmoid
+   elseif (self%jmzme == 4) then
+      fdzme = self%xmzme * ZZME * &                                !! sigmoid
                   ((ZZME * ZZME) / (self%xkzme + (ZZME * ZZME)))
-  end if
+   end if
 
-  _SET_DIAGNOSTIC_(self%id_MZMI, fdzmi * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_MZME, fdzme * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_MZMI, fdzmi * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_MZME, fdzme * s_per_d)
 
-  ! Diatom frustule dissolution
-  fsdiss = self%xsdiss * ZPDS
-  _SET_DIAGNOSTIC_(self%id_OPALDISS, fsdiss * s_per_d)
+   ! Diatom frustule dissolution
+   fsdiss = self%xsdiss * ZPDS
+   _SET_DIAGNOSTIC_(self%id_OPALDISS, fsdiss * s_per_d)
 
-  ! Detritus remineralisation
-  if (self%jmd == 1) then
-    ! temperature-dependent
-    fdd = self%xmd * fun_T * ZDET
-    fddc = self%xmdc * fun_T * ZDTC
-  elseif (self%jmd == 2) then
-    ! Q10-based temperature-dependent
-    fdd  = self%xmd  * fun_Q10 * ZDET
-    fddc = self%xmdc * fun_Q10 * ZDTC
-  else
-    ! temperature-independent
-    fdd  = self%xmd  * ZDET
-    fddc = self%xmdc * ZDTC
-  end if
+   ! Detritus remineralisation
+   if (self%jmd == 1) then
+      ! temperature-dependent
+      fdd = self%xmd * fun_T * ZDET
+      fddc = self%xmdc * fun_T * ZDTC
+   elseif (self%jmd == 2) then
+      ! Q10-based temperature-dependent
+      fdd  = self%xmd  * fun_Q10 * ZDET
+      fddc = self%xmdc * fun_Q10 * ZDTC
+   else
+      ! temperature-independent
+      fdd  = self%xmd  * ZDET
+      fddc = self%xmdc * ZDTC
+   end if
 
-  _SET_DIAGNOSTIC_(self%id_MDET, fdd * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_MDETC, fddc * s_per_d)
-  !
-  ! this variable integrates the creation of slow sinking detritus
-  !to allow the split between fast and slow detritus to be diagnosed
-  fslown  = fdpn + fdzmi + ((1._rk - self%xfdfrac1) * fdpd) + ((1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetan) * (finmi + finme))
-  ! and the same for detrital carbon
-  fslowc  = (self%xthetapn * fdpn) + (self%xthetazmi * fdzmi) + (self%xthetapd * (1._rk - self%xfdfrac1) * fdpd) + (self%xthetazme * (1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetac) * (ficmi + ficme))
+   _SET_DIAGNOSTIC_(self%id_MDET, fdd * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_MDETC, fddc * s_per_d)
+   !
+   ! this variable integrates the creation of slow sinking detritus
+   !to allow the split between fast and slow detritus to be diagnosed
+   fslown  = fdpn + fdzmi + ((1._rk - self%xfdfrac1) * fdpd) + ((1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetan) * (finmi + finme))
+   ! and the same for detrital carbon
+   fslowc  = (self%xthetapn * fdpn) + (self%xthetazmi * fdzmi) + (self%xthetapd * (1._rk - self%xfdfrac1) * fdpd) + (self%xthetazme * (1._rk - self%xfdfrac2) * fdzme) + ((1._rk - self%xbetac) * (ficmi + ficme))
 
-  _SET_DIAGNOSTIC_(self%id_detn, fslown * s_per_d)
-  _SET_DIAGNOSTIC_(self%id_detc, fslowc * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_detn, fslown * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_detc, fslowc * s_per_d)
 
-  _SET_DIAGNOSTIC_(self%id_fslownflux, ZDET * self%wdep * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_fslownflux, ZDET * self%wdep * s_per_d)
 
-  ! Nutrient regeneration
-  ! this variable integrates total nitrogen regeneration;
-  ! the corresponding dissolution flux of silicon (from sources
-  ! other than fast detritus) is also integrated
-  fregen = (( (self%xphi * (fgmipn + fgmid)) +                            &  ! messy feeding
-  (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed)) +                     &  ! messy feeding
-  fmiexcr + fmeexcr + fdd +                                               &  ! excretion + D remin.
-  fdpn2 + fdpd2 + fdzmi2 + fdzme2))                                          ! linear mortality
+   ! Nutrient regeneration
+   ! this variable integrates total nitrogen regeneration;
+   ! the corresponding dissolution flux of silicon (from sources
+   ! other than fast detritus) is also integrated
+   fregen = (( (self%xphi * (fgmipn + fgmid)) +                            &  ! messy feeding
+   (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed)) +                     &  ! messy feeding
+   fmiexcr + fmeexcr + fdd +                                               &  ! excretion + D remin.
+   fdpn2 + fdpd2 + fdzmi2 + fdzme2))                                          ! linear mortality
  
- _SET_DIAGNOSTIC_(self%id_fregen2d,fregen * dz * s_per_d)
- _SET_DIAGNOSTIC_(self%id_fregen,fregen * s_per_d)
-  !
-  ! silicon
-  fregensi = (( fsdiss + ((1._rk - self%xfdfrac1) * fdpds) +              &  ! dissolution + non-lin. mortality
-  ((1._rk - self%xfdfrac3) * fgmepds) +                                   &  ! egestion by zooplankton
-  fdpds2))                                                                   ! linear mortality
+   _SET_DIAGNOSTIC_(self%id_fregen2d,fregen * dz * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_fregen,fregen * s_per_d)
+   !
+   ! silicon
+   fregensi = (( fsdiss + ((1._rk - self%xfdfrac1) * fdpds) +              &  ! dissolution + non-lin. mortality
+   ((1._rk - self%xfdfrac3) * fgmepds) +                                   &  ! egestion by zooplankton
+   fdpds2))                                                                   ! linear mortality
 
- _SET_DIAGNOSTIC_(self%id_fregensi,fregensi * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_fregensi,fregensi * s_per_d)
 
-  ! carbon
-!  fregenc  = (( (self%xphi * ((self%xthetapn * fgmipn) + fgmidc)) +       &  ! messy feeding
-!  (self%xphi * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) +     &  ! messy feeding
-! (self%xthetazmi * fgmezmi) + fgmedc)) +                                  &  ! messy feeding
-!  fmiresp + fmeresp + fddc +                                              &  ! respiration + D remin.
-!  (self%xthetapn * fdpn2) + (self%xthetapd * fdpd2) +                     &  ! linear mortality
-!  (self%xthetazmi * fdzmi2) + (self%xthetazme * fdzme2)))                    ! linear mortality
+   ! carbon
+   !  fregenc  = (( (self%xphi * ((self%xthetapn * fgmipn) + fgmidc)) +       &  ! messy feeding
+   !  (self%xphi * ((self%xthetapn * fgmepn) + (self%xthetapd * fgmepd) +     &  ! messy feeding
+   ! (self%xthetazmi * fgmezmi) + fgmedc)) +                                  &  ! messy feeding
+   !  fmiresp + fmeresp + fddc +                                              &  ! respiration + D remin.
+   !  (self%xthetapn * fdpn2) + (self%xthetapd * fdpd2) +                     &  ! linear mortality
+   !  (self%xthetazmi * fdzmi2) + (self%xthetazme * fdzme2)))                    ! linear mortality
 
-  ! Fast-sinking detritus terms
-  ! "local" variables declared so that conservation can be checked;
-  ! the calculated terms are added to the fast-sinking flux later on
-  ! only after the flux entering this level has experienced some remineralisation
-  ! note: these fluxes will be scaled by the level thickness
-  !
-  ! nitrogen:   diatom and mesozooplankton mortality
-  ftempn = (self%xfdfrac1 * fdpd)  + (self%xfdfrac2 * fdzme)
-  _SET_ODE_(self%id_tempn,ftempn)
-  _SET_DIAGNOSTIC_(self%id_FASTN,ftempn * s_per_d)
-  ! silicon:    diatom mortality and grazed diatoms
-  ftempsi = (self%xfdfrac1 * fdpds) + (self%xfdfrac3 * fgmepds)
-  _SET_ODE_(self%id_tempsi,ftempsi)
-  _SET_DIAGNOSTIC_(self%id_FASTSI,ftempsi * s_per_d)
-  ! iron:       diatom and mesozooplankton mortality
-  ftempfe = ((self%xfdfrac1 * fdpd) + (self%xfdfrac2 * fdzme)) * self%xrfn
-  _SET_ODE_(self%id_tempfe,ftempfe)
-  _SET_DIAGNOSTIC_(self%id_FASTFE,ftempfe * s_per_d)
-  ! carbon:     diatom and mesozooplankton mortality
-  ftempc = (self%xfdfrac1 * self%xthetapd * fdpd) + (self%xfdfrac2 * self%xthetazme * fdzme)
-  _SET_ODE_(self%id_tempc,ftempc)
-  _SET_DIAGNOSTIC_(self%id_FASTC,ftempc * s_per_d)
+   ! Fast-sinking detritus terms
+   ! "local" variables declared so that conservation can be checked;
+   ! the calculated terms are added to the fast-sinking flux later on
+   ! only after the flux entering this level has experienced some remineralisation
+   ! note: these fluxes will be scaled by the level thickness
+   !
+   ! nitrogen:   diatom and mesozooplankton mortality
+   ftempn = (self%xfdfrac1 * fdpd)  + (self%xfdfrac2 * fdzme)
+   _SET_ODE_(self%id_tempn,ftempn)
+   _SET_DIAGNOSTIC_(self%id_FASTN,ftempn * s_per_d)
+   ! silicon:    diatom mortality and grazed diatoms
+   ftempsi = (self%xfdfrac1 * fdpds) + (self%xfdfrac3 * fgmepds)
+   _SET_ODE_(self%id_tempsi,ftempsi)
+   _SET_DIAGNOSTIC_(self%id_FASTSI,ftempsi * s_per_d)
+   ! iron:       diatom and mesozooplankton mortality
+   ftempfe = ((self%xfdfrac1 * fdpd) + (self%xfdfrac2 * fdzme)) * self%xrfn
+   _SET_ODE_(self%id_tempfe,ftempfe)
+   _SET_DIAGNOSTIC_(self%id_FASTFE,ftempfe * s_per_d)
+   ! carbon:     diatom and mesozooplankton mortality
+   ftempc = (self%xfdfrac1 * self%xthetapd * fdpd) + (self%xfdfrac2 * self%xthetazme * fdzme)
+   _SET_ODE_(self%id_tempc,ftempc)
+   _SET_DIAGNOSTIC_(self%id_FASTC,ftempc * s_per_d)
 
-  ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
-  ! This corresponds to jrratio.eq.2 in the original code.
+   ! CaCO3: Ridgwell et al. (2007) submodel, uses FULL 3D omega calcite to regulate rain ratio
+   ! This corresponds to jrratio.eq.2 in the original code.
 
-  _GET_(self%id_om_cal,om_cal)
-  if (om_cal .ge. 1._rk) then
-     fq1 = (om_cal - 1._rk)**0.81_rk
-  else
-    fq1 = 0._rk
-  endif
-  fcaco3 = self%xridg_r0 * fq1
+   _GET_(self%id_om_cal,om_cal)
+   if (om_cal .ge. 1._rk) then
+      fq1 = (om_cal - 1._rk)**0.81_rk
+   else
+      fq1 = 0._rk
+   endif
+   fcaco3 = self%xridg_r0 * fq1
 
-  ! Convert CaCO3 production from function of primary production into a function
-  ! of fast-sinking material; technically, this is what Dunne et al. (2007) do anyway;
-  ! they convert total primary production estimated from surface chlorophyll
-  ! to an export flux for which they apply conversion factors to estimate
-  ! the various elemental fractions (Si, Ca)
-  ftempca = ftempc * fcaco3
-  _SET_ODE_(self%id_tempca,ftempca)
-  _SET_DIAGNOSTIC_(self%id_FASTCA,ftempca * s_per_d)
+   ! Convert CaCO3 production from function of primary production into a function
+   ! of fast-sinking material; technically, this is what Dunne et al. (2007) do anyway;
+   ! they convert total primary production estimated from surface chlorophyll
+   ! to an export flux for which they apply conversion factors to estimate
+   ! the various elemental fractions (Si, Ca)
+   ftempca = ftempc * fcaco3
+   _SET_ODE_(self%id_tempca,ftempca)
+   _SET_DIAGNOSTIC_(self%id_FASTCA,ftempca * s_per_d)
 
-  !LOCAL TRENDS
+   !LOCAL TRENDS
 
-  ! chlorophyll
-  _SET_ODE_(self%id_ZCHN,((frn * fprn * ZPHN) - fgmipn - fgmepn - fdpn - fdpn2) * (fthetan / self%xxi))
-  _SET_ODE_(self%id_ZCHD,((frd * fprd * ZPHD) - fgmepd - fdpd - fdpd2) * (fthetad / self%xxi))
+   ! chlorophyll
+   _SET_ODE_(self%id_ZCHN,((frn * fprn * ZPHN) - fgmipn - fgmepn - fdpn - fdpn2) * (fthetan / self%xxi))
+   _SET_ODE_(self%id_ZCHD,((frd * fprd * ZPHD) - fgmepd - fdpd - fdpd2) * (fthetad / self%xxi))
 
-  ! phytoplankton
-  _SET_ODE_(self%id_ZPHN,(fprn * ZPHN) - fgmipn - fgmepn - fdpn - fdpn2 )
-  _SET_ODE_(self%id_ZPHD,(fprd * ZPHD) - fgmepd - fdpd - fdpd2 )
-  _SET_ODE_(self%id_ZPDS,(fprds * ZPDS) - fgmepds - fdpds - fsdiss - fdpds2 )
+   ! phytoplankton
+   _SET_ODE_(self%id_ZPHN,(fprn * ZPHN) - fgmipn - fgmepn - fdpn - fdpn2 )
+   _SET_ODE_(self%id_ZPHD,(fprd * ZPHD) - fgmepd - fdpd - fdpd2 )
+   _SET_ODE_(self%id_ZPDS,(fprds * ZPDS) - fgmepds - fdpds - fsdiss - fdpds2 )
 
-  _SET_DIAGNOSTIC_(self%id_OPAL, (fprds * ZPDS) * s_per_d)
+   _SET_DIAGNOSTIC_(self%id_OPAL, (fprds * ZPDS) * s_per_d)
 
-  ! zooplankton
-  _SET_ODE_(self%id_ZZMI, fmigrow - fgmezmi - fdzmi - fdzmi2 )
-  _SET_ODE_(self%id_ZZME, fmegrow - fdzme - fdzme2 )
+   ! zooplankton
+   _SET_ODE_(self%id_ZZMI, fmigrow - fgmezmi - fdzmi - fdzmi2 )
+   _SET_ODE_(self%id_ZZME, fmegrow - fdzme - fdzme2 )
 
-  ! detritus
-  _SET_ODE_(self%id_ZDET,fslown-fgmid-fgmed-fdd)
+   ! detritus
+   _SET_ODE_(self%id_ZDET,fslown-fgmid-fgmed-fdd)
 
-  ! dissolved inorganic nitrogen
+   ! dissolved inorganic nitrogen
    fn_cons = - (fprn * ZPHN) - (fprd * ZPHD)                         ! primary production
    fn_prod = + (self%xphi * (fgmipn + fgmid))                     &  ! messy feeding
              + (self%xphi * (fgmepn + fgmepd + fgmezmi + fgmed))  &  ! messy feeding
@@ -783,7 +781,7 @@ contains
    _SET_DIAGNOSTIC_(self%id_N_CONS, fn_cons * s_per_d)
    _SET_ODE_(self%id_ZDIN,fn_prod + fn_cons)
 
-  ! dissolved silicic acid
+   ! dissolved silicic acid
    fs_cons = - (fprds * ZPDS)                                        ! opal production
    fs_prod = + fsdiss                                             &  ! opal dissolution
              + ((1.0_rk - self%xfdfrac1) * fdpds)                 &  ! mortality loss
@@ -791,12 +789,12 @@ contains
              + fdpds2                                                ! metabolic losses
    _SET_ODE_(self%id_ZSIL,fs_prod + fs_cons)
 
-  ! dissolved iron
+   ! dissolved iron
    _SET_ODE_(self%id_ZFER, self%xrfn * (fn_prod + fn_cons))
 
   ! detrital carbon
    _SET_ODE_(self%id_ZDTC, fslowc - fgmidc - fgmedc - fddc)
-                 
+
   ! dissolved inorganic carbon
    fc_cons = - (self%xthetapn * fprn * ZPHN) - (self%xthetapd * fprd * ZPHD)                      ! primary production
    fc_prod = + (self%xthetapn * self%xphi * fgmipn) + (self%xphi * fgmidc)                     &  ! messy feeding
@@ -817,12 +815,12 @@ contains
    _SET_DIAGNOSTIC_(self%id_C_CONS, fc_cons * s_per_d)
    _SET_ODE_(self%id_ZDIC,fc_prod + fc_cons)
 
-  ! alkalinity
+   ! alkalinity
    fa_cons = -2._rk * ftempca      ! CaCO3 production
 
-  _SET_ODE_(self%id_ZALK, fa_cons)
+   _SET_ODE_(self%id_ZALK, fa_cons)
 
-  ! oxygen (has protection at low O2 concentrations)
+   ! oxygen (has protection at low O2 concentrations)
    fo2_prod = + (self%xthetanit * fprn * ZPHN)                               & ! Pn primary production, N
               + (self%xthetanit * fprd * ZPHD)                               & ! Pd primary production, N
               + (self%xthetarem * self%xthetapn * fprn * ZPHN)               & ! Pn primary production, C
@@ -872,47 +870,46 @@ contains
 
    end subroutine do
 
-   subroutine do_bottom(self,_ARGUMENTS_DO_)
+   subroutine do_bottom(self, _ARGUMENTS_DO_)
 
-  !--------------------------------------------------------------------------------------
-  ! Detritus addition to benthos
-  ! If activated (seafloor=3) slow detritus in the bottom box will enter the benthic pool
-  !--------------------------------------------------------------------------------------
-  
-   class(type_medusa_pelagic), INTENT(IN) :: self
-  _DECLARE_ARGUMENTS_DO_BOTTOM_
+   !--------------------------------------------------------------------------------------
+   ! Detritus addition to benthos
+   ! If activated (seafloor=3) slow detritus in the bottom box will enter the benthic pool
+   !--------------------------------------------------------------------------------------
 
-   !LOCAL VARIABLES
-    real(rk) :: ZSEDC,ZSEDN,ZSEDFE,ZDET,ZDTC
-    real(rk) :: fluxc,fluxn,fluxfe
-    real(rk), parameter :: s_per_d = 86400.0_rk
+   class(type_medusa_pelagic), intent(in) :: self
+   _DECLARE_ARGUMENTS_DO_BOTTOM_
 
-    _HORIZONTAL_LOOP_BEGIN_
+   real(rk) :: ZSEDC,ZSEDN,ZSEDFE,ZDET,ZDTC
+   real(rk) :: fluxc,fluxn,fluxfe
+   real(rk), parameter :: s_per_d = 86400.0_rk
 
-    if (self%seafloor /=3) return
+   if (self%seafloor /= 3) return
 
-    _GET_(self%id_ZDET,ZDET)
-    _GET_(self%id_ZDTC,ZDTC)
+   _HORIZONTAL_LOOP_BEGIN_
 
-     fluxc = self%wdep * ZDTC
-     fluxn = self%wdep * ZDET
-     fluxfe = self%wdep * ZDET * self%xrfn
+   _GET_(self%id_ZDET,ZDET)
+   _GET_(self%id_ZDTC,ZDTC)
 
-    _SET_BOTTOM_EXCHANGE_(self%id_ZDET,-fluxn)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZDTC,-fluxc)
+   fluxc = self%wdep * ZDTC
+   fluxn = self%wdep * ZDET
+   fluxfe = self%wdep * ZDET * self%xrfn
 
-    _SET_BOTTOM_ODE_(self%id_ZSEDC,  + fluxc)
-    _SET_BOTTOM_ODE_(self%id_ZSEDN,  + fluxn)
-    _SET_BOTTOM_ODE_(self%id_ZSEDFE, + fluxfe)
+   _SET_BOTTOM_EXCHANGE_(self%id_ZDET,-fluxn)
+   _SET_BOTTOM_EXCHANGE_(self%id_ZDTC,-fluxc)
 
-     _SET_BOTTOM_ODE_(self%id_ZSEDP, + fluxc/106._rk)
+   _SET_BOTTOM_ODE_(self%id_ZSEDC,  + fluxc)
+   _SET_BOTTOM_ODE_(self%id_ZSEDN,  + fluxn)
+   _SET_BOTTOM_ODE_(self%id_ZSEDFE, + fluxfe)
 
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_sbenin_c,  + fluxc * s_per_d)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_sbenin_n,  + fluxn * s_per_d)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_sbenin_fe, + fluxfe * s_per_d)
+   _SET_BOTTOM_ODE_(self%id_ZSEDP, + fluxc/106._rk)
 
-    _HORIZONTAL_LOOP_END_
+   _SET_BOTTOM_DIAGNOSTIC_(self%id_f_sbenin_c,  + fluxc * s_per_d)
+   _SET_BOTTOM_DIAGNOSTIC_(self%id_f_sbenin_n,  + fluxn * s_per_d)
+   _SET_BOTTOM_DIAGNOSTIC_(self%id_f_sbenin_fe, + fluxfe * s_per_d)
+
+   _HORIZONTAL_LOOP_END_
 
    end subroutine do_bottom
 
-  end module medusa_pelagic
+end module medusa_pelagic

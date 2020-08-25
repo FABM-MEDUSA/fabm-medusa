@@ -13,36 +13,31 @@ module medusa_ccd
 
    private
 
-   type,extends(type_base_model),public :: type_medusa_ccd
-
-      type (type_dependency_id)            :: id_depth,id_om1,id_dz
+   type, extends(type_base_model), public :: type_medusa_ccd
+      type (type_dependency_id)                     :: id_depth,id_om1,id_dz
       type (type_horizontal_diagnostic_variable_id) :: id_CCD
-
    contains
-     procedure :: initialize
-     procedure :: get_light => do_ccd
-
+      procedure :: initialize
+      procedure :: do_column
    end type
 
 contains
 
-    subroutine initialize(self,configunit)
-
+   subroutine initialize(self, configunit)
       class (type_medusa_ccd), intent(inout), target :: self
-      integer,                      intent(in)            :: configunit
+      integer,                 intent(in)            :: configunit
 
-     call self%register_implemented_routines((/source_do_column/))
-     call self%register_diagnostic_variable(self%id_CCD,'CCD','m','CCD depth',source=source_do_column)
-     call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
-     call self%register_dependency(self%id_depth, standard_variables%depth)
-     call self%register_dependency(self%id_om1,'OMEGA','-','Omega calcite 3D')
+      call self%register_implemented_routines((/source_do_column/))
+      call self%register_diagnostic_variable(self%id_CCD,'CCD','m','CCD depth',source=source_do_column)
+      call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
+      call self%register_dependency(self%id_depth, standard_variables%depth)
+      call self%register_dependency(self%id_om1,'OMEGA','-','Omega calcite 3D')
+   end subroutine
 
-    end subroutine
+   subroutine do_column(self, _ARGUMENTS_DO_COLUMN_)
+   class(type_medusa_ccd), intent(in) :: self
 
-   subroutine do_ccd(self,_ARGUMENTS_VERTICAL_)
-   class(type_medusa_ccd),intent(in) :: self
-   
-   _DECLARE_ARGUMENTS_VERTICAL_
+   _DECLARE_ARGUMENTS_DO_COLUMN_
 
     real(rk) :: depth,depthb,dz,f_om,f_om_a
     real(rk) :: fq0,fq1,fq2,fq3,fq4, f2_ccd_cal
@@ -78,9 +73,9 @@ contains
    _VERTICAL_LOOP_END_
 
    if (i2_om == 0) then ! reached seafloor and still no dissolution; set to seafloor (W-point)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_CCD, depth + 0.5_rk * dz)
-    endif
+      _SET_HORIZONTAL_DIAGNOSTIC_(self%id_CCD, depth + 0.5_rk * dz)
+   endif
 
-   end subroutine do_ccd
+   end subroutine do_column
 
 end module

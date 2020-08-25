@@ -43,37 +43,33 @@ module gas_transfer
 
    private
 
-   type,extends(type_base_model),public :: type_gas_transfer
-        type (type_horizontal_dependency_id) :: id_wnd
-        type (type_horizontal_diagnostic_variable_id)   :: id_kw660,id_wnd_diag
-        integer :: eqn
-
+   type, extends(type_base_model), public :: type_gas_transfer
+      type (type_horizontal_dependency_id)       :: id_wnd
+      type (type_surface_diagnostic_variable_id) :: id_kw660,id_wnd_diag
+      integer :: eqn
    contains
-
-     procedure :: initialize
-     procedure :: do_surface
-
+      procedure :: initialize
+      procedure :: do_surface
    end type
 
 contains
-    
-    subroutine initialize(self,configunit)
 
-     class (type_gas_transfer), intent(inout), target :: self
-     integer,                      intent(in)            :: configunit
+   subroutine initialize(self, configunit)
+      class (type_gas_transfer), intent(inout), target :: self
+      integer,                   intent(in)            :: configunit
 
-     call self%register_implemented_routines((/source_do_surface/))
+      call self%register_implemented_routines((/source_do_surface/))
 
-     call self%get_parameter(self%eqn,'eqn','-','choice of gas transfer coefficients', default = 7)
-     call self%register_dependency(self%id_wnd,  standard_variables%wind_speed)
+      call self%get_parameter(self%eqn,'eqn','-','choice of gas transfer coefficients', default = 7)
+      call self%register_dependency(self%id_wnd,  standard_variables%wind_speed)
 
-     call self%register_diagnostic_variable(self%id_kw660,'KW660','m/s','Piston velocity', output=output_time_step_averaged, source=source_do_surface)
-     call self%register_diagnostic_variable(self%id_wnd_diag,'WIND','m/s','Surface scalar wind',source=source_do_surface)
-    end subroutine
+      call self%register_diagnostic_variable(self%id_kw660,'KW660','m/s','Piston velocity')
+      call self%register_diagnostic_variable(self%id_wnd_diag,'WIND','m/s','Surface scalar wind')
+   end subroutine
 
-    subroutine do_surface(self,_ARGUMENTS_DO_)
-    class (type_gas_transfer), intent(in) :: self
-      _DECLARE_ARGUMENTS_DO_SURFACE_
+   subroutine do_surface(self, _ARGUMENTS_DO_)
+   class (type_gas_transfer), intent(in) :: self
+   _DECLARE_ARGUMENTS_DO_SURFACE_
 
    real(rk) :: wnd,kw660
    real(rk) :: a(7)
@@ -96,16 +92,16 @@ contains
 
    _HORIZONTAL_LOOP_BEGIN_
 
-           _GET_HORIZONTAL_(self%id_wnd,wnd)
-           _SET_HORIZONTAL_DIAGNOSTIC_(self%id_wnd_diag,wnd)
+   _GET_HORIZONTAL_(self%id_wnd,wnd)
+   _SET_SURFACE_DIAGNOSTIC_(self%id_wnd_diag,wnd)
 
-! Calculate gas transfer velocity (cm/h)
-           tmp_k = (a(self%eqn) * wnd**2._rk) + (b(self%eqn) * wnd)
+   ! Calculate gas transfer velocity (cm/h)
+   tmp_k = (a(self%eqn) * wnd**2._rk) + (b(self%eqn) * wnd)
 
-! Convert tmp_k from cm/h to m/s
-           kw660 = tmp_k / (3600._rk * 100._rk)
+   ! Convert tmp_k from cm/h to m/s
+   kw660 = tmp_k / (3600._rk * 100._rk)
 
-  _SET_HORIZONTAL_DIAGNOSTIC_(self%id_kw660,kw660)
+   _SET_SURFACE_DIAGNOSTIC_(self%id_kw660,kw660)
 
    _HORIZONTAL_LOOP_END_
 

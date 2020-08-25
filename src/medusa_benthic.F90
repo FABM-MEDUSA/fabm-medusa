@@ -13,32 +13,29 @@ module medusa_benthic
 
    private
 
-  type,extends(type_base_model),public :: type_medusa_benthic
+   type, extends(type_base_model), public :: type_medusa_benthic
       ! Variable identifiers
-      type (type_bottom_state_variable_id)          :: id_ZSEDC,id_ZSEDN,id_ZSEDFE,id_ZSEDSI,id_ZSEDCA
-      type (type_state_variable_id)                 :: id_ZDIN,id_ZSIL,id_ZFER,id_ZDIC,id_ZDET,id_ZDTC,id_ZOXY,id_ZALK
-      type (type_horizontal_diagnostic_variable_id) :: id_f_benout_c,id_f_benout_n,id_f_benout_fe
-      type (type_horizontal_diagnostic_variable_id) :: id_f_benout_ca,id_f_benout_si,id_f_lyso_ca
-      type (type_horizontal_dependency_id)          :: id_CAL_CCD
-      type (type_dependency_id)                     :: id_depth
+      type (type_bottom_state_variable_id)      :: id_ZSEDC,id_ZSEDN,id_ZSEDFE,id_ZSEDSI,id_ZSEDCA
+      type (type_state_variable_id)             :: id_ZDIN,id_ZSIL,id_ZFER,id_ZDIC,id_ZDET,id_ZDTC,id_ZOXY,id_ZALK
+      type (type_bottom_diagnostic_variable_id) :: id_f_benout_c,id_f_benout_n,id_f_benout_fe
+      type (type_bottom_diagnostic_variable_id) :: id_f_benout_ca,id_f_benout_si,id_f_lyso_ca
+      type (type_bottom_dependency_id)          :: id_CAL_CCD
+      type (type_dependency_id)                 :: id_depth
       ! Parameters
       real(rk) :: xsedn,xsedc,xsedfe,xsedsi,xsedca
       real(rk) :: xrfn
       real(rk) :: xthetanit,xthetarem,xo2min
-
    contains
-
       procedure :: initialize
       procedure :: do_bottom
-
-  end type type_medusa_benthic
+   end type type_medusa_benthic
 
 contains
 
-   subroutine initialize(self,configunit)
+   subroutine initialize(self, configunit)
 
-   class(type_medusa_benthic),intent(inout),target :: self
-   integer,               intent(in)           :: configunit
+   class(type_medusa_benthic), intent(inout), target :: self
+   integer,                    intent(in)            :: configunit
 
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
@@ -75,80 +72,78 @@ contains
    call self%register_dependency(self%id_CAL_CCD,'CAL_CCD','m','calcite CCD depth')
    call self%register_dependency(self%id_depth, standard_variables%depth)
 
-   call self%register_diagnostic_variable(self%id_f_benout_c,'OBEN_C','mmolC/m2/d','Benthic output carbon',source=source_do_bottom)
-   call self%register_diagnostic_variable(self%id_f_benout_n,'OBEN_N','mmolN/m2/d','Benthic output nitrogen',source=source_do_bottom)
-   call self%register_diagnostic_variable(self%id_f_benout_fe,'OBEN_FE','mmolFe/m2/d','Benthic output iron',source=source_do_bottom)
-   call self%register_diagnostic_variable(self%id_f_benout_si,'OBEN_SI','mmolSi/m2/d','Benthic output silicate',source=source_do_bottom)
-   call self%register_diagnostic_variable(self%id_f_benout_ca,'OBEN_CA','mmolCa/m2/d','Benthic output CaCO3',source=source_do_bottom)
-   call self%register_diagnostic_variable(self%id_f_lyso_ca,'LYSO_CA','mmolCa/m2/d', 'Incorrect benthic output CaCO3', missing_value=0.0_rk, source=source_do_bottom)
+   call self%register_diagnostic_variable(self%id_f_benout_c,'OBEN_C','mmolC/m2/d','Benthic output carbon')
+   call self%register_diagnostic_variable(self%id_f_benout_n,'OBEN_N','mmolN/m2/d','Benthic output nitrogen')
+   call self%register_diagnostic_variable(self%id_f_benout_fe,'OBEN_FE','mmolFe/m2/d','Benthic output iron')
+   call self%register_diagnostic_variable(self%id_f_benout_si,'OBEN_SI','mmolSi/m2/d','Benthic output silicate')
+   call self%register_diagnostic_variable(self%id_f_benout_ca,'OBEN_CA','mmolCa/m2/d','Benthic output CaCO3')
+   call self%register_diagnostic_variable(self%id_f_lyso_ca,'LYSO_CA','mmolCa/m2/d', 'Incorrect benthic output CaCO3', missing_value=0.0_rk)
 
    end subroutine initialize
 
-   subroutine do_bottom(self,_ARGUMENTS_DO_)
+   subroutine do_bottom(self, _ARGUMENTS_DO_)
 
-   class(type_medusa_benthic), INTENT(IN) :: self
-  _DECLARE_ARGUMENTS_DO_BOTTOM_
+   class(type_medusa_benthic), intent(in) :: self
+   _DECLARE_ARGUMENTS_DO_BOTTOM_
 
-! !LOCAL VARIABLES:
+   real(rk) :: ZSEDC,ZSEDN,ZSEDFE,ZSEDSI,ZSEDCA,ZDET,ZDTC,ZSIL,ZALK,ZOXY
+   real(rk), parameter :: s_per_d = 86400.0_rk
+   real(rk) :: f_benout_c,f_benout_n,f_benout_fe,f_benout_ca,f_benout_si,cal_ccd,depth
 
-    real(rk) :: ZSEDC,ZSEDN,ZSEDFE,ZSEDSI,ZSEDCA,ZDET,ZDTC,ZSIL,ZALK,ZOXY
-    real(rk), parameter :: s_per_d = 86400.0_rk
-    real(rk) :: f_benout_c,f_benout_n,f_benout_fe,f_benout_ca,f_benout_si,cal_ccd,depth
+   _HORIZONTAL_LOOP_BEGIN_
 
-    _HORIZONTAL_LOOP_BEGIN_
+   _GET_HORIZONTAL_(self%id_ZSEDC,ZSEDC)
+   _GET_HORIZONTAL_(self%id_ZSEDN,ZSEDN)
+   _GET_HORIZONTAL_(self%id_ZSEDFE,ZSEDFE)
+   _GET_HORIZONTAL_(self%id_ZSEDSI,ZSEDSI)
+   _GET_HORIZONTAL_(self%id_ZSEDCA,ZSEDCA)
+   _GET_(self%id_ZDET,ZDET)
+   _GET_(self%id_ZDTC,ZDTC)
+   _GET_(self%id_ZOXY,ZOXY)
 
-    _GET_HORIZONTAL_(self%id_ZSEDC,ZSEDC)
-    _GET_HORIZONTAL_(self%id_ZSEDN,ZSEDN)
-    _GET_HORIZONTAL_(self%id_ZSEDFE,ZSEDFE)
-    _GET_HORIZONTAL_(self%id_ZSEDSI,ZSEDSI)
-    _GET_HORIZONTAL_(self%id_ZSEDCA,ZSEDCA)
-    _GET_(self%id_ZDET,ZDET)
-    _GET_(self%id_ZDTC,ZDTC)
-    _GET_(self%id_ZOXY,ZOXY)
+   f_benout_c =  self%xsedc * ZSEDC
+   f_benout_n =  self%xsedn * ZSEDN
+   f_benout_fe = self%xsedfe * ZSEDFE
+   f_benout_si = self%xsedsi * ZSEDSI
+   f_benout_ca = self%xsedca * ZSEDCA
 
-     f_benout_c =  self%xsedc * ZSEDC
-     f_benout_n =  self%xsedn * ZSEDN
-     f_benout_fe = self%xsedfe * ZSEDFE
-     f_benout_si = self%xsedsi * ZSEDSI
-     f_benout_ca = self%xsedca * ZSEDCA
+   ! organic components
+   _SET_BOTTOM_ODE_(self%id_ZSEDC,     -f_benout_c)
+   _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, +f_benout_c)
 
-     ! organic components
-    _SET_BOTTOM_ODE_(self%id_ZSEDC,     -f_benout_c)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, +f_benout_c)
+   _SET_BOTTOM_ODE_(self%id_ZSEDN,     -f_benout_n)
+   _SET_BOTTOM_EXCHANGE_(self%id_ZDIN, +f_benout_n)
 
-    _SET_BOTTOM_ODE_(self%id_ZSEDN,     -f_benout_n)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZDIN, +f_benout_n)
-     
-     if (ZOXY .ge. self%xo2min) _SET_BOTTOM_EXCHANGE_(self%id_ZOXY, - self%xthetanit * f_benout_n - self%xthetarem * f_benout_c)
+   if (ZOXY .ge. self%xo2min) _SET_BOTTOM_EXCHANGE_(self%id_ZOXY, - self%xthetanit * f_benout_n - self%xthetarem * f_benout_c)
 
-    _SET_BOTTOM_ODE_(self%id_ZSEDFE,    -f_benout_fe)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZFER, +f_benout_n * self%xrfn)
+   _SET_BOTTOM_ODE_(self%id_ZSEDFE,    -f_benout_fe)
+   _SET_BOTTOM_EXCHANGE_(self%id_ZFER, +f_benout_n * self%xrfn)
 
-     ! inorganic components
-    _SET_BOTTOM_ODE_(self%id_ZSEDSI,    -f_benout_si)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, +f_benout_si)
+   ! inorganic components
+   _SET_BOTTOM_ODE_(self%id_ZSEDSI,    -f_benout_si)
+   _SET_BOTTOM_EXCHANGE_(self%id_ZSIL, +f_benout_si)
 
-    _SET_BOTTOM_ODE_(self%id_ZSEDCA,    -f_benout_ca)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZALK, + 2._rk * f_benout_ca)
-    _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, +f_benout_ca)
+   _SET_BOTTOM_ODE_(self%id_ZSEDCA,    -f_benout_ca)
+   _SET_BOTTOM_EXCHANGE_(self%id_ZALK, + 2._rk * f_benout_ca)
+   _SET_BOTTOM_EXCHANGE_(self%id_ZDIC, +f_benout_ca)
 
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_c, f_benout_c  * s_per_d)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_n, f_benout_n  * s_per_d)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_fe,f_benout_fe * s_per_d)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_si,f_benout_si * s_per_d)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_benout_ca,f_benout_ca * s_per_d)
+   _SET_BOTTOM_DIAGNOSTIC_(self%id_f_benout_c, f_benout_c  * s_per_d)
+   _SET_BOTTOM_DIAGNOSTIC_(self%id_f_benout_n, f_benout_n  * s_per_d)
+   _SET_BOTTOM_DIAGNOSTIC_(self%id_f_benout_fe,f_benout_fe * s_per_d)
+   _SET_BOTTOM_DIAGNOSTIC_(self%id_f_benout_si,f_benout_si * s_per_d)
+   _SET_BOTTOM_DIAGNOSTIC_(self%id_f_benout_ca,f_benout_ca * s_per_d)
 
    ! account for CaCO3 that dissolves when it shouldn't
    _GET_HORIZONTAL_(self%id_CAL_CCD,cal_ccd)
    _GET_(self%id_depth,depth)
    if (depth .le. cal_ccd) then   
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_lyso_ca,f_benout_ca * s_per_d)
+      _SET_BOTTOM_DIAGNOSTIC_(self%id_f_lyso_ca,f_benout_ca * s_per_d)
    else
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_f_lyso_ca, 0._rk)
+      _SET_BOTTOM_DIAGNOSTIC_(self%id_f_lyso_ca, 0._rk)
    end if
 
-    _HORIZONTAL_LOOP_END_
+   _HORIZONTAL_LOOP_END_
 
    end subroutine do_bottom
 
-  end module medusa_benthic
+end module medusa_benthic

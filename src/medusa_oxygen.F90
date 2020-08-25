@@ -14,27 +14,23 @@ module medusa_oxygen
 
    private
 
-  type,extends(type_base_model),public :: type_medusa_oxygen
-
+   type, extends(type_base_model), public :: type_medusa_oxygen
       ! Variable identifiers
-      type (type_state_variable_id)                 :: id_ZOXY
-      type (type_horizontal_diagnostic_variable_id) :: id_fairo2,id_O2SAT
-      type (type_dependency_id)                     :: id_temp,id_salt
-      type (type_horizontal_dependency_id)          :: id_kw660, id_fr_i !id_apress
-          
+      type (type_state_variable_id)              :: id_ZOXY
+      type (type_surface_diagnostic_variable_id) :: id_fairo2,id_O2SAT
+      type (type_dependency_id)                  :: id_temp,id_salt
+      type (type_horizontal_dependency_id)       :: id_kw660, id_fr_i !id_apress
    contains
-
       procedure :: initialize
       procedure :: do_surface
-
-  end type type_medusa_oxygen
+   end type type_medusa_oxygen
 
 contains
 
-   subroutine initialize(self,configunit)
+   subroutine initialize(self, configunit)
 
-   class(type_medusa_oxygen),intent(inout),target :: self
-   integer,               intent(in)           :: configunit
+   class(type_medusa_oxygen), intent(inout), target :: self
+   integer,                   intent(in)            :: configunit
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk 
 
    call self%register_implemented_routines((/source_do_surface/))
@@ -50,20 +46,20 @@ contains
 
    end subroutine initialize
 
-   subroutine do_surface(self,_ARGUMENTS_DO_SURFACE_)
+   subroutine do_surface(self, _ARGUMENTS_DO_SURFACE_)
 
-  ! Calculates O2 saturation at 1 atm pressure
-  ! Original author : Andrew Yool (14/10/04, revised 08/07/11)
-  ! 
-  ! This subroutine calculates the oxygen saturation concentration
-  ! at 1 atmosphere pressure in mol/m3 given ambient temperature
-  ! and salinity.  This formulation is (ostensibly) taken from
-  ! Garcia & Gordon (1992, L&O, 1307-1312). The function works
-  ! in the range -1.9 <= T <= 40, 0 <= S <= 42.
-  !
-  ! Check value : T = 10, S = 35, oxy_sato = 0.282015 mol/m3
-  !
-   class(type_medusa_oxygen),intent(in) :: self
+   ! Calculates O2 saturation at 1 atm pressure
+   ! Original author : Andrew Yool (14/10/04, revised 08/07/11)
+   ! 
+   ! This subroutine calculates the oxygen saturation concentration
+   ! at 1 atmosphere pressure in mol/m3 given ambient temperature
+   ! and salinity.  This formulation is (ostensibly) taken from
+   ! Garcia & Gordon (1992, L&O, 1307-1312). The function works
+   ! in the range -1.9 <= T <= 40, 0 <= S <= 42.
+   !
+   ! Check value : T = 10, S = 35, oxy_sato = 0.282015 mol/m3
+   !
+   class(type_medusa_oxygen), intent(in) :: self
 
    _DECLARE_ARGUMENTS_DO_SURFACE_
 
@@ -81,7 +77,7 @@ contains
    real(rk) :: c0 = -4.88682E-7_rk
    real(rk) :: tt,tk,ts,ts2,ts3,ts4,ts5
    real(rk) :: ans1, ans2
-  ! Wanninkhof (2014) coefficients
+   ! Wanninkhof (2014) coefficients
    real(rk) :: as0 = 1920.4_rk
    real(rk) :: as1 = -135.6_rk
    real(rk) :: as2 = 5.2121_rk
@@ -97,23 +93,22 @@ contains
    !_GET_HORIZONTAL_(self%id_apress,pp0)
    _GET_HORIZONTAL_(self%id_kw660,kw660)
    _GET_HORIZONTAL_(self%id_fr_i,fr_i)
-      o2 = o2/1000._rk
+   o2 = o2/1000._rk
 
- !note: air-sea fluxes must be corrected for sea ice
+   !note: air-sea fluxes must be corrected for sea ice
 
-      tt   = 298.15_rk - pt
-      tk   = 273.15_rk + pt
-      ts   = log(tt / tk)
-      ts2  = ts**2_rk
-      ts3  = ts**3_rk
-      ts4  = ts**4_rk
-      ts5  = ts**5_rk
+   tt   = 298.15_rk - pt
+   tk   = 273.15_rk + pt
+   ts   = log(tt / tk)
+   ts2  = ts**2_rk
+   ts3  = ts**3_rk
+   ts4  = ts**4_rk
+   ts5  = ts**5_rk
 
-      ans1 = a0 + a1*ts + a2*ts2 + a3*ts3 + a4*ts4 + a5*ts5  &
-             + ps*(b0 + b1*ts + b2*ts2 + b3*ts3)             &
-             + c0*(ps*ps)
-      ans2 = exp(ans1)
-
+   ans1 = a0 + a1*ts + a2*ts2 + a3*ts3 + a4*ts4 + a5*ts5  &
+            + ps*(b0 + b1*ts + b2*ts2 + b3*ts3)             &
+            + c0*(ps*ps)
+   ans2 = exp(ans1)
 
    ! Convert from ml/l to mol/m3
    o2_sato = (ans2 / 22391.6_rk) * 1000.0_rk
@@ -133,15 +128,15 @@ contains
    ! Calculate the saturation concentration for oxygen (mol/m3)
    o2sat = o2_sato * 1._rk
 
-  ! Calculate time rate of change of O2 due to gas exchange (mol/m3/s), correct for sea-ice
+   ! Calculate time rate of change of O2 due to gas exchange (mol/m3/s), correct for sea-ice
    o2flux = (1._rk - fr_i) * kwo2 * (o2sat - o2)
 
-  ! Convert oxygen flux and saturation to mmol / m3
+    ! Convert oxygen flux and saturation to mmol / m3
    o2flux = o2flux *1000._rk
 
-   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_O2SAT,o2sat * 1000._rk)   
+   _SET_SURFACE_DIAGNOSTIC_(self%id_O2SAT,o2sat * 1000._rk)   
    _SET_SURFACE_EXCHANGE_(self%id_ZOXY, o2flux)
-   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fairo2, o2flux * s_per_d)
+   _SET_SURFACE_DIAGNOSTIC_(self%id_fairo2, o2flux * s_per_d)
 
    _HORIZONTAL_LOOP_END_
 

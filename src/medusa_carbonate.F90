@@ -33,31 +33,29 @@ module medusa_carbonate
 
    private
 
-   type,extends(type_base_model),public :: type_medusa_carbonate
-      type (type_dependency_id)            :: id_ZALK
-      type (type_state_variable_id)        :: id_ZDIC
-      type (type_dependency_id)            :: id_temp,id_salt,id_dens,id_pres,id_depth
-      type (type_horizontal_dependency_id) :: id_PCO2A,id_kw660,id_fr_i
-      type (type_diagnostic_variable_id)   :: id_ph,id_pco2,id_CarbA,id_BiCarb,id_Carb,id_TA_diag
-      type (type_diagnostic_variable_id)   :: id_Om_cal,id_Om_arg
-      type (type_horizontal_diagnostic_variable_id) ::  id_fairco2,id_pco2s,id_ATM_PCO2,id_TALK,id_TCO2
-      type (type_horizontal_diagnostic_variable_id) ::  id_om_arg_surf,id_om_cal_surf
-
+   type, extends(type_base_model), public :: type_medusa_carbonate
+      type (type_dependency_id)                  :: id_ZALK
+      type (type_state_variable_id)              :: id_ZDIC
+      type (type_dependency_id)                  :: id_temp,id_salt,id_dens,id_pres,id_depth
+      type (type_horizontal_dependency_id)       :: id_PCO2A,id_kw660,id_fr_i
+      type (type_diagnostic_variable_id)         :: id_ph,id_pco2,id_CarbA,id_BiCarb,id_Carb,id_TA_diag
+      type (type_diagnostic_variable_id)         :: id_Om_cal,id_Om_arg
+      type (type_surface_diagnostic_variable_id) ::  id_fairco2,id_pco2s,id_ATM_PCO2,id_TALK,id_TCO2
+      type (type_surface_diagnostic_variable_id) ::  id_om_arg_surf,id_om_cal_surf
    contains
      procedure :: initialize
      procedure :: do
      procedure :: do_surface
-
    end type
 
    public :: CO2_dynamics,co2dyn,polyco,CaCO3_Saturation
 
 contains
 
-    subroutine initialize(self,configunit)
+   subroutine initialize(self, configunit)
 
       class (type_medusa_carbonate), intent(inout), target :: self
-      integer,                      intent(in)            :: configunit
+      integer,                       intent(in)            :: configunit
 
      call self%register_implemented_routines((/source_do, source_do_surface/))
      call self%register_state_dependency(self%id_ZDIC,'DiC','mmol C/m^3','dissolved inorganic carbon')
@@ -79,18 +77,18 @@ contains
      call self%register_dependency(self%id_pres,standard_variables%pressure)
      call self%register_horizontal_dependency(self%id_kw660, 'KW660', 'm/s', 'gas transfer velocity')
      call self%register_dependency(self%id_fr_i,standard_variables%ice_area_fraction)
-     call self%register_diagnostic_variable(self%id_fairco2,'CO2FLUX','mmol C/m^2/d','Air-sea CO2 flux',source=source_do_surface)
-     call self%register_diagnostic_variable(self%id_pco2s,'OCN_PCO2','-','Surface ocean pCO2',source=source_do_surface)
-     call self%register_diagnostic_variable(self%id_TALK,'TALK','-','Surface ocean pCO2',source=source_do_surface)
-     call self%register_diagnostic_variable(self%id_TCO2,'TCO2','-','Surface ocean pCO2',source=source_do_surface)
-     call self%register_diagnostic_variable(self%id_ATM_PCO2,'ATM_PCO2','ppmv','Atmospheric pCO2',source=source_do_surface)
-     call self%register_diagnostic_variable(self%id_om_cal_surf,'OM_CAL','-','Surface omega calcite',source=source_do_surface)
-     call self%register_diagnostic_variable(self%id_om_arg_surf,'OM_ARG','-','Surface_omega_aragonite',source=source_do_surface)
+     call self%register_diagnostic_variable(self%id_fairco2,'CO2FLUX','mmol C/m^2/d','Air-sea CO2 flux')
+     call self%register_diagnostic_variable(self%id_pco2s,'OCN_PCO2','-','Surface ocean pCO2')
+     call self%register_diagnostic_variable(self%id_TALK,'TALK','-','Surface ocean pCO2')
+     call self%register_diagnostic_variable(self%id_TCO2,'TCO2','-','Surface ocean pCO2')
+     call self%register_diagnostic_variable(self%id_ATM_PCO2,'ATM_PCO2','ppmv','Atmospheric pCO2')
+     call self%register_diagnostic_variable(self%id_om_cal_surf,'OM_CAL','-','Surface omega calcite')
+     call self%register_diagnostic_variable(self%id_om_arg_surf,'OM_ARG','-','Surface_omega_aragonite')
 
-    end subroutine
+   end subroutine
 
-    subroutine do(self,_ARGUMENTS_DO_)
-    class (type_medusa_carbonate), intent(in) :: self
+   subroutine do(self, _ARGUMENTS_DO_)
+      class (type_medusa_carbonate), intent(in) :: self
       _DECLARE_ARGUMENTS_DO_
 
       real(rk) :: ZDIC,ZALK,temp,salt,density,pres,depth
@@ -109,15 +107,15 @@ contains
          _GET_(self%id_pres,pres)
          _GET_(self%id_depth,depth)
 
-    call CO2_dynamics(temp,salt,depth,ZDIC,ZALK,pCO2a,pco2w,ph,h2co3,hco3,co3,henry,om_cal,om_arg,TDIC,TALK,dcf,iters)
+         call CO2_dynamics(temp,salt,depth,ZDIC,ZALK,pCO2a,pco2w,ph,h2co3,hco3,co3,henry,om_cal,om_arg,TDIC,TALK,dcf,iters)
 
-    _SET_DIAGNOSTIC_(self%id_ph,pH)
-    _SET_DIAGNOSTIC_(self%id_pco2,pco2w)
-    _SET_DIAGNOSTIC_(self%id_CarbA, h2co3)
-    _SET_DIAGNOSTIC_(self%id_Bicarb,hco3)
-    _SET_DIAGNOSTIC_(self%id_Carb,  co3)
-    _SET_DIAGNOSTIC_(self%id_Om_cal,Om_cal)
-    _SET_DIAGNOSTIC_(self%id_Om_arg,Om_arg)
+         _SET_DIAGNOSTIC_(self%id_ph,pH)
+         _SET_DIAGNOSTIC_(self%id_pco2,pco2w)
+         _SET_DIAGNOSTIC_(self%id_CarbA, h2co3)
+         _SET_DIAGNOSTIC_(self%id_Bicarb,hco3)
+         _SET_DIAGNOSTIC_(self%id_Carb,  co3)
+         _SET_DIAGNOSTIC_(self%id_Om_cal,Om_cal)
+         _SET_DIAGNOSTIC_(self%id_Om_arg,Om_arg)
 
       _LOOP_END_
    end subroutine
@@ -852,7 +850,7 @@ contains
    _GET_(self%id_ZALK,ZALK)
    _GET_(self%id_ZDIC,ZDIC)
    _GET_HORIZONTAL_(self%id_pco2a,pco2a)
-   _SET_HORIZONTAL_DIAGNOSTIC_(self%id_ATM_PCO2,pco2a)
+   _SET_SURFACE_DIAGNOSTIC_(self%id_ATM_PCO2,pco2a)
 
           a   =  8.24493e-1_rk - 4.0899e-3_rk*temp +  7.6438e-5_rk*temp**2 - 8.2467e-7_rk*temp**3 + 5.3875e-9_rk*temp**4 
           b   = -5.72466e-3_rk + 1.0227e-4_rk*temp - 1.6546e-6_rk*temp**2  
@@ -872,15 +870,15 @@ contains
     flux = fwind * henry * ( pco2a - pco2 * 1.0e6_rk) * dcf / 1000._rk
     flux = (1._rk - fr_i) * flux
     _SET_SURFACE_EXCHANGE_(self%id_ZDIC,flux)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_fairco2,flux * 86400._rk)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_pco2s,PCO2 * 1.0e6_rk)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_TALK,TA * 1.0e6_rk)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_TCO2,TCO2 * 1.0e6_rk)
+    _SET_SURFACE_DIAGNOSTIC_(self%id_fairco2,flux * 86400._rk)
+    _SET_SURFACE_DIAGNOSTIC_(self%id_pco2s,PCO2 * 1.0e6_rk)
+    _SET_SURFACE_DIAGNOSTIC_(self%id_TALK,TA * 1.0e6_rk)
+    _SET_SURFACE_DIAGNOSTIC_(self%id_TCO2,TCO2 * 1.0e6_rk)
 
      call CaCO3_Saturation ( temp, salt, 0._rk, cb, om_cal_surf, om_arg_surf )
 
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_om_cal_surf,om_cal_surf)
-    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_om_arg_surf,om_arg_surf)
+    _SET_SURFACE_DIAGNOSTIC_(self%id_om_cal_surf,om_cal_surf)
+    _SET_SURFACE_DIAGNOSTIC_(self%id_om_arg_surf,om_arg_surf)
 
    _HORIZONTAL_LOOP_END_
 

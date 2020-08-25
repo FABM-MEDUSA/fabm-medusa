@@ -15,7 +15,7 @@ module medusa_fast_detritus
 
    private
 
-  type,extends(type_particle_model),public :: type_medusa_fast_detritus
+   type, extends(type_particle_model), public :: type_medusa_fast_detritus
       ! Variable identifiers
       type (type_state_variable_id)        :: id_ZDIC,id_ZDIN,id_ZSIL,id_ZOXY,id_ZFER,id_ZDET,id_ZDTC,id_ZALK
       type (type_bottom_state_variable_id) :: id_ZSEDSI,id_ZSEDC,id_ZSEDN,id_ZSEDCA,id_ZSEDFE, id_ZSEDP
@@ -33,22 +33,20 @@ module medusa_fast_detritus
       ! Parameters
       real(rk) :: xthetanit,xthetarem,xo2min,xrfn
       integer :: seafloor
-
    contains
-
       procedure :: initialize
-      procedure :: get_light => do_fast_detritus
+      procedure :: do_column
       procedure :: do
       procedure :: do_bottom
+   end type type_medusa_fast_detritus
 
-  end type type_medusa_fast_detritus
 
 contains
 
-   subroutine initialize(self,configunit)
+   subroutine initialize(self, configunit)
 
-   class(type_medusa_fast_detritus),intent(inout),target :: self
-   integer,                         intent(in)           :: configunit
+   class(type_medusa_fast_detritus), intent(inout), target :: self
+   integer,                          intent(in)            :: configunit
    real(rk), parameter :: d_per_s = 1.0_rk/86400.0_rk
 
    call self%register_implemented_routines((/source_do, source_do_bottom, source_do_column/))
@@ -108,7 +106,7 @@ contains
    call self%register_diagnostic_variable(self%id_ffastca_loc,'ffastca_loc','mmol Ca m-2 s-1','local remineralisation of detritus (Ca)',missing_value=0.0_rk,source=source_do_column)
    call self%register_diagnostic_variable(self%id_ffastsi_loc,'ffastsi_loc','mmol Si m-2 s-1','local remineralisation of detritus (Si)',missing_value=0.0_rk,source=source_do_column)
 
-  call self%register_diagnostic_variable(self%id_ffastn_loc_3d,'ffastn_loc_3d','mmol Si m-2 s-1','local remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column)
+   call self%register_diagnostic_variable(self%id_ffastn_loc_3d,'ffastn_loc_3d','mmol Si m-2 s-1','local remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column)
 
    call self%register_diagnostic_variable(self%id_ffastc,'ffastc','mmol C m-2 s-1','remineralisation of detritus (C)',missing_value=0.0_rk,source=source_do_column)
    call self%register_diagnostic_variable(self%id_ffastn,'ffastn','mmol N m-2 s-1','remineralisation of detritus (N)',missing_value=0.0_rk,source=source_do_column)
@@ -137,22 +135,22 @@ contains
    call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=0.03_rk)
 
    if (self%seafloor .eq. 3) then
-         call self%register_state_dependency(self%id_ZSEDSI,'BEN_SI','mmol Si m-2', 'sediment (Si)')
-         call self%register_state_dependency(self%id_ZSEDCA,'BEN_CA','mmol Ca m-2', 'sediment (Ca)')
-         call self%register_state_dependency(self%id_ZSEDC,'BEN_C','mmol C m-2', 'sediment (C)')
-         call self%register_state_dependency(self%id_ZSEDN,'BEN_N','mmol N m-2', 'sediment (N)')
-         call self%register_state_dependency(self%id_ZSEDP,'BEN_P','mmol P m-2', 'sediment (P)')
-         call self%register_state_dependency(self%id_ZSEDFE,'BEN_FE','mmol Fe m-2', 'sediment (Fe)')
-         call self%request_coupling_to_model(self%id_ZSEDC, 'BEN', standard_variables%total_carbon)
-         call self%request_coupling_to_model(self%id_ZSEDN, 'BEN', standard_variables%total_nitrogen)
-         call self%request_coupling_to_model(self%id_ZSEDP, 'BEN', standard_variables%total_phosphorus)
-         call self%request_coupling_to_model(self%id_ZSEDSI, 'BEN', standard_variables%total_silicate)
+      call self%register_state_dependency(self%id_ZSEDSI,'BEN_SI','mmol Si m-2', 'sediment (Si)')
+      call self%register_state_dependency(self%id_ZSEDCA,'BEN_CA','mmol Ca m-2', 'sediment (Ca)')
+      call self%register_state_dependency(self%id_ZSEDC,'BEN_C','mmol C m-2', 'sediment (C)')
+      call self%register_state_dependency(self%id_ZSEDN,'BEN_N','mmol N m-2', 'sediment (N)')
+      call self%register_state_dependency(self%id_ZSEDP,'BEN_P','mmol P m-2', 'sediment (P)')
+      call self%register_state_dependency(self%id_ZSEDFE,'BEN_FE','mmol Fe m-2', 'sediment (Fe)')
+      call self%request_coupling_to_model(self%id_ZSEDC, 'BEN', standard_variables%total_carbon)
+      call self%request_coupling_to_model(self%id_ZSEDN, 'BEN', standard_variables%total_nitrogen)
+      call self%request_coupling_to_model(self%id_ZSEDP, 'BEN', standard_variables%total_phosphorus)
+      call self%request_coupling_to_model(self%id_ZSEDSI, 'BEN', standard_variables%total_silicate)
    end if
 
    end subroutine initialize
 
-   subroutine do_fast_detritus(self,_ARGUMENTS_VERTICAL_)
-   class(type_medusa_fast_detritus),intent(in) :: self
+   subroutine do_column(self, _ARGUMENTS_DO_COLUMN_)
+   class(type_medusa_fast_detritus), intent(in) :: self
       !----------------------------------------------------------------------------------------------------------
       ! This version of MEDUSA includes Yool et al (2011) ballast model
       ! (iball=1 in the original implementation):
@@ -165,7 +163,7 @@ contains
       ! The method couples C, N and Fe remineralisation to the remineralisation
       ! of particulate Si and CaCO3
       !
-   _DECLARE_ARGUMENTS_VERTICAL_
+   _DECLARE_ARGUMENTS_DO_COLUMN_
 
    real(rk) :: dz,fq0,fq1,fq2,fq3,fq4,fq5,fq6,fq7,fq8,fprotf
    real(rk) :: xmassc = 12.011_rk
@@ -338,9 +336,9 @@ contains
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRC,ffastc * s_per_d)
    _SET_HORIZONTAL_DIAGNOSTIC_(self%id_SEAFLRCA,ffastca * s_per_d)
 
-   end subroutine do_fast_detritus
+   end subroutine do_column
 
-   subroutine do(self,_ARGUMENTS_DO_)
+   subroutine do(self, _ARGUMENTS_DO_)
 
      class(type_medusa_fast_detritus), intent(in) :: self
      _DECLARE_ARGUMENTS_DO_
@@ -370,11 +368,11 @@ contains
 
    end subroutine do
 
-   subroutine do_bottom(self,_ARGUMENTS_DO_BOTTOM_)
+   subroutine do_bottom(self, _ARGUMENTS_DO_BOTTOM_)
 
      class(type_medusa_fast_detritus), intent(in) :: self
      _DECLARE_ARGUMENTS_DO_BOTTOM_
-     
+
      real(rk) :: ffastc,ffastn,ffastsi,ffastca,ffastfe
      real(rk) :: ZOXY
    !----------------------------------------------------------
