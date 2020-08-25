@@ -108,7 +108,7 @@ instances:
       PHD: 0.01
       PDS: 0.01
       DIN: 30.0
-      FER: 0.01 #1.0e-4
+      FER: 1.0e-4
       SIL: 90.0
       DET: 0.01
       DTC: 0.06625
