@@ -1,7 +1,7 @@
 check_conservation: false
 instances:
   light:
-    model: medusa/medusa_light
+    model: medusa/light
     coupling:
       CHN: pelagic/CHN
       CHD: pelagic/CHD
@@ -17,7 +17,7 @@ instances:
                                 # 6 OCMIP-2
                                 # 7 Wanninkhof (2014)
   carbonate:
-    model: medusa/medusa_carbonate
+    model: medusa/carbonate
     schedule:
       interior:
         pattern: monthly        # frequency of interior carbonate system calculations
@@ -26,12 +26,12 @@ instances:
       ALK: pelagic/ALK
       KW660: gas_transfer/KW660
   oxygen:
-    model: medusa/medusa_oxygen
+    model: medusa/oxygen
     coupling:
       OXY: pelagic/OXY
       KW660: gas_transfer/KW660
   pelagic:
-    model: medusa/medusa_pelagic
+    model: medusa/pelagic
     parameters:
       xxi: 0.01257              # C:N conversion factor (mol N g C-1), default=0.01257
       xaln: 15.0                # chl-specific initial slope of P-I curve (non-diatoms) (g C(g chl)-1 (W m-2)-1 d-1), default=15.0
@@ -108,7 +108,7 @@ instances:
       PHD: 0.01
       PDS: 0.01
       DIN: 30.0
-      FER: 1.0e-4
+      FER: 0.01 #1.0e-4
       SIL: 90.0
       DET: 0.01
       DTC: 0.06625
@@ -127,7 +127,7 @@ instances:
       BEN: benthic
       BEN_FE: benthic/BEN_FE
   iron_scavenging:
-    model: medusa/medusa_iron_scav
+    model: medusa/iron_scav
     parameters:
       deep_fe_fix: false        # stop scavenging for Fe below 0.5 umol / m3 at depths > 1000 m
       xk_FeL: 100.              # dissociation constant for (Fe+ligand) (mmol m-3)-1, default=100.
@@ -141,7 +141,7 @@ instances:
       ffastca_loc: fast_detritus/ffastca_loc
       fscal_part: pelagic/fscal_part
   fast_detritus:
-    model: medusa/medusa_fast_detritus
+    model: medusa/fast_detritus
     parameters:
       seafloor: 3               # seafloor parameterisation (1-inorganic returns, 2-organic returns, 3-medusa_benthic (or different benthic model) is coupled, default = 3
       xrfn: 30.0e-6             # phytoplankton Fe:N uptake ratio (mmol Fe mol N-1 m), default=30.0e-6
@@ -160,15 +160,15 @@ instances:
       OM_CAL3: carbonate/OM_CAL3
       CAL_CCD: ccd_cal/CCD
   ccd_cal:
-    model: medusa/medusa_ccd
+    model: medusa/ccd
     coupling:
       OMEGA: carbonate/OM_CAL3
   ccd_arg:
-    model: medusa/medusa_ccd
+    model: medusa/ccd
     coupling:
       OMEGA: carbonate/OM_ARG3
   benthic:
-    model: medusa/medusa_benthic
+    model: medusa/benthic
     use: true
     parameters:
       xsedc: 0.05              # benthic C remineralisation rate (d-1), default=0.05_rk

@@ -31,15 +31,15 @@ contains
       class (type_base_model),pointer :: model
 
       select case (name)
-         case ('medusa_pelagic');                          allocate(type_medusa_pelagic::model)
-         case ('medusa_fast_detritus');                    allocate(type_medusa_fast_detritus::model)
-         case ('medusa_oxygen');                           allocate(type_medusa_oxygen::model)
-         case ('medusa_carbonate');                        allocate(type_medusa_carbonate::model)
-         case ('medusa_benthic');                          allocate(type_medusa_benthic::model)
-         case ('gas_transfer');                            allocate(type_gas_transfer::model)
-         case ('medusa_light');                            allocate(type_medusa_light::model)
-         case ('medusa_iron_scav');                        allocate(type_medusa_iron_scav::model)
-         case ('medusa_ccd');                              allocate(type_medusa_ccd::model)
+         case ('pelagic');                          allocate(type_medusa_pelagic::model)
+         case ('fast_detritus');                    allocate(type_medusa_fast_detritus::model)
+         case ('oxygen');                           allocate(type_medusa_oxygen::model)
+         case ('carbonate');                        allocate(type_medusa_carbonate::model)
+         case ('benthic');                          allocate(type_medusa_benthic::model)
+         case ('gas_transfer');                     allocate(type_gas_transfer::model)
+         case ('light');                            allocate(type_medusa_light::model)
+         case ('iron_scav');                        allocate(type_medusa_iron_scav::model)
+         case ('ccd');                              allocate(type_medusa_ccd::model)
         ! Add new models here
       end select
    end subroutine create
