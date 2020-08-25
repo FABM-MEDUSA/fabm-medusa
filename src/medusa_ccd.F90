@@ -13,7 +13,7 @@ module medusa_ccd
    private
 
    type, extends(type_base_model), public :: type_medusa_ccd
-      type (type_dependency_id)                     :: id_depth,id_om1,id_dz
+      type (type_dependency_id)                     :: id_om1,id_dz
       type (type_horizontal_diagnostic_variable_id) :: id_CCD
    contains
       procedure :: initialize
@@ -29,7 +29,6 @@ contains
       call self%register_implemented_routines((/source_do_column/))
       call self%register_diagnostic_variable(self%id_CCD,'CCD','m','CCD depth',source=source_do_column)
       call self%register_dependency(self%id_dz, standard_variables%cell_thickness)
-      call self%register_dependency(self%id_depth, standard_variables%depth)
       call self%register_dependency(self%id_om1,'OMEGA','-','Omega calcite 3D')
    end subroutine
 
@@ -39,21 +38,23 @@ contains
 
        real(rk) :: depth,depthb,dz,f_om,f_om_a
        real(rk) :: fq0,fq1,fq2,fq3,fq4, f2_ccd_cal
-       integer :: i2_om,check
 
-       i2_om = 0
-       check = 0 !0 for surface layer
+       depth = 0._rk
+       depthb = 0._rk
 
       _DOWNWARD_LOOP_BEGIN_
 
-         _GET_(self%id_dz,dz)
+         _GET_(self%id_dz, dz)
          _GET_(self%id_om1, f_om)
-         _GET_(self%id_depth,depth)
 
-         if ((i2_om == 0).and.(f_om .lt. 1._rk)) then
-            if (check == 0) then 
+         depth = depth + 0.5_rk * dz
+
+         if (f_om .lt. 1._rk) then
+            if (depthb == 0._rk) then
+               ! In surface layer (use centre depth)
                f2_ccd_cal = depth
             else
+               ! Below surface layer (linear interpolation to find depth at which f_om==1)
                fq0 = f_om_a - f_om
                fq1 = f_om_a - 1._rk
                fq2 = fq1 / (fq0 + tiny(fq0))
@@ -61,19 +62,20 @@ contains
                fq4 = fq2 * fq3
                f2_ccd_cal = depthb + fq4
             endif
-            i2_om = 1
             _SET_HORIZONTAL_DIAGNOSTIC_(self%id_CCD, f2_ccd_cal)
+            return
          endif
 
-         check = 1
          depthb = depth
          f_om_a = f_om
 
+         depth = depth + 0.5_rk * dz
+
       _DOWNWARD_LOOP_END_
 
-      if (i2_om == 0) then ! reached seafloor and still no dissolution; set to seafloor (W-point)
-         _SET_HORIZONTAL_DIAGNOSTIC_(self%id_CCD, depth + 0.5_rk * dz)
-      endif
+      ! reached seafloor and still no dissolution; set to seafloor depth (W-point)
+      _SET_HORIZONTAL_DIAGNOSTIC_(self%id_CCD, depth)
+
    end subroutine do_column
 
 end module
