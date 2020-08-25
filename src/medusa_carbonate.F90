@@ -27,7 +27,6 @@ module medusa_carbonate
 ! See also Butenschön et al, 2016. Geosci. Model Dev., 9, 1293–1339, https://doi.org/10.5194/gmd-9-1293-2016
 
    use fabm_types
-   use fabm_standard_variables
 
    implicit none
 
@@ -37,11 +36,11 @@ module medusa_carbonate
       type (type_dependency_id)                  :: id_ZALK
       type (type_state_variable_id)              :: id_ZDIC
       type (type_dependency_id)                  :: id_temp,id_salt,id_dens,id_pres,id_depth
-      type (type_horizontal_dependency_id)       :: id_PCO2A,id_kw660,id_fr_i
+      type (type_surface_dependency_id)          :: id_PCO2A,id_kw660,id_fr_i
       type (type_diagnostic_variable_id)         :: id_ph,id_pco2,id_CarbA,id_BiCarb,id_Carb,id_TA_diag
       type (type_diagnostic_variable_id)         :: id_Om_cal,id_Om_arg
-      type (type_surface_diagnostic_variable_id) ::  id_fairco2,id_pco2s,id_ATM_PCO2,id_TALK,id_TCO2
-      type (type_surface_diagnostic_variable_id) ::  id_om_arg_surf,id_om_cal_surf
+      type (type_surface_diagnostic_variable_id) :: id_fairco2,id_pco2s,id_ATM_PCO2,id_TALK,id_TCO2
+      type (type_surface_diagnostic_variable_id) :: id_om_arg_surf,id_om_cal_surf
    contains
      procedure :: initialize
      procedure :: do
@@ -75,7 +74,7 @@ contains
      call self%register_dependency(self%id_depth, standard_variables%depth)
      call self%register_dependency(self%id_dens,standard_variables%density)
      call self%register_dependency(self%id_pres,standard_variables%pressure)
-     call self%register_horizontal_dependency(self%id_kw660, 'KW660', 'm/s', 'gas transfer velocity')
+     call self%register_dependency(self%id_kw660, 'KW660', 'm/s', 'gas transfer velocity')
      call self%register_dependency(self%id_fr_i,standard_variables%ice_area_fraction)
      call self%register_diagnostic_variable(self%id_fairco2,'CO2FLUX','mmol C/m^2/d','Air-sea CO2 flux')
      call self%register_diagnostic_variable(self%id_pco2s,'OCN_PCO2','-','Surface ocean pCO2')
@@ -97,11 +96,12 @@ contains
       integer :: iters
 
       _LOOP_BEGIN_
+
          _GET_(self%id_ZDIC,ZDIC)
          _GET_(self%id_ZALK,ZALK)
          _GET_(self%id_temp,temp)
          _GET_(self%id_salt,salt)
-         _GET_HORIZONTAL_(self%id_pco2a,pco2a)
+         _GET_SURFACE_(self%id_pco2a,pco2a)
          _GET_(self%id_dens,density)
 
          _GET_(self%id_pres,pres)
@@ -118,6 +118,7 @@ contains
          _SET_DIAGNOSTIC_(self%id_Om_arg,Om_arg)
 
       _LOOP_END_
+
    end subroutine
 
    subroutine CO2_dynamics( T, S, Pr, DIC, TALK, pco2a, pco2w, ph, h2co3, bicarb, &
@@ -828,59 +829,59 @@ contains
 
    end subroutine CaCO3_SATURATION
 
-   subroutine do_surface(self,_ARGUMENTS_DO_SURFACE_)
+   subroutine do_surface(self, _ARGUMENTS_DO_SURFACE_)
+      class(type_medusa_carbonate), intent(in) :: self
+      _DECLARE_ARGUMENTS_DO_SURFACE_
 
-   class(type_medusa_carbonate),intent(in) :: self
-   !**********************************
-   ! Air-sea exchange of CO2
-   !**********************************
-   _DECLARE_ARGUMENTS_DO_SURFACE_
+      !**********************************
+      ! Air-sea exchange of CO2
+      !**********************************
 
-    real(rk) :: ZALK,ZDIC,temp,salt,sc,fwind,flux,kw660,fr_i
-    real(rk) :: henry, pco2a, pco2, dcf, a, b, c, ca, bc, cb, ph, TA, TCO2
-    real(rk) :: om_cal_surf, om_arg_surf
-    integer :: iters
+       real(rk) :: ZALK,ZDIC,temp,salt,sc,fwind,flux,kw660,fr_i
+       real(rk) :: henry, pco2a, pco2, dcf, a, b, c, ca, bc, cb, ph, TA, TCO2
+       real(rk) :: om_cal_surf, om_arg_surf
+       integer :: iters
 
-   _HORIZONTAL_LOOP_BEGIN_
+      _SURFACE_LOOP_BEGIN_
 
-   _GET_(self%id_temp,temp)
-   _GET_(self%id_salt,salt)
-   _GET_HORIZONTAL_(self%id_kw660,kw660)
-   _GET_HORIZONTAL_(self%id_fr_i,fr_i)
-   _GET_(self%id_ZALK,ZALK)
-   _GET_(self%id_ZDIC,ZDIC)
-   _GET_HORIZONTAL_(self%id_pco2a,pco2a)
-   _SET_SURFACE_DIAGNOSTIC_(self%id_ATM_PCO2,pco2a)
+         _GET_(self%id_temp,temp)
+         _GET_(self%id_salt,salt)
+         _GET_SURFACE_(self%id_kw660,kw660)
+         _GET_SURFACE_(self%id_fr_i,fr_i)
+         _GET_(self%id_ZALK,ZALK)
+         _GET_(self%id_ZDIC,ZDIC)
+         _GET_SURFACE_(self%id_pco2a,pco2a)
+         _SET_SURFACE_DIAGNOSTIC_(self%id_ATM_PCO2,pco2a)
 
-          a   =  8.24493e-1_rk - 4.0899e-3_rk*temp +  7.6438e-5_rk*temp**2 - 8.2467e-7_rk*temp**3 + 5.3875e-9_rk*temp**4 
-          b   = -5.72466e-3_rk + 1.0227e-4_rk*temp - 1.6546e-6_rk*temp**2  
-          c   = 4.8314e-4_rk
-          dcf = (999.842594_rk + 6.793952e-2_rk*temp- 9.095290e-3_rk*temp**2 + 1.001685e-4_rk*temp**3 & 
-                - 1.120083e-6_rk*temp**4 + 6.536332e-9_rk*temp**5+a*salt+b*salt**1.5_rk+c*salt**2) 
+         a   =  8.24493e-1_rk - 4.0899e-3_rk*temp +  7.6438e-5_rk*temp**2 - 8.2467e-7_rk*temp**3 + 5.3875e-9_rk*temp**4 
+         b   = -5.72466e-3_rk + 1.0227e-4_rk*temp - 1.6546e-6_rk*temp**2  
+         c   = 4.8314e-4_rk
+         dcf = (999.842594_rk + 6.793952e-2_rk*temp- 9.095290e-3_rk*temp**2 + 1.001685e-4_rk*temp**3 & 
+               - 1.120083e-6_rk*temp**4 + 6.536332e-9_rk*temp**5+a*salt+b*salt**1.5_rk+c*salt**2) 
 
-          TA    = ZALK  / (1.0e3_rk*dcf) 
-          TCO2  = ZDIC  / (1.0e3_rk*dcf)
+         TA    = ZALK  / (1.0e3_rk*dcf) 
+         TCO2  = ZDIC  / (1.0e3_rk*dcf)
 
-    call CO2dyn ( TCO2, TA, temp, salt, pco2a, PCO2, PH, HENRY, ca, bc, cb, iters )
+         call CO2dyn ( TCO2, TA, temp, salt, pco2a, PCO2, PH, HENRY, ca, bc, cb, iters )
 
-    sc    = 2073.1_rk-125.62_rk*temp+3.6276_rk*temp**2._rk-0.0432190_rk*temp**3._rk
-    fwind = kw660 * (sc/660._rk)**(-0.5_rk)
+         sc    = 2073.1_rk-125.62_rk*temp+3.6276_rk*temp**2._rk-0.0432190_rk*temp**3._rk
+         fwind = kw660 * (sc/660._rk)**(-0.5_rk)
 
-    ! Calculate air-sea flux, correct for sea-ice
-    flux = fwind * henry * ( pco2a - pco2 * 1.0e6_rk) * dcf / 1000._rk
-    flux = (1._rk - fr_i) * flux
-    _SET_SURFACE_EXCHANGE_(self%id_ZDIC,flux)
-    _SET_SURFACE_DIAGNOSTIC_(self%id_fairco2,flux * 86400._rk)
-    _SET_SURFACE_DIAGNOSTIC_(self%id_pco2s,PCO2 * 1.0e6_rk)
-    _SET_SURFACE_DIAGNOSTIC_(self%id_TALK,TA * 1.0e6_rk)
-    _SET_SURFACE_DIAGNOSTIC_(self%id_TCO2,TCO2 * 1.0e6_rk)
+         ! Calculate air-sea flux, correct for sea-ice
+         flux = fwind * henry * ( pco2a - pco2 * 1.0e6_rk) * dcf / 1000._rk
+         flux = (1._rk - fr_i) * flux
+         _SET_SURFACE_EXCHANGE_(self%id_ZDIC,flux)
+         _SET_SURFACE_DIAGNOSTIC_(self%id_fairco2,flux * 86400._rk)
+         _SET_SURFACE_DIAGNOSTIC_(self%id_pco2s,PCO2 * 1.0e6_rk)
+         _SET_SURFACE_DIAGNOSTIC_(self%id_TALK,TA * 1.0e6_rk)
+         _SET_SURFACE_DIAGNOSTIC_(self%id_TCO2,TCO2 * 1.0e6_rk)
 
-     call CaCO3_Saturation ( temp, salt, 0._rk, cb, om_cal_surf, om_arg_surf )
+         call CaCO3_Saturation ( temp, salt, 0._rk, cb, om_cal_surf, om_arg_surf )
 
-    _SET_SURFACE_DIAGNOSTIC_(self%id_om_cal_surf,om_cal_surf)
-    _SET_SURFACE_DIAGNOSTIC_(self%id_om_arg_surf,om_arg_surf)
+         _SET_SURFACE_DIAGNOSTIC_(self%id_om_cal_surf,om_cal_surf)
+         _SET_SURFACE_DIAGNOSTIC_(self%id_om_arg_surf,om_arg_surf)
 
-   _HORIZONTAL_LOOP_END_
+      _SURFACE_LOOP_END_
 
    end subroutine do_surface
 
