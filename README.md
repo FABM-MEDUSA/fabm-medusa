@@ -34,7 +34,7 @@ Original comments from NEMO-MEDUSA code are included in this version of the mode
 
 For any requests regarding FABM-MEDUSA contact Gennadi Lessin (gle@pml.ac.uk).
 
-For questions related to FABM contact Jorn Bruggeman (jbr@pml.ac.uk) and visit http://fabm.net.
+For questions related to FABM contact Jorn Bruggeman (jorn@bolding-bruggeman.com) and visit https://fabm.net.
 
 For questions on MEDUSA process descriptions contact Andrew Yool (axy@noc.ac.uk).
   
