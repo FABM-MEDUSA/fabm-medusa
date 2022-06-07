@@ -19,7 +19,7 @@ module medusa_fast_detritus
       ! Variable identifiers
       type (type_state_variable_id)             :: id_ZDIC,id_ZDIN,id_ZSIL,id_ZOXY,id_ZFER,id_ZDET,id_ZDTC,id_ZALK
       type (type_bottom_state_variable_id)      :: id_ZSEDSI,id_ZSEDC,id_ZSEDN,id_ZSEDCA,id_ZSEDFE, id_ZSEDP
-      type (type_dependency_id)                 :: id_dz
+      type (type_dependency_id)                 :: id_dz,id_depth
       type (type_dependency_id)                 :: id_ftempc,id_ftempn,id_ftempsi,id_ftempfe,id_ftempca
       type (type_dependency_id)                 :: id_freminc1,id_freminn1,id_freminsi1,id_freminfe1,id_freminca1
       type (type_dependency_id)                 :: id_om_cal
@@ -30,8 +30,11 @@ module medusa_fast_detritus
       type (type_horizontal_dependency_id)      :: id_ffastc1,id_ffastn1,id_ffastfe1,id_ffastsi1,id_ffastca1,id_CAL_CCD
       type (type_diagnostic_variable_id)        :: id_tempc,id_tempn,id_tempsi,id_tempfe,id_tempca,id_freminn2d
       type (type_horizontal_diagnostic_variable_id) :: id_OCAL_LVL
+      type (type_bottom_diagnostic_variable_id) :: id_FE_SED
+
       ! Parameters
       real(rk) :: xthetanit,xthetarem,xo2min,xrfn
+      real(rk) :: xfe_sed,dfe_sed
       integer :: seafloor
    contains
       procedure :: initialize
@@ -132,6 +135,11 @@ contains
 
       call self%get_parameter(self%seafloor,'seafloor','-','seafloor parameterisation: 1-inorganic returns, 2-organic returns, 3-coupled benthic model', default = 3)
       call self%get_parameter(self%xrfn,'xrfn','umol Fe mol N-1 m','phytoplankton Fe : N uptake ratio',default=0.03_rk)
+
+      call self%register_dependency(self%id_depth, standard_variables%depth)
+      call self%get_parameter(self%xfe_sed,'xfe_sed','umol m-2 d-1','sedimentary source of iron',default=0.000228_rk,scale_factor=d_per_s)
+      call self%get_parameter(self%dfe_sed,'dfe_sed','m','maximum depth of sedimentary iron addition',default=1100.0_rk)
+      call self%register_diagnostic_variable(self%id_FE_SED,'FE_SED','mmol FE m-2 s-1','Seafloor flux of iron',missing_value=0.0_rk)
 
       if (self%seafloor .eq. 3) then
          call self%register_state_dependency(self%id_ZSEDSI,'BEN_SI','mmol Si m-2', 'sediment (Si)')
@@ -368,6 +376,7 @@ contains
 
       real(rk) :: ffastc,ffastn,ffastsi,ffastca,ffastfe
       real(rk) :: ZOXY
+      real(rk) :: depth
       real(rk), parameter :: s_per_d = 86400.0_rk
 
       !----------------------------------------------------------
@@ -383,6 +392,7 @@ contains
       !
       _BOTTOM_LOOP_BEGIN_
 
+         _GET_(self%id_depth,depth)
          _GET_(self%id_ZOXY,ZOXY)
          _GET_BOTTOM_(self%id_ffastc1,ffastc)
          _GET_BOTTOM_(self%id_ffastn1,ffastn)
@@ -427,6 +437,13 @@ contains
             _ADD_BOTTOM_SOURCE_(self%id_ZSEDP, + ffastc/106._rk)
 
          end if
+
+            ! Apply sedimentary flux of iron where depth is less or equal dfe_sed (1100 m in Moore et al(2004), 500 m in nemo repo.
+            ! Note that 0.000228 mmol m-2 d-1 is applied, although Moore et al (2004) value is 2 umol m-2 d-1
+             if (depth.le.self%dfe_sed) then
+                _ADD_BOTTOM_FLUX_(self%id_ZFER, + self%xfe_sed)
+                _SET_BOTTOM_DIAGNOSTIC_(self%id_FE_SED, + self%xfe_sed * s_per_d)
+             end if
  
       _BOTTOM_LOOP_END_
 
